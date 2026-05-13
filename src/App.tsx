@@ -6,6 +6,11 @@ function App() {
 
   const [activeTab, setActiveTab] = useState('Dashboard')
 
+  const prompts = [
+    'Marketing Prompt',
+    'Copywriting Prompt',
+    'Startup Ideas Prompt',
+  ]
 
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
@@ -71,17 +76,14 @@ function App() {
         {activeTab === 'Prompts' && (
           <DashboardCard title="All Prompts">
             <div className="space-y-3">
-              <div className="rounded-lg bg-zinc-800 p-4">
-                Marketing Prompt
-              </div>
-
-              <div className="rounded-lg bg-zinc-800 p-4">
-                Copywriting Prompt
-              </div>
-
-              <div className="rounded-lg bg-zinc-800 p-4">
-                Startup Ideas Prompt
-              </div>
+              {prompts.map((prompt) => (
+                <div
+                  key={prompt}
+                  className="rounded-lg bg-zinc-800 p-4"
+                >
+                  {prompt}
+                </div>
+              ))}
             </div>
           </DashboardCard>
         )}
