@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import DashboardPage from './pages/DashboardPage'
 import PromptsPage from './pages/PromptsPage'
 import FavoritesPage from './pages/FavoritesPage'
@@ -8,23 +8,19 @@ import {
   Route,
 } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
+import useLocalStorage from './hooks/useLocalStorage'
 
 function App() {
 
-  const [prompts, setPrompts] = useState<string[]>(() => {
-    const savedPrompts =
-      localStorage.getItem('prompts')
-
-    if (savedPrompts) {
-      return JSON.parse(savedPrompts)
-    }
-
-    return [
-      'Marketing Prompt',
-      'Copywriting Prompt',
-      'Startup Ideas Prompt',
-    ]
-  })
+  const [prompts, setPrompts] =
+    useLocalStorage<string[]>(
+      'prompts',
+      [
+        'Marketing Prompt',
+        'Copywriting Prompt',
+        'Startup Ideas Prompt',
+      ]
+    )
 
   const [newPrompt, setNewPrompt] = useState('')
 
@@ -47,12 +43,6 @@ function App() {
     )
   }
 
-  useEffect(() => {
-    localStorage.setItem(
-      'prompts',
-      JSON.stringify(prompts)
-    )
-  }, [prompts])
 
   return (
     <AppLayout>
