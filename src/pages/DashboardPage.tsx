@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import DashboardCard from '../components/DashboardCard'
 
@@ -8,32 +8,23 @@ import {
 } from '../api/posts'
 
 function DashboardPage() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] =
-    useState(true)
-
-  useEffect(() => {
-    async function loadPosts() {
-      try {
-        const data = await fetchPosts()
-
-        setPosts(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadPosts()
-  }, [])
+  const {
+    data: posts,
+    isLoading,
+    error,
+  } = useQuery<Post[]>({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+  })
 
   return (
     <div className="grid grid-cols-3 gap-6">
-      {loading ? (
+      {isLoading ? (
         <p>Loading posts...</p>
+      ) : error ? (
+        <p>Something went wrong.</p>
       ) : (
-        posts.map((post) => (
+        posts?.map((post) => (
           <DashboardCard
             key={post.id}
             title={post.title}
