@@ -1,7 +1,12 @@
+import { useState } from 'react'
 import SidebarButton from './components/SidebarButton';
 import DashboardCard from './components/DashboardCard'
 
 function App() {
+
+  const [activeTab, setActiveTab] = useState('Dashboard')
+
+
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
       <aside className="w-64 border-r border-zinc-800 p-6">
@@ -10,16 +15,35 @@ function App() {
         </h1>
 
         <nav className="space-y-2">
-          <SidebarButton title="Dashboard" active />
-          <SidebarButton title="Prompts" />
-          <SidebarButton title="Favorites" />
-          <SidebarButton title="Settings" />
+          <SidebarButton
+            title="Dashboard"
+            active={activeTab === 'Dashboard'}
+            onClick={() => setActiveTab('Dashboard')}
+          />
+
+          <SidebarButton
+            title="Prompts"
+            active={activeTab === 'Prompts'}
+            onClick={() => setActiveTab('Prompts')}
+          />
+
+          <SidebarButton
+            title="Favorites"
+            active={activeTab === 'Favorites'}
+            onClick={() => setActiveTab('Favorites')}
+          />
+
+          <SidebarButton
+            title="Settings"
+            active={activeTab === 'Settings'}
+            onClick={() => setActiveTab('Settings')}
+          />
         </nav>
       </aside>
 
       <main className="flex-1 p-10">
         <h2 className="mb-6 text-3xl font-bold">
-          Dashboard
+          {activeTab}
         </h2>
 
         <div className="grid grid-cols-3 gap-6">
