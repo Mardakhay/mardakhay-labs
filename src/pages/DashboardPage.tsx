@@ -1,25 +1,49 @@
+import { useEffect, useState } from 'react'
+
 import DashboardCard from '../components/DashboardCard'
 
+import {
+  fetchPosts,
+  type Post,
+} from '../api/posts'
+
 function DashboardPage() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] =
+    useState(true)
+
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        const data = await fetchPosts()
+
+        setPosts(data)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPosts()
+  }, [])
+
   return (
     <div className="grid grid-cols-3 gap-6">
-      <DashboardCard title="Prompt Collection">
-        <p className="text-zinc-400">
-          Organize and manage your AI prompts.
-        </p>
-      </DashboardCard>
-
-      <DashboardCard title="Favorite Prompts">
-        <p className="text-zinc-400">
-          Quick access to saved prompts.
-        </p>
-      </DashboardCard>
-
-      <DashboardCard title="AI Notes">
-        <p className="text-zinc-400">
-          Store ideas and AI-generated notes.
-        </p>
-      </DashboardCard>
+      {loading ? (
+        <p>Loading posts...</p>
+      ) : (
+        posts.map((post) => (
+          <DashboardCard
+            key={post.id}
+            title={post.title}
+          >
+            <p className="text-zinc-400">
+              {post.body}
+            </p>
+          </DashboardCard>
+        ))
+      )}
     </div>
   )
 }
