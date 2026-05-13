@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
-import SidebarButton from './components/SidebarButton';
-import DashboardCard from './components/DashboardCard'
+import SidebarButton from './components/SidebarButton'
+import DashboardPage from './pages/DashboardPage'
+import PromptsPage from './pages/PromptsPage'
+import FavoritesPage from './pages/FavoritesPage'
+import SettingsPage from './pages/SettingsPage'
 
 function App() {
 
@@ -89,93 +92,29 @@ function App() {
         </h2>
 
         {activeTab === 'Dashboard' && (
-          <div className="grid grid-cols-3 gap-6">
-            <DashboardCard title="Prompt Collection">
-              <p className="text-zinc-400">
-                Organize and manage your AI prompts.
-              </p>
-            </DashboardCard>
-
-            <DashboardCard title="Favorite Prompts">
-              <p className="text-zinc-400">
-                Quick access to saved prompts.
-              </p>
-            </DashboardCard>
-
-            <DashboardCard title="AI Notes">
-              <p className="text-zinc-400">
-                Store ideas and AI-generated notes.
-              </p>
-            </DashboardCard>
-          </div>
+          <DashboardPage />
         )}
 
         {activeTab === 'Prompts' && (
-          <DashboardCard title="All Prompts">
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Enter new prompt..."
-                  value={newPrompt}
-                  onChange={(event) =>
-                    setNewPrompt(event.target.value)
-                  }
-                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 outline-none"
-                />
-
-                <button
-                  onClick={handleAddPrompt}
-                  className="rounded-lg bg-white px-4 py-2 text-black"
-                >
-                  Add
-                </button>
-              </div>
-              {prompts.map((prompt) => (
-                <div
-                  key={prompt}
-                  className="flex items-center justify-between rounded-lg bg-zinc-800 p-4"
-                >
-                  <span>{prompt}</span>
-
-                  <button
-                    onClick={() =>
-                      handleDeletePrompt(prompt)
-                    }
-                    className="rounded-md bg-red-500 px-3 py-1 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          </DashboardCard>
+          <PromptsPage
+            prompts={prompts}
+            newPrompt={newPrompt}
+            setNewPrompt={setNewPrompt}
+            handleAddPrompt={handleAddPrompt}
+            handleDeletePrompt={handleDeletePrompt}
+          />
         )}
 
         {activeTab === 'Favorites' && (
-          <DashboardCard title="Favorite Prompts">
-            <p className="text-zinc-400">
-              You have no favorite prompts yet.
-            </p>
-          </DashboardCard>
+          <FavoritesPage />
         )}
 
         {activeTab === 'Settings' && (
-          <DashboardCard title="Settings">
-            <div className="space-y-4">
-              <button className="rounded-lg bg-zinc-800 px-4 py-2">
-                Dark Theme
-              </button>
-
-              <button className="rounded-lg bg-zinc-800 px-4 py-2">
-                Account Settings
-              </button>
-            </div>
-          </DashboardCard>
+          <SettingsPage />
         )}
-      </main>
-    </div>
-  )
-}
+              </main>
+            </div>
+          )
+        }
 
 export default App
