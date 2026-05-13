@@ -1,3 +1,5 @@
+import SidebarButton from './components/SidebarButton'
+
 function App() {
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
@@ -7,21 +9,10 @@ function App() {
         </h1>
 
         <nav className="space-y-2">
-          <button className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-left">
-            Dashboard
-          </button>
-
-          <button className="w-full rounded-lg px-4 py-2 text-left hover:bg-zinc-900">
-            Prompts
-          </button>
-
-          <button className="w-full rounded-lg px-4 py-2 text-left hover:bg-zinc-900">
-            Favorites
-          </button>
-
-          <button className="w-full rounded-lg px-4 py-2 text-left hover:bg-zinc-900">
-            Settings
-          </button>
+          <SidebarButton title="Dashboard" active />
+          <SidebarButton title="Prompts" />
+          <SidebarButton title="Favorites" />
+          <SidebarButton title="Settings" />
         </nav>
       </aside>
 
