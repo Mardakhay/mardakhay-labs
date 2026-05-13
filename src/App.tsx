@@ -1,4 +1,5 @@
-import SidebarButton from './components/SidebarButton'
+import SidebarButton from './components/SidebarButton';
+import DashboardCard from './components/DashboardCard'
 
 function App() {
   return (
@@ -22,17 +23,23 @@ function App() {
         </h2>
 
         <div className="grid grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            Prompt Collection
-          </div>
+          <DashboardCard title="Prompt Collection">
+            <p className="text-zinc-400">
+              Organize and manage your AI prompts.
+            </p>
+          </DashboardCard>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            Favorite Prompts
-          </div>
+          <DashboardCard title="Favorite Prompts">
+            <p className="text-zinc-400">
+              Quick access to saved prompts.
+            </p>
+          </DashboardCard>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            AI Notes
-          </div>
+          <DashboardCard title="AI Notes">
+            <p className="text-zinc-400">
+              Store ideas and AI-generated notes.
+            </p>
+          </DashboardCard>
         </div>
       </main>
     </div>
