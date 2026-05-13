@@ -25,6 +25,14 @@ function App() {
     setNewPrompt('')
   }
 
+  function handleDeletePrompt(promptToDelete: string) {
+    setPrompts(
+      prompts.filter(
+        (prompt) => prompt !== promptToDelete
+      )
+    )
+  }
+
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
       <aside className="w-64 border-r border-zinc-800 p-6">
@@ -110,9 +118,18 @@ function App() {
               {prompts.map((prompt) => (
                 <div
                   key={prompt}
-                  className="rounded-lg bg-zinc-800 p-4"
+                  className="flex items-center justify-between rounded-lg bg-zinc-800 p-4"
                 >
-                  {prompt}
+                  <span>{prompt}</span>
+
+                  <button
+                    onClick={() =>
+                      handleDeletePrompt(prompt)
+                    }
+                    className="rounded-md bg-red-500 px-3 py-1 text-sm"
+                  >
+                    Delete
+                  </button>
                 </div>
               ))}
             </div>
