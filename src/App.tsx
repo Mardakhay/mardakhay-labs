@@ -46,25 +46,67 @@ function App() {
           {activeTab}
         </h2>
 
-        <div className="grid grid-cols-3 gap-6">
-          <DashboardCard title="Prompt Collection">
-            <p className="text-zinc-400">
-              Organize and manage your AI prompts.
-            </p>
-          </DashboardCard>
+        {activeTab === 'Dashboard' && (
+          <div className="grid grid-cols-3 gap-6">
+            <DashboardCard title="Prompt Collection">
+              <p className="text-zinc-400">
+                Organize and manage your AI prompts.
+              </p>
+            </DashboardCard>
 
+            <DashboardCard title="Favorite Prompts">
+              <p className="text-zinc-400">
+                Quick access to saved prompts.
+              </p>
+            </DashboardCard>
+
+            <DashboardCard title="AI Notes">
+              <p className="text-zinc-400">
+                Store ideas and AI-generated notes.
+              </p>
+            </DashboardCard>
+          </div>
+        )}
+
+        {activeTab === 'Prompts' && (
+          <DashboardCard title="All Prompts">
+            <div className="space-y-3">
+              <div className="rounded-lg bg-zinc-800 p-4">
+                Marketing Prompt
+              </div>
+
+              <div className="rounded-lg bg-zinc-800 p-4">
+                Copywriting Prompt
+              </div>
+
+              <div className="rounded-lg bg-zinc-800 p-4">
+                Startup Ideas Prompt
+              </div>
+            </div>
+          </DashboardCard>
+        )}
+
+        {activeTab === 'Favorites' && (
           <DashboardCard title="Favorite Prompts">
             <p className="text-zinc-400">
-              Quick access to saved prompts.
+              You have no favorite prompts yet.
             </p>
           </DashboardCard>
+        )}
 
-          <DashboardCard title="AI Notes">
-            <p className="text-zinc-400">
-              Store ideas and AI-generated notes.
-            </p>
+        {activeTab === 'Settings' && (
+          <DashboardCard title="Settings">
+            <div className="space-y-4">
+              <button className="rounded-lg bg-zinc-800 px-4 py-2">
+                Dark Theme
+              </button>
+
+              <button className="rounded-lg bg-zinc-800 px-4 py-2">
+                Account Settings
+              </button>
+            </div>
           </DashboardCard>
-        </div>
+        )}
       </main>
     </div>
   )
