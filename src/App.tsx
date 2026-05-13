@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
-import SidebarButton from './components/SidebarButton'
 import DashboardPage from './pages/DashboardPage'
 import PromptsPage from './pages/PromptsPage'
 import FavoritesPage from './pages/FavoritesPage'
 import SettingsPage from './pages/SettingsPage'
+import {
+  Routes,
+  Route,
+  NavLink,
+} from 'react-router-dom'
 
 function App() {
-
-  const [activeTab, setActiveTab] = useState('Dashboard')
 
   const [prompts, setPrompts] = useState<string[]>(() => {
     const savedPrompts =
@@ -60,58 +62,93 @@ function App() {
         </h1>
 
         <nav className="space-y-2">
-          <SidebarButton
-            title="Dashboard"
-            active={activeTab === 'Dashboard'}
-            onClick={() => setActiveTab('Dashboard')}
-          />
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Dashboard
+          </NavLink>
 
-          <SidebarButton
-            title="Prompts"
-            active={activeTab === 'Prompts'}
-            onClick={() => setActiveTab('Prompts')}
-          />
+          <NavLink
+            to="/prompts"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Prompts
+          </NavLink>
 
-          <SidebarButton
-            title="Favorites"
-            active={activeTab === 'Favorites'}
-            onClick={() => setActiveTab('Favorites')}
-          />
+          <NavLink
+            to="/favorites"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Favorites
+          </NavLink>
 
-          <SidebarButton
-            title="Settings"
-            active={activeTab === 'Settings'}
-            onClick={() => setActiveTab('Settings')}
-          />
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Settings
+          </NavLink>
         </nav>
       </aside>
 
       <main className="flex-1 p-10">
         <h2 className="mb-6 text-3xl font-bold">
-          {activeTab}
+          Mardakhay Labs
         </h2>
+          <Routes>
+            <Route
+              path="/"
+              element={<DashboardPage />}
+            />
 
-        {activeTab === 'Dashboard' && (
-          <DashboardPage />
-        )}
+            <Route
+              path="/prompts"
+              element={
+                <PromptsPage
+                  prompts={prompts}
+                  newPrompt={newPrompt}
+                  setNewPrompt={setNewPrompt}
+                  handleAddPrompt={handleAddPrompt}
+                  handleDeletePrompt={handleDeletePrompt}
+                />
+              }
+            />
 
-        {activeTab === 'Prompts' && (
-          <PromptsPage
-            prompts={prompts}
-            newPrompt={newPrompt}
-            setNewPrompt={setNewPrompt}
-            handleAddPrompt={handleAddPrompt}
-            handleDeletePrompt={handleDeletePrompt}
-          />
-        )}
+            <Route
+              path="/favorites"
+              element={<FavoritesPage />}
+            />
 
-        {activeTab === 'Favorites' && (
-          <FavoritesPage />
-        )}
-
-        {activeTab === 'Settings' && (
-          <SettingsPage />
-        )}
+            <Route
+              path="/settings"
+              element={<SettingsPage />}
+            />
+          </Routes>
               </main>
             </div>
           )
