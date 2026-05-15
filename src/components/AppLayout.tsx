@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 
+import { useNavigate } from 'react-router-dom'
+import { signOut } from '../api/auth'
+import { useAuthStore } from '../stores/authStore'
+
 import Notification from './Notification'
 import { useTheme } from '../context/ThemeContext'
 
@@ -9,6 +13,8 @@ type AppLayoutProps = {
 }
 
 function AppLayout({ children }: AppLayoutProps) {
+  const navigate = useNavigate()
+  const { setUserEmail } = useAuthStore()
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
 
@@ -19,6 +25,12 @@ function AppLayout({ children }: AppLayoutProps) {
   const sidebarClassName = isDark
     ? 'border-zinc-800 bg-zinc-950'
     : 'border-zinc-200 bg-white'
+
+  async function handleLogout() {
+    await signOut()
+    setUserEmail(null)
+    navigate('/login')
+  }
 
   const navLinkClassName = (isActive: boolean) => {
     if (isDark) {
@@ -75,6 +87,16 @@ function AppLayout({ children }: AppLayoutProps) {
           }`}
         >
           {isDark ? 'Light theme' : 'Dark theme'}
+        </button>
+      <button
+          onClick={handleLogout}
+          className={`mt-3 w-full rounded-lg px-4 py-2 ${
+            isDark
+              ? 'bg-red-500 text-white'
+              : 'bg-red-100 text-red-700'
+          }`}
+        >
+          Logout
         </button>
       </aside>
 
