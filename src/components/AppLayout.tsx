@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 
-import { useNavigate } from 'react-router-dom'
 import { signOut } from '../api/auth'
-import { useAuthStore } from '../stores/authStore'
-
 import Notification from './Notification'
 import { useTheme } from '../context/ThemeContext'
+import { useAuthStore } from '../stores/authStore'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -14,7 +12,7 @@ type AppLayoutProps = {
 
 function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate()
-  const { setUserEmail } = useAuthStore()
+  const { clearUserEmail } = useAuthStore()
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
 
@@ -26,22 +24,29 @@ function AppLayout({ children }: AppLayoutProps) {
     ? 'border-zinc-800 bg-zinc-950'
     : 'border-zinc-200 bg-white'
 
-  async function handleLogout() {
-    await signOut()
-    setUserEmail(null)
-    navigate('/login')
-  }
-
   const navLinkClassName = (isActive: boolean) => {
     if (isDark) {
       return `block rounded-lg px-4 py-2 transition-colors ${
-        isActive ? 'bg-zinc-800 text-white' : 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
+        isActive
+          ? 'bg-zinc-800 text-white'
+          : 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
       }`
     }
 
     return `block rounded-lg px-4 py-2 transition-colors ${
-      isActive ? 'bg-zinc-200 text-zinc-950' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+      isActive
+        ? 'bg-zinc-200 text-zinc-950'
+        : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
     }`
+  }
+
+  async function handleLogout() {
+    try {
+      await signOut()
+    } finally {
+      clearUserEmail()
+      navigate('/login')
+    }
   }
 
   return (
@@ -88,12 +93,13 @@ function AppLayout({ children }: AppLayoutProps) {
         >
           {isDark ? 'Light theme' : 'Dark theme'}
         </button>
-      <button
+
+        <button
           onClick={handleLogout}
-          className={`mt-3 w-full rounded-lg px-4 py-2 ${
+          className={`mt-3 w-full rounded-lg px-4 py-2 transition-colors ${
             isDark
-              ? 'bg-red-500 text-white'
-              : 'bg-red-100 text-red-700'
+              ? 'bg-red-500 text-white hover:bg-red-400'
+              : 'bg-red-100 text-red-700 hover:bg-red-200'
           }`}
         >
           Logout

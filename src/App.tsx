@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Navigate, Routes, Route } from 'react-router-dom'
 
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -36,6 +36,8 @@ function App() {
                   path='/settings'
                   element={<SettingsPage />}
                 />
+
+                <Route path='*' element={<Navigate to='/' replace />} />
               </Routes>
             </AppLayout>
           </ProtectedRoute>

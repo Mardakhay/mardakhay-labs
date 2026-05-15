@@ -1,124 +1,96 @@
-import {
-  getSupabaseAnonKey,
-  getSupabaseRestUrl,
-} from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 export type Prompt = {
-  id: string
+  id: number
   content: string
   created_at: string
+  user_id: string
 }
 
-type SupabaseErrorResponse = {
-  message?: string
-  details?: string
-  hint?: string
-}
-
-function buildHeaders() {
-  const anonKey = getSupabaseAnonKey()
-
-  return {
-    apikey: anonKey,
-    Authorization: `Bearer ${anonKey}`,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    Prefer: 'return=representation',
-  }
-}
-
-async function readJsonResponse<T>(response: Response) {
-  const text = await response.text()
-
-  if (!text) {
-    return null as T
-  }
-
-  return JSON.parse(text) as T
-}
-
-async function handleSupabaseResponse<T>(response: Response) {
-  if (!response.ok) {
-    const errorBody = (await response
-      .json()
-      .catch(() => null)) as SupabaseErrorResponse | null
-
-    const message =
-      errorBody?.message ||
-      errorBody?.details ||
-      errorBody?.hint ||
-      `Supabase request failed with status ${response.status}`
-
-    throw new Error(message)
-  }
-
-  return readJsonResponse<T>(response)
-}
-
-function normalizePrompt(prompt: {
-  id: number | string
+type PromptRow = {
+  id: number
   content: string
   created_at: string
-}): Prompt {
-  return {
-    id: String(prompt.id),
-    content: prompt.content,
-    created_at: prompt.created_at,
+  user_id: string
+}
+
+async function getCurrentUser() {
+  const { data, error } =
+    await supabase.auth.getUser()
+
+  if (error) {
+    throw error
   }
+
+  if (!data.user) {
+    throw new Error('Unauthorized')
+  }
+
+  return data.user
+}
+
+function normalizePrompt(row: PromptRow): Prompt {
+  return row
 }
 
 export async function getPrompts() {
-  const response = await fetch(
-    `${getSupabaseRestUrl()}/prompts?select=*&order=created_at.desc`,
-    {
-      headers: buildHeaders(),
-    }
-  )
+  const user = await getCurrentUser()
 
-  const data =
-    (await handleSupabaseResponse<{
-      id: number | string
-      content: string
-      created_at: string
-    }[]>(response)) ?? []
+  const { data, error } =
+    await supabase
+      .from('prompts')
+      .select('id, content, created_at, user_id')
+      .eq('user_id', user.id)
+      .order('created_at', {
+        ascending: false,
+      })
 
-  return data.map(normalizePrompt)
-}
-
-export async function createPrompt(content: string) {
-  const response = await fetch(
-    `${getSupabaseRestUrl()}/prompts`,
-    {
-      method: 'POST',
-      headers: buildHeaders(),
-      body: JSON.stringify({
-        content,
-      }),
-    }
-  )
-
-  const data =
-    await handleSupabaseResponse<{
-      id: number | string
-      content: string
-      created_at: string
-    }[]>(response)
-
-  if (!data?.[0]) {
-    throw new Error('Supabase did not return the created prompt.')
+  if (error) {
+    throw error
   }
 
-  return normalizePrompt(data[0])
+  return (data ?? []).map(
+    (row) => normalizePrompt(row as PromptRow)
+  )
 }
 
-export async function deletePrompt(promptId: string) {
-  const response = await fetch(
-    `${getSupabaseRestUrl()}/prompts?id=eq.${encodeURIComponent(promptId)}`,
-    {
-      method: 'DELETE',
-      headers: buildHeaders(),
-    }
-  )
+export async function createPrompt(
+  content: string
+) {
+  const user = await getCurrentUser()
 
-  await handleSupabaseResponse<unknown>(response)
+  const { data, error } =
+    await supabase
+      .from('prompts')
+      .insert({
+        content,
+        user_id: user.id,
+      })
+      .select('id, content, created_at, user_id')
+      .single()
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('Failed to create prompt.')
+  }
+
+  return normalizePrompt(data as PromptRow)
+}
+
+export async function deletePrompt(promptId: number) {
+  const user = await getCurrentUser()
+
+  const { error } =
+    await supabase
+      .from('prompts')
+      .delete()
+      .eq('id', promptId)
+      .eq('user_id', user.id)
+
+  if (error) {
+    throw error
+  }
 }
