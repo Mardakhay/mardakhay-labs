@@ -1,4 +1,5 @@
 import DashboardCard from '../components/DashboardCard'
+import { useNotificationStore } from '../stores/notificationStore'
 
 type PromptsPageProps = {
   prompts: string[]
@@ -15,6 +16,9 @@ function PromptsPage({
   handleAddPrompt,
   handleDeletePrompt,
 }: PromptsPageProps) {
+
+  const { showNotification } = useNotificationStore()
+  
   return (
     <DashboardCard title="All Prompts">
       <div className="space-y-3">
@@ -30,7 +34,13 @@ function PromptsPage({
           />
 
           <button
-            onClick={handleAddPrompt}
+            onClick={() => {
+              handleAddPrompt()
+
+              showNotification(
+                'Prompt added successfully!'
+              )
+            }}
             className="rounded-lg bg-white px-4 py-2 text-black"
           >
             Add
