@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 
 import AppLayout from './components/AppLayout'
@@ -13,14 +12,14 @@ function App() {
     'prompts',
     ['Marketing Prompt', 'Copywriting Prompt', 'Startup Ideas Prompt']
   )
-  const [newPrompt, setNewPrompt] = useState('')
 
-  function handleAddPrompt() {
-    const prompt = newPrompt.trim()
-    if (!prompt) return
+  function handleAddPrompt(prompt: string) {
+    if (!prompt.trim()) return
 
-    setPrompts((previousPrompts) => [...previousPrompts, prompt])
-    setNewPrompt('')
+    setPrompts((prevPrompts) => [
+      ...prevPrompts,
+      prompt,
+    ])
   }
 
   function handleDeletePrompt(promptToDelete: string) {
@@ -38,8 +37,6 @@ function App() {
           element={
             <PromptsPage
               prompts={prompts}
-              newPrompt={newPrompt}
-              setNewPrompt={setNewPrompt}
               handleAddPrompt={handleAddPrompt}
               handleDeletePrompt={handleDeletePrompt}
             />
