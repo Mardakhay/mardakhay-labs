@@ -1,6 +1,8 @@
 import { Navigate, Routes, Route } from 'react-router-dom'
 
+import { useTheme } from './context/useTheme'
 import AppLayout from './components/AppLayout'
+import Notification from './components/Notification'
 import ProtectedRoute from './components/ProtectedRoute'
 
 import DashboardPage from './pages/DashboardPage'
@@ -10,40 +12,37 @@ import PromptsPage from './pages/PromptsPage'
 import SettingsPage from './pages/SettingsPage'
 
 function App() {
+  const { theme } = useTheme()
+
   return (
-    <Routes>
-      <Route path='/login' element={<LoginPage />} />
+    <div className={theme === 'dark' ? 'dark' : ''}>
+      <Notification />
 
-      <Route
-        path='/*'
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Routes>
-                <Route path='/' element={<DashboardPage />} />
+      <Routes>
+        <Route path='/login' element={<LoginPage />} />
 
-                <Route
-                  path='/prompts'
-                  element={<PromptsPage />}
-                />
+        <Route
+          path='/*'
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Routes>
+                  <Route path='/' element={<DashboardPage />} />
 
-                <Route
-                  path='/favorites'
-                  element={<FavoritesPage />}
-                />
+                  <Route path='/prompts' element={<PromptsPage />} />
 
-                <Route
-                  path='/settings'
-                  element={<SettingsPage />}
-                />
+                  <Route path='/favorites' element={<FavoritesPage />} />
 
-                <Route path='*' element={<Navigate to='/' replace />} />
-              </Routes>
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+                  <Route path='/settings' element={<SettingsPage />} />
+
+                  <Route path='*' element={<Navigate to='/' replace />} />
+                </Routes>
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </div>
   )
 }
 
