@@ -4,13 +4,11 @@ import { ArrowRight, GitBranch, ShieldCheck, Sparkles, TerminalSquare, Wand2 } f
 
 import { signIn, signUp } from '../api/auth'
 import { useNotificationStore } from '../stores/notificationStore'
-import { useTheme } from '../context/useTheme'
 
 function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
   const { showNotification } = useNotificationStore()
 
   const [email, setEmail] = useState('')

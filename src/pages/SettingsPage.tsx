@@ -1,26 +1,22 @@
 import { useState } from 'react'
-import { Bell, LogOut, Moon, ShieldCheck, UserRound, Workflow } from 'lucide-react'
+import { Bell, LogOut, ShieldCheck, UserRound, Workflow, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { signOut } from '../api/auth'
 import DashboardCard from '../components/DashboardCard'
-import { useTheme } from '../context/useTheme'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
 
 function SettingsPage() {
   const navigate = useNavigate()
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
   const { user, setUser } = useAuthStore()
   const { showNotification } = useNotificationStore()
 
   const [emailAlerts, setEmailAlerts] = useState(true)
   const [inAppAlerts, setInAppAlerts] = useState(true)
 
-  const buttonClassName = isDark
-    ? 'rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-white transition-colors hover:bg-zinc-800'
-    : 'rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-950 transition-colors hover:bg-zinc-100'
+  const buttonClassName =
+    'rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-white transition-colors hover:bg-zinc-800'
 
   async function handleLogout() {
     try {
@@ -40,23 +36,19 @@ function SettingsPage() {
     <div className='space-y-6'>
       <DashboardCard title='Profile settings'>
         <div className='grid gap-4 lg:grid-cols-[1.4fr_1fr]'>
-          <div
-            className={`rounded-3xl border p-5 ${
-              isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'
-            }`}
-          >
+          <div className='rounded-3xl border border-white/5 bg-white/5 p-5'>
             <div className='flex items-start gap-4'>
               <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
                 <UserRound className='h-5 w-5' />
               </div>
               <div className='min-w-0 flex-1'>
-                <p className={`text-sm uppercase tracking-[0.28em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
                   Account
                 </p>
                 <h3 className='mt-2 text-2xl font-semibold tracking-tight'>
                   {user?.email ?? 'Workspace user'}
                 </h3>
-                <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                <p className='mt-2 text-sm leading-6 text-zinc-400'>
                   Your session is protected by Supabase Auth and routed through the
                   authenticated workspace shell.
                 </p>
@@ -64,24 +56,20 @@ function SettingsPage() {
             </div>
           </div>
 
-          <div
-            className={`rounded-3xl border p-5 ${
-              isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'
-            }`}
-          >
-            <p className={`text-sm uppercase tracking-[0.28em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+          <div className='rounded-3xl border border-white/5 bg-white/5 p-5'>
+            <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
               Workspace
             </p>
             <div className='mt-4 space-y-3 text-sm'>
               <div className='flex items-center justify-between gap-3'>
-                <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>Theme</span>
-                <button onClick={toggleTheme} className={buttonClassName}>
-                  {isDark ? 'Dark mode' : 'Light mode'}
-                </button>
+                <span className='text-zinc-400'>Appearance</span>
+                <span className='inline-flex rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-violet-100'>
+                  Dark-only
+                </span>
               </div>
 
               <div className='flex items-center justify-between gap-3'>
-                <span className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>Workspace state</span>
+                <span className='text-zinc-400'>Workspace state</span>
                 <span className='inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-200'>
                   Live
                 </span>
@@ -161,7 +149,7 @@ function SettingsPage() {
 
       <DashboardCard title='Workspace preferences'>
         <div className='grid gap-4 lg:grid-cols-3'>
-          <div className={`rounded-2xl border p-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'}`}>
+          <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
                 <Workflow className='h-4 w-4' />
@@ -173,19 +161,19 @@ function SettingsPage() {
             </div>
           </div>
 
-          <div className={`rounded-2xl border p-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'}`}>
+          <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
-                <Moon className='h-4 w-4' />
+                <Sparkles className='h-4 w-4' />
               </div>
               <div>
-                <p className='font-medium'>Theme engine</p>
-                <p className='text-sm text-zinc-500'>Persistent across refreshes.</p>
+                <p className='font-medium'>Dark-only UI</p>
+                <p className='text-sm text-zinc-500'>Locked to a consistent product look.</p>
               </div>
             </div>
           </div>
 
-          <div className={`rounded-2xl border p-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'}`}>
+          <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
                 <Bell className='h-4 w-4' />

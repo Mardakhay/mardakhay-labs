@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LoaderCircle, Plus, X } from 'lucide-react'
 
-import { useTheme } from '../context/useTheme'
-
 type CreatePromptModalProps = {
   onAddPrompt: (prompt: string) => Promise<void> | void
   triggerLabel?: string
@@ -22,9 +20,6 @@ function CreatePromptModal({
   description = 'Add a new AI prompt to your workspace library.',
   submitLabel = 'Create Prompt',
 }: CreatePromptModalProps) {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
-
   const [isOpen, setIsOpen] = useState(false)
   const [prompt, setPrompt] = useState(initialPrompt)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -62,18 +57,6 @@ function CreatePromptModal({
     }
   }
 
-  const modalClassName = isDark
-    ? 'border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/50'
-    : 'border-zinc-200 bg-white text-zinc-950 shadow-2xl shadow-zinc-950/10'
-
-  const inputClassName = isDark
-    ? 'border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500 focus:border-violet-500'
-    : 'border-zinc-300 bg-white text-zinc-950 placeholder:text-zinc-400 focus:border-violet-500'
-
-  const cancelButtonClassName = isDark
-    ? 'border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800'
-    : 'border-zinc-300 bg-zinc-100 text-zinc-950 hover:bg-zinc-200'
-
   return (
     <>
       <button
@@ -83,9 +66,7 @@ function CreatePromptModal({
         }}
         className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
           compact
-            ? isDark
-              ? 'border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 hover:bg-zinc-800'
-              : 'border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-100'
+            ? 'border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 hover:bg-zinc-800'
             : 'bg-white text-zinc-950 hover:bg-zinc-200'
         }`}
       >
@@ -106,7 +87,7 @@ function CreatePromptModal({
             role='dialog'
             aria-modal='true'
             aria-label='Create prompt'
-            className={`w-full max-w-2xl rounded-3xl border p-6 ${modalClassName}`}
+            className='w-full max-w-2xl rounded-3xl border border-zinc-800 bg-zinc-950 p-6 text-white shadow-2xl shadow-black/50'
           >
             <div className='mb-6 flex items-start justify-between gap-4'>
               <div>
@@ -123,11 +104,7 @@ function CreatePromptModal({
 
               <button
                 onClick={() => setIsOpen(false)}
-                className={`rounded-full border p-2 transition-colors ${
-                  isDark
-                    ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white'
-                    : 'border-zinc-300 bg-zinc-100 text-zinc-500 hover:text-zinc-950'
-                }`}
+                className='rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white'
                 aria-label='Close dialog'
               >
                 <X className='h-4 w-4' />
@@ -143,13 +120,13 @@ function CreatePromptModal({
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
               rows={7}
-              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm leading-6 outline-none transition-colors ${inputClassName}`}
+              className='mt-2 w-full rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500'
             />
 
             <div className='mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end'>
               <button
                 onClick={() => setIsOpen(false)}
-                className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${cancelButtonClassName}`}
+                className='rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
                 disabled={isSubmitting}
               >
                 Cancel

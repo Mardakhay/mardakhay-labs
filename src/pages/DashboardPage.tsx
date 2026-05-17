@@ -13,13 +13,11 @@ import { createPrompt, getPrompts, type Prompt, updatePrompt } from '../api/prom
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
-import { useTheme } from '../context/useTheme'
 import { useNotificationStore } from '../stores/notificationStore'
 
 function DashboardPage() {
   const navigate = useNavigate()
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
   const { showNotification } = useNotificationStore()
   const queryClient = useQueryClient()
 

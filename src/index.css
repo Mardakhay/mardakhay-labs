@@ -1,17 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: light;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --app-bg:
-    radial-gradient(circle at top left, rgba(99, 102, 241, 0.08), transparent 28%),
-    radial-gradient(circle at top right, rgba(168, 85, 247, 0.05), transparent 24%),
-    #f8fafc;
-  --app-fg: #09090b;
-}
-
-:root.dark {
   color-scheme: dark;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --app-bg:
     radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 28%),
     radial-gradient(circle at top right, rgba(168, 85, 247, 0.08), transparent 24%),
@@ -36,10 +27,6 @@ body {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease,
-    color-scheme 180ms ease;
 }
 
 ::selection {
