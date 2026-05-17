@@ -6,8 +6,6 @@ import { signIn, signUp } from '../api/auth'
 import { useNotificationStore } from '../stores/notificationStore'
 import { useTheme } from '../context/useTheme'
 
-import heroImage from '../assets/hero.png'
-
 function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -65,13 +63,6 @@ function LoginPage() {
     <div className={`min-h-screen ${shellClassName}`}>
       <div className='grid min-h-screen lg:grid-cols-2'>
         <section className='relative hidden overflow-hidden border-r border-white/5 lg:flex'>
-          <img
-            src={heroImage}
-            alt='Abstract AI workspace visual'
-            className='absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-luminosity'
-          />
-          <div className='absolute inset-0 bg-gradient-to-b from-zinc-950/10 via-zinc-950/70 to-zinc-950' />
-
           <div className='relative z-10 flex w-full flex-col justify-between p-12 xl:p-16'>
             <div className='flex items-center gap-3'>
               <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20'>
