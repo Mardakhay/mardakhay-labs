@@ -19,7 +19,6 @@ type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
 
 function PromptsPage() {
-  const isDark = true
   const { showNotification } = useNotificationStore()
   const queryClient = useQueryClient()
 
@@ -107,8 +106,8 @@ function PromptsPage() {
     const normalizedQuery = searchQuery.trim().toLowerCase()
 
     const filtered = prompts.filter((prompt) => {
-      const matchesSearch = !normalizedQuery
-        || prompt.content.toLowerCase().includes(normalizedQuery)
+      const matchesSearch =
+        !normalizedQuery || prompt.content.toLowerCase().includes(normalizedQuery)
 
       const matchesView =
         viewFilter === 'all' || (viewFilter === 'favorites' && prompt.is_favorite)
@@ -151,33 +150,24 @@ function PromptsPage() {
       <DashboardCard title='Prompt library'>
         <div className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
           <div className='max-w-2xl'>
-            <p className={`text-sm uppercase tracking-[0.28em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
               Workspace tools
             </p>
             <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
               Manage your prompt assets with search, filters, and favorites.
             </h3>
-            <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+            <p className='mt-2 text-sm leading-6 text-zinc-400'>
               Build a reusable prompt library for workflows, experiments, and AI output
               that stays in sync with your Supabase data layer.
             </p>
           </div>
 
-          <CreatePromptModal
-            triggerLabel='New prompt'
-            onAddPrompt={handleAddPrompt}
-          />
+          <CreatePromptModal triggerLabel='New prompt' onAddPrompt={handleAddPrompt} />
         </div>
       </DashboardCard>
 
       <div className='grid gap-4 lg:grid-cols-[1.4fr_auto_auto]'>
-        <label
-          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-            isDark
-              ? 'border-zinc-800 bg-zinc-900/90 text-white'
-              : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
-          }`}
-        >
+        <label className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/90 px-4 py-3 text-white'>
           <Search className='h-4 w-4 shrink-0 text-zinc-500' />
           <input
             value={searchQuery}
@@ -187,13 +177,7 @@ function PromptsPage() {
           />
         </label>
 
-        <div
-          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-            isDark
-              ? 'border-zinc-800 bg-zinc-900/90 text-white'
-              : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
-          }`}
-        >
+        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/90 px-4 py-3 text-white'>
           <Filter className='h-4 w-4 shrink-0 text-zinc-500' />
           <select
             value={viewFilter}
@@ -205,13 +189,7 @@ function PromptsPage() {
           </select>
         </div>
 
-        <div
-          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-            isDark
-              ? 'border-zinc-800 bg-zinc-900/90 text-white'
-              : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
-          }`}
-        >
+        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/90 px-4 py-3 text-white'>
           <ArrowUpDown className='h-4 w-4 shrink-0 text-zinc-500' />
           <select
             value={sortOrder}
@@ -226,7 +204,7 @@ function PromptsPage() {
 
       <DashboardCard title={`Prompts (${filteredPrompts.length})`}>
         {filteredPrompts.length === 0 ? (
-          <div className={`rounded-2xl border border-dashed px-6 py-12 text-center ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+          <div className='rounded-2xl border border-dashed border-zinc-700 px-6 py-12 text-center text-zinc-400'>
             <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200'>
               <Plus className='h-5 w-5' />
             </div>

@@ -13,7 +13,6 @@ import PromptCard from '../components/PromptCard'
 import { useNotificationStore } from '../stores/notificationStore'
 
 function FavoritesPage() {
-  const isDark = true
   const { showNotification } = useNotificationStore()
   const queryClient = useQueryClient()
 
@@ -101,19 +100,19 @@ function FavoritesPage() {
       <DashboardCard title='Favorite prompts'>
         <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl'>
-            <p className={`text-sm uppercase tracking-[0.28em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
               Pinned assets
             </p>
             <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
               Your most valuable prompts stay close at hand.
             </h3>
-            <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+            <p className='mt-2 text-sm leading-6 text-zinc-400'>
               Save the prompts you reuse most often so they are easy to revisit, edit,
               and refine.
             </p>
           </div>
 
-          <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${isDark ? 'border-white/10 bg-white/5 text-white' : 'border-zinc-200 bg-white text-zinc-950'}`}>
+          <div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white'>
             <Heart className='h-4 w-4 fill-current text-violet-300' />
             {favoritePrompts.length} saved
           </div>
@@ -122,7 +121,7 @@ function FavoritesPage() {
 
       {favoritePrompts.length === 0 ? (
         <DashboardCard title='No favorites yet'>
-          <div className={`rounded-3xl border border-dashed px-6 py-12 text-center ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+          <div className='rounded-3xl border border-dashed border-zinc-700 px-6 py-12 text-center text-zinc-400'>
             <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200'>
               <Sparkles className='h-5 w-5' />
             </div>

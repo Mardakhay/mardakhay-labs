@@ -17,7 +17,6 @@ import { useNotificationStore } from '../stores/notificationStore'
 
 function DashboardPage() {
   const navigate = useNavigate()
-  const isDark = true
   const { showNotification } = useNotificationStore()
   const queryClient = useQueryClient()
 
@@ -63,13 +62,7 @@ function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div
-        className={`rounded-3xl border p-8 ${
-          isDark
-            ? 'border-zinc-800 bg-zinc-950/80 text-white'
-            : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
-        }`}
-      >
+      <div className='rounded-3xl border border-zinc-800 bg-zinc-950/80 p-8 text-white'>
         <div className='animate-pulse space-y-4'>
           <div className='h-6 w-40 rounded-full bg-white/10' />
           <div className='h-10 w-72 rounded-2xl bg-white/10' />
@@ -126,13 +119,7 @@ function DashboardPage() {
 
   return (
     <div className='space-y-6'>
-      <section
-        className={`relative overflow-hidden rounded-3xl border p-6 ${
-          isDark
-            ? 'border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/20 text-white shadow-2xl shadow-black/30'
-            : 'border-zinc-200 bg-gradient-to-br from-white via-white to-violet-50/70 text-zinc-950 shadow-xl shadow-zinc-950/5'
-        }`}
-      >
+      <section className='relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/20 p-6 text-white shadow-2xl shadow-black/30'>
         <div className='absolute inset-0 opacity-50'>
           <div className='absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-500/10 blur-3xl' />
           <div className='absolute bottom-0 left-1/2 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl' />
@@ -149,41 +136,23 @@ function DashboardPage() {
               Build, save, and manage your prompt library.
             </h2>
 
-            <p className={`mt-3 max-w-xl text-sm leading-6 sm:text-base ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+            <p className='mt-3 max-w-xl text-sm leading-6 text-zinc-300 sm:text-base'>
               Mardakhay Labs keeps your prompts organized in a secure cloud workspace
               with fast search, favorites, and a clean AI-first dashboard.
             </p>
 
             <div className='mt-5 flex flex-wrap gap-2'>
-              <span
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
-                  isDark
-                    ? 'border-white/10 bg-white/5 text-zinc-300'
-                    : 'border-zinc-200 bg-white text-zinc-600'
-                }`}
-              >
+              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
                 <Clock3 className='h-3.5 w-3.5' />
                 Real-time ready
               </span>
 
-              <span
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
-                  isDark
-                    ? 'border-white/10 bg-white/5 text-zinc-300'
-                    : 'border-zinc-200 bg-white text-zinc-600'
-                }`}
-              >
+              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
                 <Wand2 className='h-3.5 w-3.5' />
                 Prompt generation flow
               </span>
 
-              <span
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
-                  isDark
-                    ? 'border-white/10 bg-white/5 text-zinc-300'
-                    : 'border-zinc-200 bg-white text-zinc-600'
-                }`}
-              >
+              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
                 <TerminalSquare className='h-3.5 w-3.5' />
                 Protected by auth
               </span>
@@ -193,20 +162,13 @@ function DashboardPage() {
           <div className='relative flex flex-wrap gap-3'>
             <button
               onClick={() => navigate('/prompts')}
-              className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
-                isDark
-                  ? 'border border-white/10 bg-white/5 text-white hover:bg-white/10'
-                  : 'border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-100'
-              }`}
+              className='inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10'
             >
               Open prompt library
               <ArrowRight className='h-4 w-4' />
             </button>
 
-            <CreatePromptModal
-              triggerLabel='New prompt'
-              onAddPrompt={handleAddPrompt}
-            />
+            <CreatePromptModal triggerLabel='New prompt' onAddPrompt={handleAddPrompt} />
           </div>
         </div>
       </section>
@@ -214,12 +176,8 @@ function DashboardPage() {
       <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
         {metricCards.map((metric) => (
           <DashboardCard key={metric.label} title={metric.label}>
-            <p className={`text-4xl font-semibold tracking-tight ${isDark ? 'text-white' : 'text-zinc-950'}`}>
-              {metric.value}
-            </p>
-            <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              {metric.note}
-            </p>
+            <p className='text-4xl font-semibold tracking-tight text-white'>{metric.value}</p>
+            <p className='mt-2 text-sm text-zinc-400'>{metric.note}</p>
           </DashboardCard>
         ))}
       </div>
@@ -241,14 +199,14 @@ function DashboardPage() {
 
         <DashboardCard title='Activity'>
           <div className='space-y-4'>
-            <div className={`rounded-2xl border p-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'}`}>
+            <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
               <div className='flex items-center gap-3'>
                 <div className='rounded-xl bg-violet-500/15 p-2 text-violet-200'>
                   <Activity className='h-4 w-4' />
                 </div>
                 <div>
                   <p className='text-sm font-medium'>Workspace sync</p>
-                  <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  <p className='text-sm text-zinc-400'>
                     Your prompts are live in Supabase and scoped to your account.
                   </p>
                 </div>
@@ -259,9 +217,7 @@ function DashboardPage() {
               recentPrompts.map((prompt, index) => (
                 <div
                   key={prompt.id}
-                  className={`flex items-start gap-3 rounded-2xl border p-4 ${
-                    isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'
-                  }`}
+                  className='flex items-start gap-3 rounded-2xl border border-white/5 bg-white/5 p-4'
                 >
                   <div className='mt-0.5 rounded-full bg-violet-500/10 p-2 text-violet-200'>
                     <Clock3 className='h-4 w-4' />
@@ -270,14 +226,12 @@ function DashboardPage() {
                     <p className='text-sm font-medium'>
                       {index === 0 ? 'Latest prompt saved' : 'Prompt stored'}
                     </p>
-                    <p className={`truncate text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                      {prompt.content}
-                    </p>
+                    <p className='truncate text-sm text-zinc-400'>{prompt.content}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className={`rounded-2xl border border-dashed px-5 py-8 text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+              <div className='rounded-2xl border border-dashed border-zinc-700 px-5 py-8 text-sm text-zinc-400'>
                 No activity yet. Add prompts to populate this section.
               </div>
             )}
