@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-import { createPrompt, getPrompts, type Prompt } from '../api/prompts'
+import { createPrompt, getPrompts, type Prompt, updatePrompt } from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
@@ -43,8 +43,24 @@ function DashboardPage() {
     },
   })
 
+  const updatePromptMutation = useMutation({
+    mutationFn: ({ promptId, content }: { promptId: number; content: string }) =>
+      updatePrompt(promptId, content),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt updated successfully!', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
+  })
+
   async function handleAddPrompt(prompt: string) {
     await createPromptMutation.mutateAsync(prompt)
+  }
+
+  function handleUpdatePrompt(promptId: number, content: string) {
+    updatePromptMutation.mutate({ promptId, content })
   }
 
   if (isLoading) {
@@ -219,7 +235,7 @@ function DashboardPage() {
           ) : (
             <div className='space-y-4'>
               {recentPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} compact />
+                <PromptCard key={prompt.id} prompt={prompt} compact onEdit={handleUpdatePrompt} />
               ))}
             </div>
           )}

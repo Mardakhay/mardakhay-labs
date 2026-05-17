@@ -113,8 +113,10 @@ function AppLayout() {
                 <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
                   <Menu className='h-4 w-4' />
                 </div>
-                <div className='min-w-0'>
-                  <p className='text-sm font-medium'>{user?.email ?? 'Signed in user'}</p>
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate text-sm font-medium'>
+                    {user?.email ?? 'Signed in user'}
+                  </p>
                   <p className='text-xs text-zinc-500'>Protected by Supabase Auth</p>
                 </div>
               </div>

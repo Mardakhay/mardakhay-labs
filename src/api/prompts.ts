@@ -70,6 +70,31 @@ export async function createPrompt(content: string) {
   return toPrompt(data as PromptRow)
 }
 
+
+export async function updatePrompt(promptId: number, content: string) {
+  const user = await getCurrentUser()
+
+  const { data, error } = await supabase
+    .from('prompts')
+    .update({
+      content,
+    })
+    .eq('id', promptId)
+    .eq('user_id', user.id)
+    .select('id, content, created_at, user_id, is_favorite')
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('Failed to update prompt.')
+  }
+
+  return toPrompt(data as PromptRow)
+}
+
 export async function deletePrompt(promptId: number) {
   const user = await getCurrentUser()
 

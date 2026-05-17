@@ -8,12 +8,14 @@ import {
 } from 'lucide-react'
 
 import { useTheme } from '../context/useTheme'
+import CreatePromptModal from './CreatePromptModal'
 import type { Prompt } from '../api/prompts'
 
 type PromptCardProps = {
   prompt: Prompt
   onDelete?: (promptId: number) => void
   onToggleFavorite?: (promptId: number, isFavorite: boolean) => void
+  onEdit?: (promptId: number, content: string) => void | Promise<void>
   compact?: boolean
 }
 
@@ -34,6 +36,7 @@ function PromptCard({
   prompt,
   onDelete,
   onToggleFavorite,
+  onEdit,
   compact = false,
 }: PromptCardProps) {
   const { theme } = useTheme()
@@ -118,23 +121,40 @@ function PromptCard({
         </button>
       </div>
 
-      <div className='mt-5 flex items-center justify-between gap-3 border-t border-white/5 pt-4'>
+      <div className='mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4'>
         <div className={`flex items-center gap-2 text-xs ${metaClassName}`}>
           <MoreVertical className='h-4 w-4' />
           AI prompt asset
         </div>
 
-        {onDelete ? (
-          <button
-            onClick={() => onDelete(prompt.id)}
-            className='inline-flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
-          >
-            <Trash2 className='h-4 w-4' />
-            Delete
-          </button>
-        ) : (
-          <div />
-        )}
+        <div className='flex items-center gap-2'>
+          {onEdit ? (
+            <CreatePromptModal
+              triggerLabel='Edit'
+              compact
+              initialPrompt={prompt.content}
+              title='Edit Prompt'
+              description='Refine this prompt and save the updated version back to your workspace.'
+              submitLabel='Save changes'
+              onAddPrompt={(nextContent) => onEdit(prompt.id, nextContent)}
+            />
+          ) : null}
+
+          {onDelete ? (
+            <button
+              onClick={() => {
+                const confirmed = window.confirm('Delete this prompt? This action cannot be undone.')
+                if (confirmed) {
+                  onDelete(prompt.id)
+                }
+              }}
+              className='inline-flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+            >
+              <Trash2 className='h-4 w-4' />
+              Delete
+            </button>
+          ) : null}
+        </div>
       </div>
     </article>
   )

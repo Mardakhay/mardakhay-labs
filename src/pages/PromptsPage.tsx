@@ -7,6 +7,7 @@ import {
   deletePrompt,
   getPrompts,
   togglePromptFavorite,
+  updatePrompt,
   type Prompt,
 } from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
@@ -48,6 +49,18 @@ function PromptsPage() {
     },
   })
 
+  const updatePromptMutation = useMutation({
+    mutationFn: ({ promptId, content }: { promptId: number; content: string }) =>
+      updatePrompt(promptId, content),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt updated successfully!', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
+  })
+
   const deletePromptMutation = useMutation({
     mutationFn: deletePrompt,
     onSuccess: () => {
@@ -78,6 +91,10 @@ function PromptsPage() {
 
   async function handleAddPrompt(prompt: string) {
     await createPromptMutation.mutateAsync(prompt)
+  }
+
+  function handleUpdatePrompt(promptId: number, content: string) {
+    updatePromptMutation.mutate({ promptId, content })
   }
 
   function handleDeletePrompt(promptId: number) {
@@ -229,6 +246,7 @@ function PromptsPage() {
                 key={prompt.id}
                 prompt={prompt}
                 onDelete={handleDeletePrompt}
+                onEdit={handleUpdatePrompt}
                 onToggleFavorite={handleToggleFavorite}
               />
             ))}
