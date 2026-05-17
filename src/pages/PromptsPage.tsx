@@ -147,27 +147,24 @@ function PromptsPage() {
 
   return (
     <div className='space-y-6'>
-      <DashboardCard title='Prompt library'>
-        <div className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
-          <div className='max-w-2xl'>
-            <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
-              Workspace tools
-            </p>
-            <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
-              Manage your prompt assets with search, filters, and favorites.
-            </h3>
-            <p className='mt-2 text-sm leading-6 text-zinc-400'>
-              Build a reusable prompt library for workflows, experiments, and AI output
-              that stays in sync with your Supabase data layer.
-            </p>
-          </div>
-
-          <CreatePromptModal triggerLabel='New prompt' onAddPrompt={handleAddPrompt} />
+      <section className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5 lg:flex-row lg:items-end lg:justify-between'>
+        <div className='max-w-2xl'>
+          <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+            Workspace tools
+          </p>
+          <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
+            Prompt library
+          </h3>
+          <p className='mt-2 text-sm leading-6 text-zinc-400'>
+            Search, edit, favorite, and organize your AI prompts in one place.
+          </p>
         </div>
-      </DashboardCard>
 
-      <div className='grid gap-4 lg:grid-cols-[1.4fr_auto_auto]'>
-        <label className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/90 px-4 py-3 text-white'>
+        <CreatePromptModal triggerLabel='New prompt' onAddPrompt={handleAddPrompt} />
+      </section>
+
+      <div className='grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_auto_auto]'>
+        <label className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
           <Search className='h-4 w-4 shrink-0 text-zinc-500' />
           <input
             value={searchQuery}
@@ -177,7 +174,7 @@ function PromptsPage() {
           />
         </label>
 
-        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/90 px-4 py-3 text-white'>
+        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
           <Filter className='h-4 w-4 shrink-0 text-zinc-500' />
           <select
             value={viewFilter}
@@ -189,7 +186,7 @@ function PromptsPage() {
           </select>
         </div>
 
-        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/90 px-4 py-3 text-white'>
+        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
           <ArrowUpDown className='h-4 w-4 shrink-0 text-zinc-500' />
           <select
             value={sortOrder}

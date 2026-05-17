@@ -119,10 +119,10 @@ function DashboardPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/20 p-6 text-white shadow-2xl shadow-black/30'>
-        <div className='absolute inset-0 opacity-50'>
-          <div className='absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-500/10 blur-3xl' />
-          <div className='absolute bottom-0 left-1/2 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl' />
+      <section className='relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/10 p-5 text-white shadow-sm sm:p-6'>
+        <div className='absolute inset-0 opacity-35'>
+          <div className='absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl' />
+          <div className='absolute bottom-0 left-1/2 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl' />
         </div>
 
         <div className='relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
@@ -132,16 +132,16 @@ function DashboardPage() {
               AI Prompt Workspace
             </span>
 
-            <h2 className='mt-4 text-3xl font-semibold tracking-tight sm:text-4xl'>
+            <h2 className='mt-4 text-2xl font-semibold tracking-tight sm:text-3xl'>
               Build, save, and manage your prompt library.
             </h2>
 
-            <p className='mt-3 max-w-xl text-sm leading-6 text-zinc-300 sm:text-base'>
+            <p className='mt-3 max-w-xl text-sm leading-6 text-zinc-300'>
               Mardakhay Labs keeps your prompts organized in a secure cloud workspace
               with fast search, favorites, and a clean AI-first dashboard.
             </p>
 
-            <div className='mt-5 flex flex-wrap gap-2'>
+            <div className='mt-4 flex flex-wrap gap-2'>
               <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
                 <Clock3 className='h-3.5 w-3.5' />
                 Real-time ready
@@ -159,7 +159,7 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className='relative flex flex-wrap gap-3'>
+          <div className='relative flex flex-wrap gap-3 lg:justify-end'>
             <button
               onClick={() => navigate('/prompts')}
               className='inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10'

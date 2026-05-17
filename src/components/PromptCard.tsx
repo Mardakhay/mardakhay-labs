@@ -38,8 +38,8 @@ function PromptCard({
   onEdit,
   compact = false,
 }: PromptCardProps) {
-  const cardClassName = 'border-zinc-800 bg-zinc-900/90 text-white shadow-black/10'
-  const badgeClassName = 'border-zinc-700 bg-zinc-800/80 text-zinc-300'
+  const cardClassName = 'border-zinc-800/70 bg-zinc-900/80 text-white shadow-sm'
+  const badgeClassName = 'border-zinc-700 bg-zinc-800/70 text-zinc-300'
   const previewClassName = 'text-zinc-300'
   const metaClassName = 'text-zinc-500'
 
@@ -53,7 +53,7 @@ function PromptCard({
 
   return (
     <article
-      className={`group rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl ${cardClassName} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
+      className={`group rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg ${cardClassName} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
     >
       <div className='flex items-start justify-between gap-4'>
         <div className='min-w-0 flex-1'>

@@ -1,19 +1,19 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 
 import { Navigate, Route, Routes } from 'react-router-dom'
 
-import AppLayout from './components/AppLayout'
 import Notification from './components/Notification'
-import ProtectedRoute from './components/ProtectedRoute'
-
-import DashboardPage from './pages/DashboardPage'
-import FavoritesPage from './pages/FavoritesPage'
-import LoginPage from './pages/LoginPage'
-import PromptsPage from './pages/PromptsPage'
-import SettingsPage from './pages/SettingsPage'
 
 import { supabase } from './lib/supabase'
 import { useAuthStore } from './stores/authStore'
+
+const AppLayout = lazy(() => import('./components/AppLayout'))
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const PromptsPage = lazy(() => import('./pages/PromptsPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 
 function App() {
   const { user, isLoading, setUser, setIsLoading } = useAuthStore()
@@ -49,7 +49,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
+      <div className='flex min-h-screen items-center justify-center bg-zinc-950 text-white'>
         Loading...
       </div>
     )
@@ -58,26 +58,35 @@ function App() {
   return (
     <>
       <Notification />
-      <Routes>
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" replace /> : <LoginPage />}
-        />
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/prompts" element={<PromptsPage />} />
-            <Route path="/favorites" element={<FavoritesPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+      <Suspense
+        fallback={
+          <div className='flex min-h-screen items-center justify-center bg-zinc-950 text-white'>
+            Loading...
+          </div>
+        }
+      >
+        <Routes>
+          <Route
+            path='/login'
+            element={user ? <Navigate to='/' replace /> : <LoginPage />}
+          />
+
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path='/' element={<DashboardPage />} />
+              <Route path='/prompts' element={<PromptsPage />} />
+              <Route path='/favorites' element={<FavoritesPage />} />
+              <Route path='/settings' element={<SettingsPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route
-          path="*"
-          element={<Navigate to={user ? '/' : '/login'} replace />}
-        />
-      </Routes>
+          <Route
+            path='*'
+            element={<Navigate to={user ? '/' : '/login'} replace />}
+          />
+        </Routes>
+      </Suspense>
     </>
   )
 }

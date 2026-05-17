@@ -82,7 +82,7 @@ function FavoritesPage() {
   if (isLoading) {
     return (
       <DashboardCard title='Loading favorites'>
-        <div className='h-40 animate-pulse rounded-3xl bg-white/5' />
+        <div className='h-40 animate-pulse rounded-3xl bg-white/[0.03]' />
       </DashboardCard>
     )
   }
@@ -97,31 +97,25 @@ function FavoritesPage() {
 
   return (
     <div className='space-y-6'>
-      <DashboardCard title='Favorite prompts'>
-        <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
-          <div className='max-w-2xl'>
-            <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
-              Pinned assets
-            </p>
-            <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
-              Your most valuable prompts stay close at hand.
-            </h3>
-            <p className='mt-2 text-sm leading-6 text-zinc-400'>
-              Save the prompts you reuse most often so they are easy to revisit, edit,
-              and refine.
-            </p>
-          </div>
-
-          <div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white'>
-            <Heart className='h-4 w-4 fill-current text-violet-300' />
-            {favoritePrompts.length} saved
-          </div>
+      <section className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5'>
+        <div>
+          <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+            Pinned assets
+          </p>
+          <h2 className='mt-2 text-2xl font-semibold tracking-tight'>
+            Favorite prompts
+          </h2>
         </div>
-      </DashboardCard>
+
+        <div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white'>
+          <Heart className='h-4 w-4 fill-current text-violet-300' />
+          {favoritePrompts.length}
+        </div>
+      </section>
 
       {favoritePrompts.length === 0 ? (
         <DashboardCard title='No favorites yet'>
-          <div className='rounded-3xl border border-dashed border-zinc-700 px-6 py-12 text-center text-zinc-400'>
+          <div className='rounded-2xl border border-dashed border-zinc-700 px-6 py-12 text-center text-zinc-400'>
             <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200'>
               <Sparkles className='h-5 w-5' />
             </div>
