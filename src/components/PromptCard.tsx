@@ -25,7 +25,7 @@ function formatPromptTitle(content: string) {
 }
 
 function formatPromptPreview(content: string, compact = false) {
-  const maxLength = compact ? 120 : 180
+  const maxLength = compact ? 72 : 180
   const clean = content.trim().replace(/\s+/g, ' ')
   if (clean.length <= maxLength) return clean
   return `${clean.slice(0, maxLength)}…`
@@ -53,7 +53,7 @@ function PromptCard({
 
   return (
     <article
-      className={`group rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg ${cardClassName} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
+      className={`group rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg ${compact ? 'p-4' : 'p-5'} ${cardClassName} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
     >
       <div className='flex items-start justify-between gap-4'>
         <div className='min-w-0 flex-1'>
@@ -63,9 +63,11 @@ function PromptCard({
               Prompt
             </span>
 
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] ${badgeClassName}`}>
-              {wordCount} words
-            </span>
+            {!compact && (
+              <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] ${badgeClassName}`}>
+                {wordCount} words
+              </span>
+            )}
 
             {prompt.is_favorite && (
               <span className='inline-flex items-center gap-1 rounded-full border border-violet-500/20 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-violet-200'>
@@ -74,11 +76,11 @@ function PromptCard({
             )}
           </div>
 
-          <h3 className='text-base font-semibold tracking-tight sm:text-lg'>
+          <h3 className={`font-semibold tracking-tight ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
             {promptTitle}
           </h3>
 
-          <p className={`mt-3 whitespace-pre-wrap text-sm leading-6 ${previewClassName}`}>
+          <p className={`mt-3 whitespace-pre-wrap text-sm ${compact ? 'leading-5 text-zinc-300/90' : 'leading-6 ' + previewClassName}`}>
             {promptPreview}
           </p>
 
@@ -107,7 +109,7 @@ function PromptCard({
         </button>
       </div>
 
-      <div className='mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4'>
+      <div className={`mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4 ${compact ? 'text-xs' : ''}`}>
         <div className={`flex items-center gap-2 text-xs ${metaClassName}`}>
           <MoreVertical className='h-4 w-4' />
           AI prompt asset
