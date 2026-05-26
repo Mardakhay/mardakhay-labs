@@ -67,6 +67,23 @@ textarea::placeholder {
   color: #71717a;
 }
 
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  box-shadow: 0 0 0 1000px rgba(24, 24, 27, 0.94) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none;
+}
+
 :focus-visible {
   outline: 2px solid rgba(168, 85, 247, 0.65);
   outline-offset: 2px;
