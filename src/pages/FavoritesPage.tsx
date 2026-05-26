@@ -7,6 +7,7 @@ import {
   togglePromptFavorite,
   updatePrompt,
   type Prompt,
+  type PromptInput,
 } from '../api/prompts'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
@@ -28,8 +29,8 @@ function FavoritesPage() {
   const favoritePrompts = prompts.filter((prompt) => prompt.is_favorite)
 
   const updatePromptMutation = useMutation({
-    mutationFn: ({ promptId, content }: { promptId: number; content: string }) =>
-      updatePrompt(promptId, content),
+    mutationFn: ({ promptId, input }: { promptId: number; input: PromptInput }) =>
+      updatePrompt(promptId, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['prompts'] })
       showNotification('Prompt updated successfully!', 'success')
@@ -67,8 +68,8 @@ function FavoritesPage() {
     },
   })
 
-  function handleUpdatePrompt(promptId: number, content: string) {
-    updatePromptMutation.mutate({ promptId, content })
+  function handleUpdatePrompt(promptId: number, input: PromptInput) {
+    updatePromptMutation.mutate({ promptId, input })
   }
 
   function handleDeletePrompt(promptId: number) {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpDown, Filter, Search, Plus } from 'lucide-react'
+import { Filter, Plus, Search, ArrowUpDown } from 'lucide-react'
 
 import {
   createPrompt,
@@ -9,9 +9,11 @@ import {
   togglePromptFavorite,
   updatePrompt,
   type Prompt,
+  type PromptInput,
 } from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
+import DropdownMenu from '../components/DropdownMenu'
 import PromptCard from '../components/PromptCard'
 import { useNotificationStore } from '../stores/notificationStore'
 
@@ -47,8 +49,8 @@ function PromptsPage() {
   })
 
   const updatePromptMutation = useMutation({
-    mutationFn: ({ promptId, content }: { promptId: number; content: string }) =>
-      updatePrompt(promptId, content),
+    mutationFn: ({ promptId, input }: { promptId: number; input: PromptInput }) =>
+      updatePrompt(promptId, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['prompts'] })
       showNotification('Prompt updated successfully!', 'success')
@@ -86,12 +88,12 @@ function PromptsPage() {
     },
   })
 
-  async function handleAddPrompt(prompt: string) {
-    await createPromptMutation.mutateAsync(prompt)
+  async function handleAddPrompt(input: PromptInput) {
+    await createPromptMutation.mutateAsync(input)
   }
 
-  function handleUpdatePrompt(promptId: number, content: string) {
-    updatePromptMutation.mutate({ promptId, content })
+  function handleUpdatePrompt(promptId: number, input: PromptInput) {
+    updatePromptMutation.mutate({ promptId, input })
   }
 
   function handleDeletePrompt(promptId: number) {
@@ -106,9 +108,8 @@ function PromptsPage() {
     const normalizedQuery = searchQuery.trim().toLowerCase()
 
     const filtered = prompts.filter((prompt) => {
-      const matchesSearch =
-        !normalizedQuery || prompt.content.toLowerCase().includes(normalizedQuery)
-
+      const combinedText = `${prompt.title}\n${prompt.content}`.toLowerCase()
+      const matchesSearch = !normalizedQuery || combinedText.includes(normalizedQuery)
       const matchesView =
         viewFilter === 'all' || (viewFilter === 'favorites' && prompt.is_favorite)
 
@@ -160,10 +161,10 @@ function PromptsPage() {
           </p>
         </div>
 
-        <CreatePromptModal triggerLabel='New prompt' onAddPrompt={handleAddPrompt} />
+        <CreatePromptModal triggerLabel='New prompt' onSave={handleAddPrompt} />
       </section>
 
-      <div className='grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_auto_auto]'>
+      <div className='grid gap-4 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.85fr)_minmax(0,0.85fr)]'>
         <label className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
           <Search className='h-4 w-4 shrink-0 text-zinc-500' />
           <input
@@ -174,29 +175,43 @@ function PromptsPage() {
           />
         </label>
 
-        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
-          <Filter className='h-4 w-4 shrink-0 text-zinc-500' />
-          <select
-            value={viewFilter}
-            onChange={(event) => setViewFilter(event.target.value as ViewFilter)}
-            className='bg-transparent text-sm outline-none'
-          >
-            <option value='all'>All prompts</option>
-            <option value='favorites'>Favorites</option>
-          </select>
-        </div>
+        <DropdownMenu
+          icon={Filter}
+          label='Filter prompts'
+          value={viewFilter}
+          onChange={setViewFilter}
+          items={[
+            {
+              value: 'all',
+              label: 'All prompts',
+              description: 'Show every prompt in the library.',
+            },
+            {
+              value: 'favorites',
+              label: 'Favorites only',
+              description: 'Show only starred prompts.',
+            },
+          ]}
+        />
 
-        <div className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
-          <ArrowUpDown className='h-4 w-4 shrink-0 text-zinc-500' />
-          <select
-            value={sortOrder}
-            onChange={(event) => setSortOrder(event.target.value as SortOrder)}
-            className='bg-transparent text-sm outline-none'
-          >
-            <option value='recent'>Most recent</option>
-            <option value='oldest'>Oldest first</option>
-          </select>
-        </div>
+        <DropdownMenu
+          icon={ArrowUpDown}
+          label='Sort prompts'
+          value={sortOrder}
+          onChange={setSortOrder}
+          items={[
+            {
+              value: 'recent',
+              label: 'Most recent',
+              description: 'Show the newest prompts first.',
+            },
+            {
+              value: 'oldest',
+              label: 'Oldest first',
+              description: 'Show the earliest prompts first.',
+            },
+          ]}
+        />
       </div>
 
       <DashboardCard title={`Prompts (${filteredPrompts.length})`}>

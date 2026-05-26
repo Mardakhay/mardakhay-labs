@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowRight, Sparkles, ShieldCheck, TerminalSquare, Wand2 } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Sparkles, TerminalSquare, Wand2 } from 'lucide-react'
 
 import { signIn, signUp } from '../api/auth'
 import { useNotificationStore } from '../stores/notificationStore'
@@ -55,44 +55,44 @@ function LoginPage() {
 
   return (
     <div className={`min-h-screen ${shellClassName}`}>
-      <div className="grid min-h-screen lg:grid-cols-2">
-        <section className="relative hidden overflow-hidden border-r border-white/5 lg:flex">
-          <div className="relative z-10 flex w-full flex-col justify-between p-12 xl:p-16">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20">
-                <Sparkles className="h-5 w-5" />
+      <div className='grid min-h-screen lg:grid-cols-2'>
+        <section className='relative hidden overflow-hidden border-r border-white/5 lg:flex'>
+          <div className='relative z-10 flex w-full flex-col justify-between p-12 xl:p-16'>
+            <div className='flex items-center gap-3'>
+              <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20'>
+                <Sparkles className='h-5 w-5' />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight">Mardakhay Labs</h1>
-                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">
+                <h1 className='text-2xl font-semibold tracking-tight'>Mardakhay Labs</h1>
+                <p className='text-xs uppercase tracking-[0.3em] text-zinc-400'>
                   AI prompt workspace
                 </p>
               </div>
             </div>
 
-            <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-violet-200">
-                Future-proof your workflow
+            <div className='max-w-xl'>
+              <p className='text-xs font-semibold uppercase tracking-[0.32em] text-violet-200'>
+                Product-first workspace
               </p>
-              <h2 className="mt-4 text-5xl font-semibold tracking-tight xl:text-6xl">
-                Build a prompt system that feels premium.
+              <h2 className='mt-4 text-5xl font-semibold tracking-tight xl:text-6xl'>
+                Keep your prompts organized in one calm place.
               </h2>
-              <p className="mt-5 max-w-lg text-base leading-7 text-zinc-300">
-                Organize prompts, save favorites, and manage your AI workflows with a
-                clean workspace designed for shipping real products.
+              <p className='mt-5 max-w-lg text-base leading-7 text-zinc-300'>
+                Sign in to access your prompt library, favorites, and workspace tools
+                with a stable dark interface designed to stay out of your way.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200">
-                  <TerminalSquare className="h-3.5 w-3.5" />
-                  Protected workspace
+              <div className='mt-8 flex flex-wrap gap-3'>
+                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200'>
+                  <TerminalSquare className='h-3.5 w-3.5' />
+                  Secure workspace
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200">
-                  <Wand2 className="h-3.5 w-3.5" />
+                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200'>
+                  <Wand2 className='h-3.5 w-3.5' />
                   Prompt tools
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200">
-                  <ShieldCheck className="h-3.5 w-3.5" />
+                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200'>
+                  <ShieldCheck className='h-3.5 w-3.5' />
                   Supabase Auth
                 </span>
               </div>
@@ -100,38 +100,38 @@ function LoginPage() {
           </div>
         </section>
 
-        <section className="flex items-center justify-center px-4 py-10 sm:px-6 lg:px-10">
+        <section className='flex items-center justify-center px-4 py-10 sm:px-6 lg:px-10'>
           <div className={`w-full max-w-md rounded-3xl border p-6 sm:p-8 ${panelClassName}`}>
-            <div className="mb-8 flex items-center justify-between gap-4">
+            <div className='mb-8 flex items-center justify-between gap-4'>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+                <p className='text-xs uppercase tracking-[0.3em] text-zinc-500'>
                   Sign in
                 </p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                <h2 className='mt-2 text-3xl font-semibold tracking-tight'>
                   {isSignup ? 'Create account' : 'Welcome back'}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-zinc-400">
-                  Access your AI workspace and keep your prompt library in sync.
+                <p className='mt-2 text-sm leading-6 text-zinc-400'>
+                  Access your prompt workspace and keep your library in sync.
                 </p>
               </div>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200">
-                <Sparkles className="h-5 w-5" />
+              <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+                <Sparkles className='h-5 w-5' />
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className='space-y-4'>
               <input
-                type="email"
-                placeholder="Email address"
+                type='email'
+                placeholder='Email address'
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 className={`w-full rounded-2xl border px-4 py-3.5 text-sm outline-none transition-colors ${inputClassName}`}
               />
 
               <input
-                type="password"
-                placeholder="Password"
+                type='password'
+                placeholder='Password'
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className={`w-full rounded-2xl border px-4 py-3.5 text-sm outline-none transition-colors ${inputClassName}`}
@@ -139,23 +139,23 @@ function LoginPage() {
 
               <button
                 onClick={handleAuth}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400"
+                className='inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400'
               >
                 {isSignup ? 'Create account' : 'Sign in'}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className='h-4 w-4' />
               </button>
             </div>
 
             <button
               onClick={() => setIsSignup((current) => !current)}
-              className="mt-6 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-200"
+              className='mt-6 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-200'
             >
               {isSignup
                 ? 'Already have an account? Sign in'
                 : "Don't have an account? Create one"}
             </button>
 
-            <p className="mt-6 text-xs leading-6 uppercase tracking-[0.26em] text-zinc-500">
+            <p className='mt-6 text-xs leading-6 uppercase tracking-[0.26em] text-zinc-500'>
               By continuing, you agree to the terms of service and privacy policy.
             </p>
           </div>
