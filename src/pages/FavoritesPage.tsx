@@ -11,7 +11,12 @@ import {
 } from '../api/prompts'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
+import { togglePromptFavoriteInList } from '../lib/promptCache'
 import { useNotificationStore } from '../stores/notificationStore'
+
+type PromptCacheContext = {
+  previousPrompts?: Prompt[]
+}
 
 function FavoritesPage() {
   const { showNotification } = useNotificationStore()
@@ -51,28 +56,19 @@ function FavoritesPage() {
     },
   })
 
-  const favoriteMutation = useMutation({
-    mutationFn: ({
-      promptId,
-      isFavorite,
-    }: {
-      promptId: number
-      isFavorite: boolean
-    }) => togglePromptFavorite(promptId, isFavorite),
-    onMutate: async ({ promptId, isFavorite }) => {
+  const favoriteMutation = useMutation<
+    Prompt,
+    Error,
+    { promptId: number; isFavorite: boolean },
+    PromptCacheContext
+  >({
+    mutationFn: ({ promptId, isFavorite }) => togglePromptFavorite(promptId, isFavorite),
+    onMutate: async ({ promptId }) => {
       await queryClient.cancelQueries({ queryKey: ['prompts'] })
-
       const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
 
-      queryClient.setQueryData<Prompt[]>(['prompts'], (current = []) =>
-        current.map((prompt) =>
-          prompt.id === promptId
-            ? {
-                ...prompt,
-                is_favorite: !isFavorite,
-              }
-            : prompt,
-        ),
+      queryClient.setQueryData<Prompt[]>(['prompts'], (current) =>
+        togglePromptFavoriteInList(current, promptId)
       )
 
       return { previousPrompts }
@@ -83,6 +79,9 @@ function FavoritesPage() {
       }
 
       showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
+    onSuccess: () => {
+      showNotification('Prompt favorites updated.', 'success')
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['prompts'] })

@@ -31,11 +31,12 @@ function ConfirmModal({
       }
     }
 
+    const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', handleEscape)
 
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', handleEscape)
     }
   }, [isLoading, onCancel, open])

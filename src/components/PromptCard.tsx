@@ -165,12 +165,13 @@ function PromptCard({
               event.stopPropagation()
               onToggleFavorite?.(prompt.id, prompt.is_favorite)
             }}
-            className={`shrink-0 self-start inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-150 ${
+            className={`min-h-11 min-w-11 shrink-0 self-start rounded-full border p-2 transition-all ${
               prompt.is_favorite
                 ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
                 : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
             }`}
             aria-label={prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-pressed={prompt.is_favorite}
           >
             {prompt.is_favorite ? (
               <Star className='h-4 w-4 fill-current' />
@@ -188,8 +189,9 @@ function PromptCard({
                 event.stopPropagation()
                 void handleCopy()
               }}
-              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+              className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
               aria-label='Copy prompt content'
+              title='Copy prompt content'
             >
               {copied ? (
                 <Check className='h-4 w-4 text-emerald-300' />
@@ -206,7 +208,8 @@ function PromptCard({
                   event.stopPropagation()
                   openEditor()
                 }}
-                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+              title='Edit prompt'
               >
                 Edit
               </button>
@@ -219,7 +222,8 @@ function PromptCard({
                   event.stopPropagation()
                   setShowDeleteConfirm(true)
                 }}
-                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+              title='Delete prompt'
               >
                 <Trash2 className='h-4 w-4' />
                 Delete
