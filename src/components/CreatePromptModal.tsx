@@ -119,6 +119,7 @@ function PromptEditorModal({
               Prompt title
             </label>
             <input
+              autoFocus
               value={promptTitle}
               onChange={(event) => setPromptTitle(event.target.value)}
               placeholder='Summarize the prompt in a short title'

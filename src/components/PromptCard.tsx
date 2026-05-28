@@ -1,4 +1,4 @@
-import { type KeyboardEvent as ReactKeyboardEvent, useState } from 'react'
+import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from 'react'
 import {
   Bot,
   Boxes,
@@ -35,6 +35,15 @@ function PromptCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current !== null) {
+        window.clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const promptTitle = prompt.title.trim() || derivePromptTitle(prompt.content)
   const promptPreview = formatPromptPreview(prompt.content, compact ? 88 : 190)
@@ -73,7 +82,14 @@ function PromptCard({
     }
 
     setCopied(true)
-    window.setTimeout(() => setCopied(false), 1600)
+
+    if (copyTimeoutRef.current !== null) {
+      window.clearTimeout(copyTimeoutRef.current)
+    }
+
+    copyTimeoutRef.current = window.setTimeout(() => {
+      setCopied(false)
+    }, 1600)
   }
 
   return (
