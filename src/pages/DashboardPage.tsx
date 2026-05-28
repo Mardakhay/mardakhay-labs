@@ -9,11 +9,23 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-import { createPrompt, getPrompts, type Prompt, type PromptInput, updatePrompt } from '../api/prompts'
+import {
+  createPrompt,
+  getPrompts,
+  togglePromptFavorite,
+  type Prompt,
+  type PromptInput,
+  updatePrompt,
+} from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
+import { togglePromptFavoriteInList } from '../lib/promptCache'
 import { useNotificationStore } from '../stores/notificationStore'
+
+type PromptCacheContext = {
+  previousPrompts?: Prompt[]
+}
 
 function DashboardPage() {
   const navigate = useNavigate()
@@ -52,12 +64,48 @@ function DashboardPage() {
     },
   })
 
+  const favoriteMutation = useMutation<
+    Prompt,
+    Error,
+    { promptId: number; isFavorite: boolean },
+    PromptCacheContext
+  >({
+    mutationFn: ({ promptId, isFavorite }) => togglePromptFavorite(promptId, isFavorite),
+    onMutate: async ({ promptId }) => {
+      await queryClient.cancelQueries({ queryKey: ['prompts'] })
+      const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
+
+      queryClient.setQueryData<Prompt[]>(['prompts'], (current) =>
+        togglePromptFavoriteInList(current, promptId)
+      )
+
+      return { previousPrompts }
+    },
+    onError: (mutationError: Error, _variables, context) => {
+      if (context?.previousPrompts) {
+        queryClient.setQueryData(['prompts'], context.previousPrompts)
+      }
+
+      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
+    onSuccess: () => {
+      showNotification('Prompt favorites updated.', 'success')
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+    },
+  })
+
   async function handleAddPrompt(input: PromptInput) {
     await createPromptMutation.mutateAsync(input)
   }
 
   function handleUpdatePrompt(promptId: number, input: PromptInput) {
     updatePromptMutation.mutate({ promptId, input })
+  }
+
+  function handleToggleFavorite(promptId: number, isFavorite: boolean) {
+    favoriteMutation.mutate({ promptId, isFavorite })
   }
 
   if (isLoading) {
@@ -193,6 +241,7 @@ function DashboardPage() {
                   prompt={prompt}
                   compact
                   onEdit={handleUpdatePrompt}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               ))}
             </div>
