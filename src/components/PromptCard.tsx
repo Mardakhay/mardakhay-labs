@@ -53,9 +53,9 @@ function PromptCard({
         tabIndex={onEdit ? 0 : undefined}
         onClick={openEditor}
         onKeyDown={handleCardKeyDown}
-        className={`group rounded-2xl border border-zinc-800/80 bg-zinc-900/85 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-violet-500/30 ${compact ? 'p-4' : 'p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${onEdit ? 'cursor-pointer' : ''}`}
+        className={`group rounded-2xl border border-zinc-800/80 bg-zinc-900/85 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-violet-500/30 ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${onEdit ? 'cursor-pointer' : ''}`}
       >
-        <div className='flex items-start justify-between gap-4'>
+        <div className='flex items-start justify-between gap-3 sm:gap-4'>
           <div className='min-w-0 flex-1'>
             <div className='mb-3 flex flex-wrap items-center gap-2'>
               <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-zinc-300'>
@@ -98,7 +98,7 @@ function PromptCard({
               event.stopPropagation()
               onToggleFavorite?.(prompt.id, prompt.is_favorite)
             }}
-            className={`rounded-full border p-2 transition-all ${
+            className={`min-h-11 min-w-11 rounded-full border p-2 transition-all ${
               prompt.is_favorite
                 ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
                 : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
@@ -113,10 +113,12 @@ function PromptCard({
           </button>
         </div>
 
-        <div className='mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4'>
-          <p className='text-xs text-zinc-500'>Click the card to edit the prompt.</p>
+        <div className='mt-4 flex flex-col gap-3 border-t border-white/5 pt-4 sm:flex-row sm:items-center sm:justify-between'>
+          <p className='text-xs text-zinc-500 sm:max-w-[50%]'>
+            Click the card to edit the prompt.
+          </p>
 
-          <div className='flex items-center gap-2'>
+          <div className='grid grid-cols-2 gap-2 sm:flex sm:items-center'>
             {onEdit ? (
               <button
                 type='button'
@@ -124,7 +126,7 @@ function PromptCard({
                   event.stopPropagation()
                   openEditor()
                 }}
-                className='inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
               >
                 Edit
               </button>
@@ -137,7 +139,7 @@ function PromptCard({
                   event.stopPropagation()
                   setShowDeleteConfirm(true)
                 }}
-                className='inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
               >
                 <Trash2 className='h-4 w-4' />
                 Delete

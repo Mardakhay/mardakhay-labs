@@ -66,13 +66,15 @@ function PromptEditorModal({
   }
 
   return (
-    <div className='flex w-full max-w-2xl max-h-[min(92vh,44rem)] flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60'>
-      <div className='flex items-start justify-between gap-4 border-b border-white/5 px-6 py-5'>
+    <div className='flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'>
+      <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
         <div className='min-w-0'>
-          <p className='text-xs uppercase tracking-[0.3em] text-zinc-500'>
+          <p className='text-xs uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.3em]'>
             Prompt editor
           </p>
-          <h2 className='mt-2 text-2xl font-semibold tracking-tight'>{title}</h2>
+          <h2 className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
+            {title}
+          </h2>
           <p className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
             {description}
           </p>
@@ -80,14 +82,14 @@ function PromptEditorModal({
 
         <button
           onClick={onClose}
-          className='rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white'
+          className='flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white'
           aria-label='Close dialog'
         >
           <X className='h-4 w-4' />
         </button>
       </div>
 
-      <div className='flex-1 overflow-y-auto px-6 py-6'>
+      <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6'>
         <div className='space-y-5'>
           <div>
             <label className='block text-sm font-medium text-zinc-200'>
@@ -97,7 +99,7 @@ function PromptEditorModal({
               value={promptTitle}
               onChange={(event) => setPromptTitle(event.target.value)}
               placeholder='Summarize the prompt in a short title'
-              className='mt-2 w-full rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500'
+              className='mt-2 min-h-12 w-full rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500'
             />
             <p className='mt-2 text-xs leading-5 text-zinc-500'>
               Leave it blank to auto-generate the title from the first line.
@@ -113,21 +115,21 @@ function PromptEditorModal({
               value={promptContent}
               onChange={(event) => setPromptContent(event.target.value)}
               rows={10}
-              className='mt-2 h-64 w-full resize-none rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500'
+              className='mt-2 h-[42dvh] min-h-52 w-full resize-none rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500 sm:h-64'
             />
           </div>
         </div>
       </div>
 
-      <div className='flex items-center justify-between gap-4 border-t border-white/5 px-6 py-5'>
-        <p className='text-xs uppercase tracking-[0.26em] text-zinc-500'>
+      <div className='flex shrink-0 flex-col gap-4 border-t border-white/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5'>
+        <p className='hidden text-xs uppercase tracking-[0.26em] text-zinc-500 sm:block'>
           Escape closes this dialog
         </p>
 
-        <div className='flex flex-col-reverse gap-3 sm:flex-row sm:justify-end'>
+        <div className='grid gap-3 sm:flex sm:justify-end'>
           <button
             onClick={onClose}
-            className='rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            className='min-h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
             disabled={isSubmitting}
           >
             Cancel
@@ -135,7 +137,7 @@ function PromptEditorModal({
 
           <button
             onClick={handleSubmit}
-            className='inline-flex items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-60'
+            className='inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-60'
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -195,7 +197,7 @@ function CreatePromptModal({
       {!hideTrigger ? (
         <button
           onClick={() => setModalOpen(true)}
-          className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
+          className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
             compact
               ? 'border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 hover:bg-zinc-800'
               : 'bg-white text-zinc-950 hover:bg-zinc-200'
@@ -208,7 +210,7 @@ function CreatePromptModal({
 
       {modalOpen ? (
         <div
-          className='fixed inset-0 z-50 grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
+          className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:grid sm:place-items-center sm:px-4 sm:py-4'
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setModalOpen(false)

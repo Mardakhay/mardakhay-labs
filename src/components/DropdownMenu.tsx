@@ -70,7 +70,7 @@ function DropdownMenu<T extends string>({
         onClick={() => setOpen((current) => !current)}
         aria-haspopup='menu'
         aria-expanded={open}
-        className='flex w-full items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-left text-white transition-colors hover:border-zinc-700 hover:bg-zinc-900'
+        className='flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-left text-white transition-colors hover:border-zinc-700 hover:bg-zinc-900'
       >
         <span className='flex min-w-0 items-center gap-3'>
           <Icon className='h-4 w-4 shrink-0 text-zinc-500' />
@@ -86,7 +86,7 @@ function DropdownMenu<T extends string>({
         <div
           role='menu'
           aria-label={label}
-          className={`absolute top-[calc(100%+0.5rem)] z-30 w-72 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-2 shadow-2xl shadow-black/50 ${align === 'right' ? 'right-0' : 'left-0'}`}
+          className={`absolute top-[calc(100%+0.5rem)] z-30 w-full min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-2 shadow-2xl shadow-black/50 sm:w-72 ${align === 'right' ? 'right-0' : 'left-0'}`}
         >
           {items.map((item) => {
             const active = item.value === value
@@ -96,7 +96,7 @@ function DropdownMenu<T extends string>({
                 key={item.value}
                 type='button'
                 onClick={() => handleSelect(item.value)}
-                className={`flex w-full items-center justify-between gap-4 rounded-xl px-3 py-3 text-left transition-colors ${active ? 'bg-violet-500/10 text-violet-100' : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'}`}
+                className={`flex min-h-12 w-full items-center justify-between gap-4 rounded-xl px-3 py-3 text-left transition-colors ${active ? 'bg-violet-500/10 text-violet-100' : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'}`}
                 role='menuitemradio'
                 aria-checked={active}
               >
