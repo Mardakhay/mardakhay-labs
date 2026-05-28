@@ -1,5 +1,16 @@
 import { type KeyboardEvent as ReactKeyboardEvent, useState } from 'react'
-import { CalendarDays, Hash, Star, StarOff, Trash2 } from 'lucide-react'
+import {
+  Bot,
+  Boxes,
+  CalendarDays,
+  Check,
+  Clipboard,
+  Hash,
+  Star,
+  StarOff,
+  Tag,
+  Trash2,
+} from 'lucide-react'
 
 import type { Prompt, PromptInput } from '../api/prompts'
 import { countPromptWords, derivePromptTitle, formatPromptPreview } from '../lib/promptFormatting'
@@ -23,6 +34,7 @@ function PromptCard({
 }: PromptCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const promptTitle = prompt.title.trim() || derivePromptTitle(prompt.content)
   const promptPreview = formatPromptPreview(prompt.content, compact ? 88 : 190)
@@ -44,6 +56,24 @@ function PromptCard({
       event.preventDefault()
       openEditor()
     }
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(prompt.content)
+    } catch {
+      const textarea = document.createElement('textarea')
+      textarea.value = prompt.content
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1600)
   }
 
   return (
@@ -74,6 +104,20 @@ function PromptCard({
                   Favorite
                 </span>
               ) : null}
+
+              {prompt.ai_target ? (
+                <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/70 px-2.5 py-1 text-[11px] font-medium text-zinc-300'>
+                  <Bot className='h-3.5 w-3.5' />
+                  {prompt.ai_target}
+                </span>
+              ) : null}
+
+              {prompt.category ? (
+                <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/70 px-2.5 py-1 text-[11px] font-medium text-zinc-300'>
+                  <Boxes className='h-3.5 w-3.5' />
+                  {prompt.category}
+                </span>
+              ) : null}
             </div>
 
             <h3 className={`font-semibold tracking-tight ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
@@ -89,6 +133,13 @@ function PromptCard({
                 <CalendarDays className='h-3.5 w-3.5' />
                 {createdLabel}
               </span>
+
+              {prompt.hashtags.slice(0, compact ? 2 : 4).map((tag) => (
+                <span key={tag} className='inline-flex items-center gap-1.5'>
+                  <Tag className='h-3.5 w-3.5' />
+                  #{tag}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -114,7 +165,24 @@ function PromptCard({
         </div>
 
         <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-4'>
-          <div className='grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center'>
+          <div className='grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:items-center'>
+            <button
+              type='button'
+              onClick={(event) => {
+                event.stopPropagation()
+                void handleCopy()
+              }}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+              aria-label='Copy prompt content'
+            >
+              {copied ? (
+                <Check className='h-4 w-4 text-emerald-300' />
+              ) : (
+                <Clipboard className='h-4 w-4' />
+              )}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+
             {onEdit ? (
               <button
                 type='button'
@@ -152,6 +220,8 @@ function PromptCard({
           hideTrigger
           initialTitle={prompt.title}
           initialPrompt={prompt.content}
+          initialAiTarget={prompt.ai_target}
+          initialCategory={prompt.category}
           title='Edit prompt'
           description='Refine the title and content, then save the updated version back to your workspace.'
           submitLabel='Save changes'

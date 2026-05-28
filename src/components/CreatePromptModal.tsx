@@ -1,11 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
-import { LoaderCircle, Plus, X } from 'lucide-react'
+import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
 import { derivePromptTitle } from '../lib/promptFormatting'
+import {
+  aiTargetOptions,
+  promptCategoryOptions,
+  type AiTarget,
+  type PromptCategory,
+} from '../lib/promptMetadata'
+import DropdownMenu from './DropdownMenu'
 
 type PromptFormValues = {
   title: string
   content: string
+  aiTarget?: AiTarget
+  category?: PromptCategory
 }
 
 type CreatePromptModalProps = {
@@ -14,6 +23,8 @@ type CreatePromptModalProps = {
   compact?: boolean
   initialPrompt?: string
   initialTitle?: string
+  initialAiTarget?: AiTarget
+  initialCategory?: PromptCategory
   title?: string
   description?: string
   submitLabel?: string
@@ -25,6 +36,8 @@ type CreatePromptModalProps = {
 type PromptEditorModalProps = {
   initialPrompt: string
   initialTitle: string
+  initialAiTarget?: AiTarget
+  initialCategory?: PromptCategory
   title: string
   description: string
   submitLabel: string
@@ -35,6 +48,8 @@ type PromptEditorModalProps = {
 function PromptEditorModal({
   initialPrompt,
   initialTitle,
+  initialAiTarget,
+  initialCategory,
   title,
   description,
   submitLabel,
@@ -43,6 +58,12 @@ function PromptEditorModal({
 }: PromptEditorModalProps) {
   const [promptTitle, setPromptTitle] = useState(initialTitle)
   const [promptContent, setPromptContent] = useState(initialPrompt)
+  const [aiTarget, setAiTarget] = useState<AiTarget | 'none'>(
+    initialAiTarget ?? 'none'
+  )
+  const [category, setCategory] = useState<PromptCategory | 'none'>(
+    initialCategory ?? 'none'
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const resolvedTitle = useMemo(() => {
@@ -58,6 +79,8 @@ function PromptEditorModal({
       await onSave({
         title: resolvedTitle,
         content: promptContent,
+        aiTarget: aiTarget === 'none' ? undefined : aiTarget,
+        category: category === 'none' ? undefined : category,
       })
       onClose()
     } finally {
@@ -104,6 +127,46 @@ function PromptEditorModal({
             <p className='mt-2 text-xs leading-5 text-zinc-500'>
               Leave it blank to auto-generate the title from the first line.
             </p>
+          </div>
+
+          <div className='grid gap-3 sm:grid-cols-2'>
+            <DropdownMenu
+              icon={Bot}
+              label='AI target'
+              value={aiTarget}
+              onChange={setAiTarget}
+              items={[
+                {
+                  value: 'none',
+                  label: 'No target',
+                  description: 'Keep this prompt provider-neutral.',
+                },
+                ...aiTargetOptions.map((option) => ({
+                  value: option,
+                  label: option,
+                  description: `Intended for ${option}.`,
+                })),
+              ]}
+            />
+
+            <DropdownMenu
+              icon={Boxes}
+              label='Category'
+              value={category}
+              onChange={setCategory}
+              items={[
+                {
+                  value: 'none',
+                  label: 'No category',
+                  description: 'Leave this prompt uncategorized.',
+                },
+                ...promptCategoryOptions.map((option) => ({
+                  value: option,
+                  label: option,
+                  description: `${option} workspace prompt.`,
+                })),
+              ]}
+            />
           </div>
 
           <div>
@@ -161,6 +224,8 @@ function CreatePromptModal({
   compact = false,
   initialPrompt = '',
   initialTitle = '',
+  initialAiTarget,
+  initialCategory,
   title = 'Create prompt',
   description = 'Add a new AI prompt to your workspace library.',
   submitLabel = 'Create prompt',
@@ -221,6 +286,8 @@ function CreatePromptModal({
             key={`${initialTitle}::${initialPrompt}`}
             initialPrompt={initialPrompt}
             initialTitle={initialTitle}
+            initialAiTarget={initialAiTarget}
+            initialCategory={initialCategory}
             title={title}
             description={description}
             submitLabel={submitLabel}
