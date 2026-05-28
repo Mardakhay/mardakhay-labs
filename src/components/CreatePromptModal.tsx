@@ -197,7 +197,7 @@ function CreatePromptModal({
       {!hideTrigger ? (
         <button
           onClick={() => setModalOpen(true)}
-          className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
+          className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 sm:w-auto ${
             compact
               ? 'border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 hover:bg-zinc-800'
               : 'bg-white text-zinc-950 hover:bg-zinc-200'

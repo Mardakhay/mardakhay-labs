@@ -113,12 +113,8 @@ function PromptCard({
           </button>
         </div>
 
-        <div className='mt-4 flex flex-col gap-3 border-t border-white/5 pt-4 sm:flex-row sm:items-center sm:justify-between'>
-          <p className='text-xs text-zinc-500 sm:max-w-[50%]'>
-            Click the card to edit the prompt.
-          </p>
-
-          <div className='grid grid-cols-2 gap-2 sm:flex sm:items-center'>
+        <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-4'>
+          <div className='grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center'>
             {onEdit ? (
               <button
                 type='button'

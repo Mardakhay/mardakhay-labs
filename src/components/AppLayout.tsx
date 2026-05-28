@@ -1,16 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, LogOut, Menu, Sparkles, UserRound } from 'lucide-react'
+import {
+  ChevronDown,
+  Heart,
+  LayoutDashboard,
+  Library,
+  LogOut,
+  Menu,
+  Settings,
+  Sparkles,
+  UserRound,
+} from 'lucide-react'
 
 import { signOut } from '../api/auth'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
 
 const navigation = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/prompts', label: 'Prompts' },
-  { to: '/favorites', label: 'Favorites' },
-  { to: '/settings', label: 'Settings' },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/prompts', label: 'Prompts', icon: Library },
+  { to: '/favorites', label: 'Favorites', icon: Heart },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ] as const
 
 function AppLayout() {
@@ -81,18 +91,19 @@ function AppLayout() {
           </div>
 
           <nav className='mt-8 space-y-2'>
-            {navigation.map(({ to, label }) => (
+            {navigation.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
+                  `flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
                     isActive
                       ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
                       : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.03]'
                   }`
                 }
               >
+                <Icon className='h-4 w-4' />
                 <span>{label}</span>
               </NavLink>
             ))}
@@ -132,16 +143,24 @@ function AppLayout() {
         </aside>
 
         <div className='flex min-h-screen flex-1 flex-col'>
-          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/92 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4 lg:px-8'>
+          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/95 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4 lg:px-8'>
             <div className='flex items-center justify-between gap-3'>
-              <div className='min-w-0'>
-                <div className='flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.28em]'>
-                  <Sparkles className='h-3.5 w-3.5 text-violet-300 xl:hidden' />
-                  <span>Workspace</span>
+              <div className='flex min-w-0 items-center gap-3'>
+                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 xl:hidden'>
+                  <Sparkles className='h-4 w-4' />
                 </div>
-                <h2 className='mt-1 truncate text-lg font-semibold tracking-tight sm:text-2xl'>
-                  {activeRoute}
-                </h2>
+
+                <div className='min-w-0'>
+                  <p className='truncate text-sm font-semibold tracking-tight text-white xl:hidden'>
+                    Mardakhay Labs
+                  </p>
+                  <p className='hidden text-xs uppercase tracking-[0.28em] text-zinc-500 xl:block'>
+                    Workspace
+                  </p>
+                  <h2 className='truncate text-xs font-medium text-zinc-500 sm:text-2xl sm:font-semibold sm:text-white xl:mt-1 xl:block'>
+                    {activeRoute}
+                  </h2>
+                </div>
               </div>
 
               <div className='flex items-center gap-2'>
@@ -199,26 +218,27 @@ function AppLayout() {
               </div>
             </div>
 
-            <nav className='mt-3 flex gap-2 overflow-x-auto pb-1 xl:hidden'>
-              {navigation.map(({ to, label }) => (
+            <nav className='mt-3 grid grid-cols-4 gap-2 xl:hidden'>
+              {navigation.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `min-h-11 whitespace-nowrap rounded-full border px-4 py-2.5 text-sm font-medium transition-colors ${
+                    `flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2 text-[11px] font-medium transition-colors sm:min-h-11 sm:flex-row sm:gap-2 sm:rounded-full sm:text-sm ${
                       isActive
                         ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
                         : 'border-white/10 bg-white/[0.03] text-zinc-300'
                     }`
                   }
                 >
-                  {label}
+                  <Icon className='h-4 w-4 shrink-0' />
+                  <span className='truncate'>{label}</span>
                 </NavLink>
               ))}
             </nav>
           </header>
 
-          <main className='flex-1 px-3 py-4 sm:px-6 sm:py-6 lg:px-8'>
+          <main className='flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8'>
             <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6'>
               <Outlet />
             </div>
