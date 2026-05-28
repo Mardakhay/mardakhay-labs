@@ -90,12 +90,33 @@ function PromptsPage() {
       promptId: number
       isFavorite: boolean
     }) => togglePromptFavorite(promptId, isFavorite),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt favorites updated.', 'success')
+    onMutate: async ({ promptId, isFavorite }) => {
+      await queryClient.cancelQueries({ queryKey: ['prompts'] })
+
+      const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
+
+      queryClient.setQueryData<Prompt[]>(['prompts'], (current = []) =>
+        current.map((prompt) =>
+          prompt.id === promptId
+            ? {
+                ...prompt,
+                is_favorite: !isFavorite,
+              }
+            : prompt,
+        ),
+      )
+
+      return { previousPrompts }
     },
-    onError: (mutationError: Error) => {
+    onError: (mutationError: Error, _variables, context) => {
+      if (context?.previousPrompts) {
+        queryClient.setQueryData(['prompts'], context.previousPrompts)
+      }
+
       showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
     },
   })
 

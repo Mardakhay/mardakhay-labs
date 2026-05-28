@@ -165,7 +165,7 @@ function PromptCard({
               event.stopPropagation()
               onToggleFavorite?.(prompt.id, prompt.is_favorite)
             }}
-            className={`min-h-11 min-w-11 rounded-full border p-2 transition-all ${
+            className={`shrink-0 self-start inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-150 ${
               prompt.is_favorite
                 ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
                 : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
