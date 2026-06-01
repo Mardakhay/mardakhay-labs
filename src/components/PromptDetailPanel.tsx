@@ -39,6 +39,15 @@ function PromptDetailPanel({
   const [copiedMode, setCopiedMode] = useState<string | null>(null)
   const modalRef = useRef<HTMLDivElement | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
+  const copyTimeoutRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current !== null) {
+        window.clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (!prompt) return
@@ -66,7 +75,14 @@ function PromptDetailPanel({
   async function handleCopy(label: string, value: string) {
     await copyText(value)
     setCopiedMode(label)
-    window.setTimeout(() => setCopiedMode(null), 1400)
+
+    if (copyTimeoutRef.current !== null) {
+      window.clearTimeout(copyTimeoutRef.current)
+    }
+
+    copyTimeoutRef.current = window.setTimeout(() => {
+      setCopiedMode(null)
+    }, 1400)
   }
 
   const markdown = promptToMarkdown(prompt)
