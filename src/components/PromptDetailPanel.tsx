@@ -1,8 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Clipboard, Code2, Download, FileJson, FileText, Star, X } from 'lucide-react'
+import {
+  Check,
+  Clipboard,
+  Code2,
+  Download,
+  FileJson,
+  FileText,
+  Star,
+  X,
+} from 'lucide-react'
 
 import type { Prompt, PromptInput } from '../api/prompts'
-import { copyText, downloadTextFile, promptToJson, promptToMarkdown } from '../lib/promptExport'
+import {
+  copyText,
+  downloadTextFile,
+  promptToJson,
+  promptToMarkdown,
+} from '../lib/promptExport'
 import CreatePromptModal from './CreatePromptModal'
 import HighlightedText from './HighlightedText'
 
@@ -23,11 +37,14 @@ function PromptDetailPanel({
 }: PromptDetailPanelProps) {
   const [showEditor, setShowEditor] = useState(false)
   const [copiedMode, setCopiedMode] = useState<string | null>(null)
-  const panelRef = useRef<HTMLDivElement | null>(null)
+  const modalRef = useRef<HTMLDivElement | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     if (!prompt) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
@@ -38,7 +55,10 @@ function PromptDetailPanel({
     window.addEventListener('keydown', handleKeyDown)
     closeButtonRef.current?.focus()
 
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [onClose, prompt])
 
   if (!prompt) return null
@@ -57,18 +77,30 @@ function PromptDetailPanel({
   }).format(new Date(prompt.created_at))
 
   return (
-    <div className='app-modal-backdrop fixed inset-0 z-40 flex justify-end bg-black/50 backdrop-blur-sm'>
+    <div
+      className='app-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:grid sm:place-items-center sm:px-4 sm:py-4'
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+    >
       <aside
-        ref={panelRef}
+        ref={modalRef}
         role='dialog'
         aria-modal='true'
         aria-labelledby='prompt-detail-title'
-        className='app-modal-panel flex h-full w-full max-w-2xl flex-col border-l border-white/10 bg-zinc-950 text-white shadow-2xl shadow-black/60'
+        className='app-modal-panel flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'
       >
-        <div className='flex items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6'>
+        <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
           <div className='min-w-0'>
-            <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>Prompt detail</p>
-            <h2 id='prompt-detail-title' className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
+            <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>
+              Prompt detail
+            </p>
+            <h2
+              id='prompt-detail-title'
+              className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'
+            >
               <HighlightedText text={prompt.title} query={searchQuery} />
             </h2>
             <p className='mt-2 text-sm text-zinc-500'>{createdLabel}</p>
@@ -85,7 +117,7 @@ function PromptDetailPanel({
           </button>
         </div>
 
-        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6'>
+        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6'>
           <div className='mb-5 flex flex-wrap gap-2'>
             {prompt.ai_target ? (
               <span className='rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-300'>
@@ -98,7 +130,10 @@ function PromptDetailPanel({
               </span>
             ) : null}
             {prompt.hashtags.map((tag) => (
-              <span key={tag} className='rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs text-violet-100'>
+              <span
+                key={tag}
+                className='rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs text-violet-100'
+              >
                 #{tag}
               </span>
             ))}
@@ -109,14 +144,18 @@ function PromptDetailPanel({
           </pre>
         </div>
 
-        <div className='border-t border-white/5 px-4 py-4 sm:px-6'>
+        <div className='border-t border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
           <div className='grid gap-2 sm:grid-cols-3'>
             <button
               type='button'
               onClick={() => void handleCopy('prompt', prompt.content)}
               className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
             >
-              {copiedMode === 'prompt' ? <Check className='h-4 w-4 text-emerald-300' /> : <Clipboard className='h-4 w-4' />}
+              {copiedMode === 'prompt' ? (
+                <Check className='h-4 w-4 text-emerald-300' />
+              ) : (
+                <Clipboard className='h-4 w-4' />
+              )}
               Prompt
             </button>
             <button
@@ -124,7 +163,11 @@ function PromptDetailPanel({
               onClick={() => void handleCopy('markdown', markdown)}
               className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
             >
-              {copiedMode === 'markdown' ? <Check className='h-4 w-4 text-emerald-300' /> : <FileText className='h-4 w-4' />}
+              {copiedMode === 'markdown' ? (
+                <Check className='h-4 w-4 text-emerald-300' />
+              ) : (
+                <FileText className='h-4 w-4' />
+              )}
               Markdown
             </button>
             <button
@@ -132,7 +175,11 @@ function PromptDetailPanel({
               onClick={() => void handleCopy('json', json)}
               className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
             >
-              {copiedMode === 'json' ? <Check className='h-4 w-4 text-emerald-300' /> : <FileJson className='h-4 w-4' />}
+              {copiedMode === 'json' ? (
+                <Check className='h-4 w-4 text-emerald-300' />
+              ) : (
+                <FileJson className='h-4 w-4' />
+              )}
               JSON
             </button>
           </div>
@@ -143,7 +190,9 @@ function PromptDetailPanel({
               onClick={() => onToggleFavorite(prompt.id, prompt.is_favorite)}
               className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/10 px-3 text-sm font-medium text-violet-100 transition-colors hover:bg-violet-500/20'
             >
-              <Star className={`h-4 w-4 ${prompt.is_favorite ? 'fill-current text-violet-300' : ''}`} />
+              <Star
+                className={`h-4 w-4 ${prompt.is_favorite ? 'fill-current text-violet-300' : ''}`}
+              />
               Favorite
             </button>
             <button
@@ -164,7 +213,13 @@ function PromptDetailPanel({
             </button>
             <button
               type='button'
-              onClick={() => downloadTextFile(`${prompt.title || 'prompt'}.json`, json, 'application/json')}
+              onClick={() =>
+                downloadTextFile(
+                  `${prompt.title || 'prompt'}.json`,
+                  json,
+                  'application/json'
+                )
+              }
               className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
             >
               <Download className='h-4 w-4' />
