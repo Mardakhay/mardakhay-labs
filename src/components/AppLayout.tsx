@@ -109,50 +109,52 @@ function AppLayout() {
   return (
     <div className='min-h-screen bg-zinc-950 text-white'>
       <div className='flex min-h-screen'>
-        <aside className='hidden w-72 shrink-0 flex-col border-r border-white/5 bg-white/[0.035] px-5 py-6 shadow-2xl shadow-black/20 backdrop-blur-xl xl:flex'>
-          <div className='flex items-center gap-3'>
-            <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 shadow-[0_0_40px_rgba(139,92,246,0.14)] ring-1 ring-violet-400/10'>
-              <Sparkles className='h-5 w-5' />
+        <aside className='hidden h-screen w-72 shrink-0 flex-col justify-between border-r border-white/5 bg-white/[0.035] px-5 py-5 shadow-2xl shadow-black/20 backdrop-blur-xl xl:sticky xl:top-0 xl:flex'>
+          <div>
+            <div className='flex items-center gap-3'>
+              <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 shadow-[0_0_40px_rgba(139,92,246,0.14)] ring-1 ring-violet-400/10'>
+                <Sparkles className='h-5 w-5' />
+              </div>
+              <div className='min-w-0'>
+                <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+                  AI Workspace
+                </p>
+                <h1 className='truncate text-lg font-semibold tracking-tight'>
+                  Mardakhay Labs
+                </h1>
+              </div>
             </div>
-            <div className='min-w-0'>
-              <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
-                AI Workspace
-              </p>
-              <h1 className='truncate text-lg font-semibold tracking-tight'>
-                Mardakhay Labs
-              </h1>
-            </div>
+
+            <button
+              type='button'
+              onClick={() => setCommandOpen(true)}
+              className='mt-5 flex min-h-11 items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-3 text-left text-sm text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white'
+            >
+              <span>Search commands</span>
+              <span className='rounded-lg border border-white/10 px-2 py-1 text-[11px] text-zinc-500'>Ctrl K</span>
+            </button>
+
+            <nav className='mt-4 space-y-2'>
+              {navigation.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'border-violet-500/30 bg-violet-500/10 text-violet-100 shadow-lg shadow-violet-950/10'
+                        : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.04] hover:text-white'
+                    }`
+                  }
+                >
+                  <Icon className='h-4 w-4 transition-transform duration-200 group-hover:scale-110' />
+                  <span>{label}</span>
+                </NavLink>
+              ))}
+            </nav>
           </div>
 
-          <button
-            type='button'
-            onClick={() => setCommandOpen(true)}
-            className='mt-6 flex min-h-11 items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-3 text-left text-sm text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white'
-          >
-            <span>Search commands</span>
-            <span className='rounded-lg border border-white/10 px-2 py-1 text-[11px] text-zinc-500'>Ctrl K</span>
-          </button>
-
-          <nav className='mt-5 space-y-2'>
-            {navigation.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'border-violet-500/30 bg-violet-500/10 text-violet-100 shadow-lg shadow-violet-950/10'
-                      : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.04] hover:text-white'
-                  }`
-                }
-              >
-                <Icon className='h-4 w-4 transition-transform duration-200 group-hover:scale-110' />
-                <span>{label}</span>
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className='mt-auto pt-6'>
+          <div className='pt-4'>
             <div className='app-surface rounded-2xl border border-white/5 p-4'>
               <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
                 Workspace
@@ -176,7 +178,7 @@ function AppLayout() {
 
             <button
               onClick={handleLogout}
-              className='mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 hover:shadow-lg hover:shadow-red-950/20'
+              className='mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 hover:shadow-lg hover:shadow-red-950/20'
               aria-label='Sign out'
             >
               <LogOut className='h-4 w-4' />
