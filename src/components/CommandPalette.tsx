@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FilePlus2, Heart, LayoutDashboard, Library, Search, Settings, Sparkles } from 'lucide-react'
+import {
+  FilePlus2,
+  Heart,
+  LayoutDashboard,
+  Library,
+  Search,
+  Settings,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react'
 
 import type { Prompt } from '../api/prompts'
 
@@ -16,7 +25,7 @@ type CommandItem = {
   id: string
   label: string
   description: string
-  icon: typeof Sparkles
+  icon: LucideIcon
   action: () => void
 }
 
