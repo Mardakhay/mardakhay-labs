@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
 import { derivePromptTitle } from '../lib/promptFormatting'
@@ -41,6 +42,9 @@ type PromptEditorModalProps = {
   title: string
   description: string
   submitLabel: string
+  titleId: string
+  descriptionId: string
+  modalRef: RefObject<HTMLDivElement | null>
   onClose: () => void
   onSave: (values: PromptFormValues) => Promise<void> | void
 }
@@ -53,6 +57,9 @@ function PromptEditorModal({
   title,
   description,
   submitLabel,
+  titleId,
+  descriptionId,
+  modalRef,
   onClose,
   onSave,
 }: PromptEditorModalProps) {
@@ -89,16 +96,23 @@ function PromptEditorModal({
   }
 
   return (
-    <div className='flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'>
+    <div
+      ref={modalRef}
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+      className='flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'
+    >
       <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
         <div className='min-w-0'>
           <p className='text-xs uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.3em]'>
             Prompt editor
           </p>
-          <h2 className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
+          <h2 id={titleId} className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
             {title}
           </h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
+          <p id={descriptionId} className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
             {description}
           </p>
         </div>
@@ -235,6 +249,11 @@ function CreatePromptModal({
   hideTrigger = false,
 }: CreatePromptModalProps) {
   const [internalOpen, setInternalOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const modalRef = useRef<HTMLDivElement | null>(null)
+  const previousActiveElementRef = useRef<HTMLElement | null>(null)
+  const titleId = 'prompt-dialog-title'
+  const descriptionId = 'prompt-dialog-description'
   const isControlled = open !== undefined
   const modalOpen = isControlled ? open : internalOpen
   const setModalOpen = onOpenChange ?? setInternalOpen
@@ -242,9 +261,34 @@ function CreatePromptModal({
   useEffect(() => {
     if (!modalOpen) return
 
+    previousActiveElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setModalOpen(false)
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+
+      if (!focusableElements?.length) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault()
+        lastElement.focus()
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
       }
     }
 
@@ -255,6 +299,11 @@ function CreatePromptModal({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = previousOverflow
+
+      const previousElement = previousActiveElementRef.current
+      if (previousElement?.isConnected) {
+        previousElement.focus()
+      }
     }
   }, [modalOpen, setModalOpen])
 
@@ -262,6 +311,7 @@ function CreatePromptModal({
     <>
       {!hideTrigger ? (
         <button
+          ref={triggerRef}
           onClick={() => setModalOpen(true)}
           className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 sm:w-auto ${
             compact
@@ -292,6 +342,9 @@ function CreatePromptModal({
             title={title}
             description={description}
             submitLabel={submitLabel}
+            titleId={titleId}
+            descriptionId={descriptionId}
+            modalRef={modalRef}
             onClose={() => setModalOpen(false)}
             onSave={onSave}
           />
