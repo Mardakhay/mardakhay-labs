@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Clipboard, Code2, Download, FileJson, FileText, Star, StarOff, X } from 'lucide-react'
+import { Check, Clipboard, Code2, Download, FileJson, FileText, Star, X } from 'lucide-react'
 
 import type { Prompt, PromptInput } from '../api/prompts'
 import { copyText, downloadTextFile, promptToJson, promptToMarkdown } from '../lib/promptExport'
@@ -143,7 +143,7 @@ function PromptDetailPanel({
               onClick={() => onToggleFavorite(prompt.id, prompt.is_favorite)}
               className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/10 px-3 text-sm font-medium text-violet-100 transition-colors hover:bg-violet-500/20'
             >
-              {prompt.is_favorite ? <Star className='h-4 w-4 fill-current' /> : <StarOff className='h-4 w-4' />}
+              <Star className={`h-4 w-4 ${prompt.is_favorite ? 'fill-current text-violet-300' : ''}`} />
               Favorite
             </button>
             <button
