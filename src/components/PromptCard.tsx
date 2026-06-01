@@ -37,6 +37,11 @@ type PromptCardProps = {
   compact?: boolean
 }
 
+function isTypingTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable
+}
+
 function PromptCard({
   prompt,
   onDelete,
@@ -53,6 +58,7 @@ function PromptCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [isPointerOver, setIsPointerOver] = useState(false)
   const copyTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -62,6 +68,23 @@ function PromptCard({
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (!onOpenDetail || !isPointerOver) return
+
+    function handleWindowKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Enter') return
+      if (event.repeat || event.defaultPrevented) return
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+      if (isTypingTarget(event.target)) return
+
+      event.preventDefault()
+      onOpenDetail(prompt)
+    }
+
+    window.addEventListener('keydown', handleWindowKeyDown)
+    return () => window.removeEventListener('keydown', handleWindowKeyDown)
+  }, [isPointerOver, onOpenDetail, prompt])
 
   const promptTitle = prompt.title.trim() || derivePromptTitle(prompt.content)
   const promptPreview = formatPromptPreview(prompt.content, compact ? 88 : 190)
@@ -109,6 +132,8 @@ function PromptCard({
         role={onOpenDetail ? 'button' : undefined}
         tabIndex={onOpenDetail ? 0 : undefined}
         aria-label={onOpenDetail ? `Open prompt ${promptTitle}` : undefined}
+        onMouseEnter={onOpenDetail ? () => setIsPointerOver(true) : undefined}
+        onMouseLeave={onOpenDetail ? () => setIsPointerOver(false) : undefined}
         onClick={
           onOpenDetail
             ? (event) => {
