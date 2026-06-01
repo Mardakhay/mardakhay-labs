@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
@@ -362,8 +362,9 @@ function CreatePromptModal({
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const modalRef = useRef<HTMLDivElement | null>(null)
   const previousActiveElementRef = useRef<HTMLElement | null>(null)
-  const titleId = 'prompt-dialog-title'
-  const descriptionId = 'prompt-dialog-description'
+  const dialogId = useId()
+  const titleId = `${dialogId}-title`
+  const descriptionId = `${dialogId}-description`
   const isControlled = open !== undefined
   const modalOpen = isControlled ? open : internalOpen
   const setModalOpen = onOpenChange ?? setInternalOpen
