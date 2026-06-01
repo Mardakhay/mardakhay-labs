@@ -79,9 +79,9 @@ function AppLayout() {
   return (
     <div className='min-h-screen bg-zinc-950 text-white'>
       <div className='flex min-h-screen'>
-        <aside className='hidden w-72 shrink-0 flex-col border-r border-white/5 bg-white/[0.03] px-5 py-6 xl:flex'>
+        <aside className='hidden w-72 shrink-0 flex-col border-r border-white/5 bg-white/[0.035] px-5 py-6 shadow-2xl shadow-black/20 backdrop-blur-xl xl:flex'>
           <div className='flex items-center gap-3'>
-            <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+            <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 shadow-[0_0_40px_rgba(139,92,246,0.14)] ring-1 ring-violet-400/10'>
               <Sparkles className='h-5 w-5' />
             </div>
             <div className='min-w-0'>
@@ -100,21 +100,21 @@ function AppLayout() {
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
+                  `group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
-                      : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.03]'
+                      ? 'border-violet-500/30 bg-violet-500/10 text-violet-100 shadow-lg shadow-violet-950/10'
+                      : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.04] hover:text-white'
                   }`
                 }
               >
-                <Icon className='h-4 w-4' />
+                <Icon className='h-4 w-4 transition-transform duration-200 group-hover:scale-110' />
                 <span>{label}</span>
               </NavLink>
             ))}
           </nav>
 
           <div className='mt-auto pt-6'>
-            <div className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'>
+            <div className='app-surface rounded-2xl border border-white/5 p-4'>
               <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
                 Workspace
               </p>
@@ -137,7 +137,7 @@ function AppLayout() {
 
             <button
               onClick={handleLogout}
-              className='mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+              className='mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 hover:shadow-lg hover:shadow-red-950/20'
               aria-label='Sign out'
             >
               <LogOut className='h-4 w-4' />
@@ -147,10 +147,10 @@ function AppLayout() {
         </aside>
 
         <div className='flex min-h-screen flex-1 flex-col'>
-          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/95 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4 lg:px-8'>
+          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/90 px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-6 sm:py-4 lg:px-8'>
             <div className='flex items-center justify-between gap-3'>
               <div className='flex min-w-0 items-center gap-3'>
-                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 xl:hidden'>
+                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 ring-1 ring-violet-400/10 xl:hidden'>
                   <Sparkles className='h-4 w-4' />
                 </div>
 
@@ -176,7 +176,7 @@ function AppLayout() {
                   <button
                     type='button'
                     onClick={() => setAccountMenuOpen((current) => !current)}
-                    className='inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-white transition-colors hover:bg-white/[0.07]'
+                    className='inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-white transition-all duration-200 hover:bg-white/[0.07]'
                     aria-haspopup='menu'
                     aria-expanded={accountMenuOpen}
                     aria-label='Open account menu'
@@ -186,14 +186,14 @@ function AppLayout() {
                       {user?.email ?? 'Account'}
                     </span>
                     <ChevronDown
-                      className={`h-4 w-4 text-zinc-500 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`}
+                      className={`h-4 w-4 text-zinc-500 transition-transform duration-200 ${accountMenuOpen ? 'rotate-180' : ''}`}
                     />
                   </button>
 
                   {accountMenuOpen ? (
                     <div
                       role='menu'
-                      className='absolute right-0 top-[calc(100%+0.5rem)] w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-2 shadow-2xl shadow-black/50'
+                      className='app-menu absolute right-0 top-[calc(100%+0.5rem)] w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl'
                     >
                       <div className='px-3 py-3'>
                         <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>
@@ -228,14 +228,14 @@ function AppLayout() {
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2 text-[11px] font-medium transition-colors sm:min-h-11 sm:flex-row sm:gap-2 sm:rounded-full sm:text-sm ${
+                    `group flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2 text-[11px] font-medium transition-all duration-200 sm:min-h-11 sm:flex-row sm:gap-2 sm:rounded-full sm:text-sm ${
                       isActive
-                        ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
-                        : 'border-white/10 bg-white/[0.03] text-zinc-300'
+                        ? 'border-violet-500/30 bg-violet-500/10 text-violet-100 shadow-lg shadow-violet-950/10'
+                        : 'border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06] hover:text-white'
                     }`
                   }
                 >
-                  <Icon className='h-4 w-4 shrink-0' />
+                  <Icon className='h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110' />
                   <span className='truncate'>{label}</span>
                 </NavLink>
               ))}
@@ -243,7 +243,7 @@ function AppLayout() {
           </header>
 
           <main className='flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8'>
-            <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6'>
+            <div key={location.pathname} className='app-page mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6'>
               <Outlet />
             </div>
           </main>
