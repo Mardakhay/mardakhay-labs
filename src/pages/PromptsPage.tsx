@@ -1,41 +1,25 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, Bot, Boxes, Filter, Plus, Search, Tag } from 'lucide-react'
 
-import {
-  createPrompt,
-  deletePrompt,
-  getPrompts,
-  togglePromptFavorite,
-  updatePrompt,
-  type Prompt,
-  type PromptInput,
-} from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import DropdownMenu from '../components/DropdownMenu'
 import PromptCard from '../components/PromptCard'
+import { usePromptMutations } from '../hooks/usePromptMutations'
+import { usePromptsQuery } from '../hooks/usePromptsQuery'
 import {
   aiTargetOptions,
   promptCategoryOptions,
   type AiTarget,
   type PromptCategory,
 } from '../lib/promptMetadata'
-import { togglePromptFavoriteInList } from '../lib/promptCache'
-import { useNotificationStore } from '../stores/notificationStore'
 
 type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
 type AiTargetFilter = 'all' | AiTarget
 type CategoryFilter = 'all' | PromptCategory
-type PromptCacheContext = {
-  previousPrompts?: Prompt[]
-}
 
 function PromptsPage() {
-  const { showNotification } = useNotificationStore()
-  const queryClient = useQueryClient()
-
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all')
@@ -44,95 +28,17 @@ function PromptsPage() {
   const [hashtagFilter, setHashtagFilter] = useState('all')
 
   const {
+    createPromptMutation,
+    updatePromptMutation,
+    deletePromptMutation,
+    favoriteMutation,
+  } = usePromptMutations()
+
+  const {
     data: prompts = [],
     isLoading,
     error,
-  } = useQuery<Prompt[], Error>({
-    queryKey: ['prompts'],
-    queryFn: getPrompts,
-  })
-
-  const createPromptMutation = useMutation({
-    mutationFn: createPrompt,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt added successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to create prompt.', 'error')
-    },
-  })
-
-  const updatePromptMutation = useMutation({
-    mutationFn: ({ promptId, input }: { promptId: number; input: PromptInput }) =>
-      updatePrompt(promptId, input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt updated successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
-    },
-  })
-
-  const deletePromptMutation = useMutation({
-    mutationFn: deletePrompt,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt deleted successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to delete prompt.', 'error')
-    },
-  })
-
-  const favoriteMutation = useMutation<
-    Prompt,
-    Error,
-    { promptId: number; isFavorite: boolean },
-    PromptCacheContext
-  >({
-    mutationFn: ({ promptId, isFavorite }) => togglePromptFavorite(promptId, isFavorite),
-    onMutate: async ({ promptId }) => {
-      await queryClient.cancelQueries({ queryKey: ['prompts'] })
-      const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
-
-      queryClient.setQueryData<Prompt[]>(['prompts'], (current) =>
-        togglePromptFavoriteInList(current, promptId)
-      )
-
-      return { previousPrompts }
-    },
-    onError: (mutationError: Error, _variables, context) => {
-      if (context?.previousPrompts) {
-        queryClient.setQueryData(['prompts'], context.previousPrompts)
-      }
-
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
-    },
-    onSuccess: () => {
-      showNotification('Prompt favorites updated.', 'success')
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-    },
-  })
-
-  async function handleAddPrompt(input: PromptInput) {
-    await createPromptMutation.mutateAsync(input)
-  }
-
-  function handleUpdatePrompt(promptId: number, input: PromptInput) {
-    updatePromptMutation.mutate({ promptId, input })
-  }
-
-  function handleDeletePrompt(promptId: number) {
-    deletePromptMutation.mutate(promptId)
-  }
-
-  function handleToggleFavorite(promptId: number, isFavorite: boolean) {
-    favoriteMutation.mutate({ promptId, isFavorite })
-  }
+  } = usePromptsQuery()
 
   const filteredPrompts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase()
@@ -226,7 +132,10 @@ function PromptsPage() {
           </p>
         </div>
 
-        <CreatePromptModal triggerLabel='New prompt' onSave={handleAddPrompt} />
+        <CreatePromptModal
+          triggerLabel='New prompt'
+          onSave={(input) => createPromptMutation.mutateAsync(input)}
+        />
       </section>
 
       <div className='grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_repeat(4,minmax(0,0.85fr))]'>
@@ -368,9 +277,14 @@ function PromptsPage() {
               <PromptCard
                 key={prompt.id}
                 prompt={prompt}
-                onDelete={handleDeletePrompt}
-                onEdit={handleUpdatePrompt}
-                onToggleFavorite={handleToggleFavorite}
+                onDelete={(promptId) => deletePromptMutation.mutate(promptId)}
+                onEdit={(promptId, input) =>
+                  updatePromptMutation.mutate({ promptId, input })
+                }
+                onToggleFavorite={(promptId, isFavorite) =>
+                  favoriteMutation.mutate({ promptId, isFavorite })
+                }
+                isDeleting={deletePromptMutation.isPending}
               />
             ))}
           </div>
