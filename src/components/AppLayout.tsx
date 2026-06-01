@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ChevronDown,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 
 import { signOut } from '../api/auth'
+import { promptsQueryBaseKey } from '../hooks/usePromptsQuery'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
 
@@ -26,6 +28,7 @@ const navigation = [
 function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user, setUser } = useAuthStore()
   const { showNotification } = useNotificationStore()
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
@@ -37,6 +40,7 @@ function AppLayout() {
   async function handleLogout() {
     try {
       await signOut()
+      queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
       setUser(null)
       showNotification('You have been signed out.', 'success')
       navigate('/login', { replace: true })
