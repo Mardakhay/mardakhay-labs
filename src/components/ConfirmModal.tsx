@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 type ConfirmModalProps = {
@@ -22,22 +22,59 @@ function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const modalRef = useRef<HTMLDivElement | null>(null)
+  const cancelButtonRef = useRef<HTMLButtonElement | null>(null)
+  const previousActiveElementRef = useRef<HTMLElement | null>(null)
+  const titleId = 'confirm-dialog-title'
+  const descriptionId = 'confirm-dialog-description'
+
   useEffect(() => {
     if (!open) return
 
-    function handleEscape(event: KeyboardEvent) {
+    previousActiveElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape' && !isLoading) {
         onCancel()
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+
+      if (!focusableElements?.length) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault()
+        lastElement.focus()
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
       }
     }
 
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', handleEscape)
+    window.addEventListener('keydown', handleKeyDown)
+    cancelButtonRef.current?.focus()
 
     return () => {
       document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', handleEscape)
+      window.removeEventListener('keydown', handleKeyDown)
+
+      const previousElement = previousActiveElementRef.current
+      if (previousElement?.isConnected) {
+        previousElement.focus()
+      }
     }
   }, [isLoading, onCancel, open])
 
@@ -45,20 +82,28 @@ function ConfirmModal({
 
   return (
     <div className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:items-center sm:px-4'>
-      <div className='w-full max-w-md rounded-t-3xl border border-white/10 bg-zinc-950 p-5 shadow-2xl sm:rounded-3xl sm:p-6'>
+      <div
+        ref={modalRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        className='w-full max-w-md rounded-t-3xl border border-white/10 bg-zinc-950 p-5 shadow-2xl sm:rounded-3xl sm:p-6'
+      >
         <div className='flex items-start gap-4'>
           <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-200'>
             <AlertTriangle className='h-5 w-5' />
           </div>
 
           <div>
-            <h3 className='text-lg font-semibold text-white'>{title}</h3>
-            <p className='mt-2 text-sm leading-6 text-zinc-400'>{description}</p>
+            <h3 id={titleId} className='text-lg font-semibold text-white'>{title}</h3>
+            <p id={descriptionId} className='mt-2 text-sm leading-6 text-zinc-400'>{description}</p>
           </div>
         </div>
 
         <div className='mt-6 grid gap-3 sm:flex sm:items-center sm:justify-end'>
           <button
+            ref={cancelButtonRef}
             onClick={onCancel}
             disabled={isLoading}
             className='min-h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50'
