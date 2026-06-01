@@ -4,21 +4,50 @@ create table if not exists public.prompts (
   title text not null default '',
   content text not null,
   user_id uuid not null references auth.users(id) on delete cascade,
-  is_favorite boolean not null default false
+  is_favorite boolean not null default false,
+  ai_target text,
+  category text,
+  hashtags text[] not null default '{}'
 );
 
 alter table if exists public.prompts
   add column if not exists title text not null default '';
 
+alter table if exists public.prompts
+  add column if not exists ai_target text;
+
+alter table if exists public.prompts
+  add column if not exists category text;
+
+alter table if exists public.prompts
+  add column if not exists hashtags text[] not null default '{}';
+
 update public.prompts
 set title = left(split_part(content, E'\n', 1), 80)
 where title = '';
+
+update public.prompts
+set hashtags = coalesce(
+  array(
+    select distinct lower(substring(match[1] from 1 for 32))
+    from regexp_matches(content, '(^|\s)#([A-Za-z][A-Za-z0-9_-]{0,31})\b', 'g') as match
+    order by lower(substring(match[1] from 1 for 32))
+  ),
+  '{}'
+)
+where hashtags = '{}';
 
 create index if not exists prompts_user_id_created_at_idx
   on public.prompts (user_id, created_at desc);
 
 create index if not exists prompts_user_id_is_favorite_idx
   on public.prompts (user_id, is_favorite);
+
+create index if not exists prompts_user_id_ai_target_idx
+  on public.prompts (user_id, ai_target);
+
+create index if not exists prompts_user_id_category_idx
+  on public.prompts (user_id, category);
 
 alter table public.prompts enable row level security;
 
