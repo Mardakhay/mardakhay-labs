@@ -49,13 +49,13 @@ function Notification() {
 
   return (
     <div
-      className='fixed right-4 top-4 z-[100] w-[min(92vw,420px)]'
+      className='app-toast fixed right-4 top-4 z-[100] w-[min(92vw,420px)]'
       role={variant === 'error' ? 'alert' : 'status'}
       aria-live={variant === 'error' ? 'assertive' : 'polite'}
     >
       <div className={`rounded-2xl border px-4 py-3 backdrop-blur-xl ${variantConfig[variant].className}`}>
         <div className='flex items-start gap-3'>
-          <div className='mt-0.5 rounded-full bg-white/5 p-2'>
+          <div className='mt-0.5 rounded-full bg-white/5 p-2 ring-1 ring-white/5'>
             <Icon className='h-4 w-4' />
           </div>
 
