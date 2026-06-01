@@ -19,8 +19,10 @@ type PromptFormValues = {
   category?: PromptCategory
 }
 
+type PromptSaveHandler = (values: PromptFormValues) => Promise<unknown> | unknown
+
 type CreatePromptModalProps = {
-  onSave: (values: PromptFormValues) => Promise<void> | void
+  onSave: PromptSaveHandler
   triggerLabel?: string
   compact?: boolean
   initialPrompt?: string
@@ -49,7 +51,7 @@ type PromptEditorModalProps = {
   modalRef: RefObject<HTMLDivElement | null>
   draftKey: string
   onClose: () => void
-  onSave: (values: PromptFormValues) => Promise<void> | void
+  onSave: PromptSaveHandler
 }
 
 function PromptEditorModal({
