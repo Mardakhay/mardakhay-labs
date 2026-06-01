@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
@@ -45,7 +46,8 @@ type AiTargetFilter = 'all' | AiTarget
 type CategoryFilter = 'all' | PromptCategory
 
 function replaceHashtag(content: string, fromTag: string, toTag: string) {
-  const pattern = new RegExp(`(^|\\s)#${fromTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
+  const escapedTag = fromTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const pattern = new RegExp(`(^|\\s)#${escapedTag}\\b`, 'gi')
   return content.replace(pattern, (_match, prefix: string) => `${prefix}#${toTag}`)
 }
 
@@ -210,7 +212,7 @@ function PromptsPage() {
     showNotification(`Imported ${promptInputs.length} prompt${promptInputs.length === 1 ? '' : 's'}.`, 'success')
   }
 
-  async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
