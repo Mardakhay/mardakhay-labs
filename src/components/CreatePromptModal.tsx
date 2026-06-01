@@ -9,6 +9,7 @@ import {
   type AiTarget,
   type PromptCategory,
 } from '../lib/promptMetadata'
+import { promptTemplates } from '../lib/promptTemplates'
 import DropdownMenu from './DropdownMenu'
 
 type PromptFormValues = {
@@ -32,6 +33,7 @@ type CreatePromptModalProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
+  draftKey?: string
 }
 
 type PromptEditorModalProps = {
@@ -45,6 +47,7 @@ type PromptEditorModalProps = {
   titleId: string
   descriptionId: string
   modalRef: RefObject<HTMLDivElement | null>
+  draftKey: string
   onClose: () => void
   onSave: (values: PromptFormValues) => Promise<void> | void
 }
@@ -60,6 +63,7 @@ function PromptEditorModal({
   titleId,
   descriptionId,
   modalRef,
+  draftKey,
   onClose,
   onSave,
 }: PromptEditorModalProps) {
@@ -72,10 +76,80 @@ function PromptEditorModal({
     initialCategory ?? 'none'
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasRestorableDraft, setHasRestorableDraft] = useState(false)
+  const canUseTemplates = !initialPrompt.trim()
 
   const resolvedTitle = useMemo(() => {
     return promptTitle.trim() || derivePromptTitle(promptContent)
   }, [promptContent, promptTitle])
+
+  useEffect(() => {
+    try {
+      const rawDraft = window.localStorage.getItem(draftKey)
+      setHasRestorableDraft(Boolean(rawDraft))
+    } catch {
+      setHasRestorableDraft(false)
+    }
+  }, [draftKey])
+
+  useEffect(() => {
+    const hasMeaningfulDraft =
+      promptTitle.trim() !== initialTitle.trim() ||
+      promptContent.trim() !== initialPrompt.trim() ||
+      aiTarget !== (initialAiTarget ?? 'none') ||
+      category !== (initialCategory ?? 'none')
+
+    try {
+      if (hasMeaningfulDraft) {
+        window.localStorage.setItem(
+          draftKey,
+          JSON.stringify({
+            title: promptTitle,
+            content: promptContent,
+            aiTarget,
+            category,
+          })
+        )
+      }
+    } catch {
+      // Draft persistence is best effort only.
+    }
+  }, [
+    aiTarget,
+    category,
+    draftKey,
+    initialAiTarget,
+    initialCategory,
+    initialPrompt,
+    initialTitle,
+    promptContent,
+    promptTitle,
+  ])
+
+  function restoreDraft() {
+    try {
+      const rawDraft = window.localStorage.getItem(draftKey)
+      if (!rawDraft) return
+      const draft = JSON.parse(rawDraft) as Partial<PromptFormValues & { aiTarget: AiTarget | 'none'; category: PromptCategory | 'none' }>
+      setPromptTitle(draft.title ?? '')
+      setPromptContent(draft.content ?? '')
+      setAiTarget(draft.aiTarget ?? 'none')
+      setCategory(draft.category ?? 'none')
+      setHasRestorableDraft(false)
+    } catch {
+      setHasRestorableDraft(false)
+    }
+  }
+
+  function applyTemplate(templateId: string) {
+    const template = promptTemplates.find((item) => item.id === templateId)
+    if (!template) return
+
+    setPromptTitle(template.title)
+    setPromptContent(template.content)
+    setAiTarget(template.aiTarget ?? 'none')
+    setCategory(template.category ?? 'none')
+  }
 
   async function handleSubmit() {
     if (!promptContent.trim() || isSubmitting) return
@@ -89,6 +163,7 @@ function PromptEditorModal({
         aiTarget: aiTarget === 'none' ? undefined : aiTarget,
         category: category === 'none' ? undefined : category,
       })
+      window.localStorage.removeItem(draftKey)
       onClose()
     } finally {
       setIsSubmitting(false)
@@ -102,7 +177,7 @@ function PromptEditorModal({
       aria-modal='true'
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className='flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'
+      className='app-modal-panel flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'
     >
       <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
         <div className='min-w-0'>
@@ -128,6 +203,38 @@ function PromptEditorModal({
 
       <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6'>
         <div className='space-y-5'>
+          {hasRestorableDraft ? (
+            <div className='flex flex-col gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 p-4 text-sm text-violet-100 sm:flex-row sm:items-center sm:justify-between'>
+              <span>A saved draft is available for this editor.</span>
+              <button
+                type='button'
+                onClick={restoreDraft}
+                className='rounded-xl border border-violet-400/30 px-3 py-2 font-medium transition-colors hover:bg-violet-500/15'
+              >
+                Restore draft
+              </button>
+            </div>
+          ) : null}
+
+          {canUseTemplates ? (
+            <div>
+              <p className='mb-2 text-sm font-medium text-zinc-200'>Templates</p>
+              <div className='grid gap-2 sm:grid-cols-2'>
+                {promptTemplates.map((template) => (
+                  <button
+                    key={template.id}
+                    type='button'
+                    onClick={() => applyTemplate(template.id)}
+                    className='rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-left transition-colors hover:bg-white/[0.06]'
+                  >
+                    <span className='block text-sm font-medium text-white'>{template.label}</span>
+                    <span className='mt-1 block text-xs leading-5 text-zinc-500'>{template.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div>
             <label className='block text-sm font-medium text-zinc-200'>
               Prompt title
@@ -247,6 +354,7 @@ function CreatePromptModal({
   open,
   onOpenChange,
   hideTrigger = false,
+  draftKey,
 }: CreatePromptModalProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -257,6 +365,7 @@ function CreatePromptModal({
   const isControlled = open !== undefined
   const modalOpen = isControlled ? open : internalOpen
   const setModalOpen = onOpenChange ?? setInternalOpen
+  const resolvedDraftKey = draftKey ?? `mardakhay-labs:draft:${initialTitle || 'new'}`
 
   useEffect(() => {
     if (!modalOpen) return
@@ -326,7 +435,7 @@ function CreatePromptModal({
 
       {modalOpen ? (
         <div
-          className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:grid sm:place-items-center sm:px-4 sm:py-4'
+          className='app-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:grid sm:place-items-center sm:px-4 sm:py-4'
           onPointerDown={(event) => {
             if (event.target === event.currentTarget) {
               setModalOpen(false)
@@ -345,6 +454,7 @@ function CreatePromptModal({
             titleId={titleId}
             descriptionId={descriptionId}
             modalRef={modalRef}
+            draftKey={resolvedDraftKey}
             onClose={() => setModalOpen(false)}
             onSave={onSave}
           />
