@@ -3,7 +3,6 @@ import { derivePromptTitle } from '../lib/promptFormatting'
 import {
   extractHashtags,
   parsePromptContent,
-  serializePromptContent,
   type PromptMetadata,
 } from '../lib/promptMetadata'
 
@@ -24,6 +23,12 @@ export type PromptInput = PromptMetadata & {
   content: string
 }
 
+type PromptRow = Omit<Prompt, 'ai_target' | 'category' | 'hashtags'> & {
+  ai_target: PromptMetadata['aiTarget'] | null
+  category: PromptMetadata['category'] | null
+  hashtags: string[] | null
+}
+
 async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser()
 
@@ -39,31 +44,34 @@ async function getCurrentUser() {
 }
 
 function selectPromptColumns() {
-  return 'id, title, content, created_at, user_id, is_favorite'
+  return 'id, title, content, created_at, user_id, is_favorite, ai_target, category, hashtags'
 }
 
 function normalizePromptInput(input: PromptInput) {
-  const content = input.content.trim()
+  const parsed = parsePromptContent(input.content)
+  const content = parsed.content.trim()
   const title = input.title.trim() || derivePromptTitle(content)
+  const aiTarget = input.aiTarget ?? parsed.metadata.aiTarget
+  const category = input.category ?? parsed.metadata.category
 
   return {
     title,
-    content: serializePromptContent(content, {
-      aiTarget: input.aiTarget,
-      category: input.category,
-    }),
+    content,
+    ai_target: aiTarget ?? null,
+    category: category ?? null,
+    hashtags: extractHashtags(content),
   }
 }
 
-function mapPromptRow(row: Prompt) {
+function mapPromptRow(row: PromptRow) {
   const parsed = parsePromptContent(row.content)
 
   return {
     ...row,
     content: parsed.content,
-    ai_target: parsed.metadata.aiTarget,
-    category: parsed.metadata.category,
-    hashtags: extractHashtags(parsed.content),
+    ai_target: row.ai_target ?? parsed.metadata.aiTarget,
+    category: row.category ?? parsed.metadata.category,
+    hashtags: row.hashtags?.length ? row.hashtags : extractHashtags(parsed.content),
   }
 }
 
@@ -82,7 +90,7 @@ export async function getPrompts() {
     throw error
   }
 
-  return ((data ?? []) as unknown as Prompt[]).map(mapPromptRow)
+  return ((data ?? []) as unknown as PromptRow[]).map(mapPromptRow)
 }
 
 export async function createPrompt(input: PromptInput) {
@@ -107,7 +115,7 @@ export async function createPrompt(input: PromptInput) {
     throw new Error('Failed to create prompt.')
   }
 
-  return mapPromptRow(data as unknown as Prompt)
+  return mapPromptRow(data as unknown as PromptRow)
 }
 
 export async function updatePrompt(promptId: number, input: PromptInput) {
@@ -130,7 +138,7 @@ export async function updatePrompt(promptId: number, input: PromptInput) {
     throw new Error('Failed to update prompt.')
   }
 
-  return mapPromptRow(data as unknown as Prompt)
+  return mapPromptRow(data as unknown as PromptRow)
 }
 
 export async function deletePrompt(promptId: number) {
@@ -171,5 +179,5 @@ export async function togglePromptFavorite(
     throw new Error('Failed to update prompt favorite.')
   }
 
-  return mapPromptRow(data as unknown as Prompt)
+  return mapPromptRow(data as unknown as PromptRow)
 }
