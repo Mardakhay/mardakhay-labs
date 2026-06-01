@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Activity,
   ArrowRight,
@@ -9,104 +8,25 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-import {
-  createPrompt,
-  getPrompts,
-  togglePromptFavorite,
-  type Prompt,
-  type PromptInput,
-  updatePrompt,
-} from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
-import { togglePromptFavoriteInList } from '../lib/promptCache'
-import { useNotificationStore } from '../stores/notificationStore'
-
-type PromptCacheContext = {
-  previousPrompts?: Prompt[]
-}
+import { usePromptMutations } from '../hooks/usePromptMutations'
+import { usePromptsQuery } from '../hooks/usePromptsQuery'
 
 function DashboardPage() {
   const navigate = useNavigate()
-  const { showNotification } = useNotificationStore()
-  const queryClient = useQueryClient()
+  const {
+    createPromptMutation,
+    updatePromptMutation,
+    favoriteMutation,
+  } = usePromptMutations()
 
   const {
     data: prompts = [],
     isLoading,
     error,
-  } = useQuery<Prompt[], Error>({
-    queryKey: ['prompts'],
-    queryFn: getPrompts,
-  })
-
-  const createPromptMutation = useMutation({
-    mutationFn: createPrompt,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt added successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to create prompt.', 'error')
-    },
-  })
-
-  const updatePromptMutation = useMutation({
-    mutationFn: ({ promptId, input }: { promptId: number; input: PromptInput }) =>
-      updatePrompt(promptId, input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt updated successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
-    },
-  })
-
-  const favoriteMutation = useMutation<
-    Prompt,
-    Error,
-    { promptId: number; isFavorite: boolean },
-    PromptCacheContext
-  >({
-    mutationFn: ({ promptId, isFavorite }) => togglePromptFavorite(promptId, isFavorite),
-    onMutate: async ({ promptId }) => {
-      await queryClient.cancelQueries({ queryKey: ['prompts'] })
-      const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
-
-      queryClient.setQueryData<Prompt[]>(['prompts'], (current) =>
-        togglePromptFavoriteInList(current, promptId)
-      )
-
-      return { previousPrompts }
-    },
-    onError: (mutationError: Error, _variables, context) => {
-      if (context?.previousPrompts) {
-        queryClient.setQueryData(['prompts'], context.previousPrompts)
-      }
-
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
-    },
-    onSuccess: () => {
-      showNotification('Prompt favorites updated.', 'success')
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-    },
-  })
-
-  async function handleAddPrompt(input: PromptInput) {
-    await createPromptMutation.mutateAsync(input)
-  }
-
-  function handleUpdatePrompt(promptId: number, input: PromptInput) {
-    updatePromptMutation.mutate({ promptId, input })
-  }
-
-  function handleToggleFavorite(promptId: number, isFavorite: boolean) {
-    favoriteMutation.mutate({ promptId, isFavorite })
-  }
+  } = usePromptsQuery()
 
   if (isLoading) {
     return (
@@ -150,7 +70,7 @@ function DashboardPage() {
     },
     {
       label: 'Latest update',
-      value: latestPrompt ? 'Fresh' : '—',
+      value: latestPrompt ? 'Fresh' : '-',
       note: latestPrompt
         ? new Date(latestPrompt.created_at).toLocaleDateString('en', {
             month: 'short',
@@ -211,7 +131,10 @@ function DashboardPage() {
               <ArrowRight className='h-4 w-4' />
             </button>
 
-            <CreatePromptModal triggerLabel='New prompt' onSave={handleAddPrompt} />
+            <CreatePromptModal
+              triggerLabel='New prompt'
+              onSave={(input) => createPromptMutation.mutateAsync(input)}
+            />
           </div>
         </div>
       </section>
@@ -240,8 +163,12 @@ function DashboardPage() {
                   key={prompt.id}
                   prompt={prompt}
                   compact
-                  onEdit={handleUpdatePrompt}
-                  onToggleFavorite={handleToggleFavorite}
+                  onEdit={(promptId, input) =>
+                    updatePromptMutation.mutate({ promptId, input })
+                  }
+                  onToggleFavorite={(promptId, isFavorite) =>
+                    favoriteMutation.mutate({ promptId, isFavorite })
+                  }
                 />
               ))}
             </div>
