@@ -79,7 +79,7 @@ function PromptCard({
       if (isTypingTarget(event.target)) return
 
       event.preventDefault()
-      onOpenDetail(prompt)
+      onOpenDetail?.(prompt)
     }
 
     window.addEventListener('keydown', handleWindowKeyDown)
