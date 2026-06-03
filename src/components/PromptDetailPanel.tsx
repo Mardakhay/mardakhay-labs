@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Check,
   Clipboard,
@@ -71,6 +72,12 @@ function PromptDetailPanel({
   }, [onClose, prompt])
 
   if (!prompt) return null
+  const portalTarget =
+    typeof document !== 'undefined'
+      ? document.body
+      : null
+  
+  if (!portalTarget) return null
 
   async function handleCopy(label: string, value: string) {
     await copyText(value)
@@ -258,7 +265,8 @@ function PromptDetailPanel({
         submitLabel='Save changes'
         onSave={(input) => onEdit(prompt.id, input)}
       />
-    </div>
+    </div>,
+    portalTarget
   )
 }
 
