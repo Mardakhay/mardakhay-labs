@@ -72,11 +72,12 @@ function PromptDetailPanel({
   }, [onClose, prompt])
 
   if (!prompt) return null
+
   const portalTarget =
     typeof document !== 'undefined'
       ? document.body
       : null
-  
+
   if (!portalTarget) return null
 
   async function handleCopy(label: string, value: string) {
@@ -99,7 +100,7 @@ function PromptDetailPanel({
     timeStyle: 'short',
   }).format(new Date(prompt.created_at))
 
-  return (
+  return createPortal(
     <div
       className='app-modal-backdrop fixed inset-0 z-[100] grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
       onPointerDown={(event) => {
@@ -113,7 +114,7 @@ function PromptDetailPanel({
         role='dialog'
         aria-modal='true'
         aria-labelledby='prompt-detail-title'
-        className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[92vh]'      >
+        className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[92vh]'>
         <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
           <div className='min-w-0'>
             <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>
