@@ -105,13 +105,13 @@ function PromptCard({
 
   function isInteractiveTarget(target: EventTarget | null) {
     if (!(target instanceof HTMLElement)) return false
-
+  
     return Boolean(
       target.closest(
-        'button, a, input, textarea, select, label, [role="button"], [data-no-open-detail]'
-      )
+       'button, a, input, textarea, select, label, [data-no-open-detail]'
     )
-  }
+  )
+}
 
   async function handleCopy() {
     await copyText(prompt.content)
