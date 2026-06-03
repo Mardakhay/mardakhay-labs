@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Heart, Sparkles } from 'lucide-react'
 
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
+import PromptDetailPanel from '../components/PromptDetailPanel'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
 
@@ -18,7 +20,10 @@ function FavoritesPage() {
     error,
   } = usePromptsQuery()
 
+  const [detailPromptId, setDetailPromptId] = useState<number | null>(null)
+
   const favoritePrompts = prompts.filter((prompt) => prompt.is_favorite)
+  const detailPrompt = prompts.find((prompt) => prompt.id === detailPromptId) ?? null
 
   if (isLoading) {
     return (
@@ -78,6 +83,7 @@ function FavoritesPage() {
               onEdit={(promptId, input) =>
                 updatePromptMutation.mutate({ promptId, input })
               }
+              onOpenDetail={(nextPrompt) => setDetailPromptId(nextPrompt.id)}
               onToggleFavorite={(promptId, isFavorite) =>
                 favoriteMutation.mutate({ promptId, isFavorite })
               }
@@ -86,6 +92,17 @@ function FavoritesPage() {
           ))}
         </div>
       )}
+
+      <PromptDetailPanel
+        prompt={detailPrompt}
+        onClose={() => setDetailPromptId(null)}
+        onEdit={(promptId, input) =>
+          updatePromptMutation.mutate({ promptId, input })
+        }
+        onToggleFavorite={(promptId, isFavorite) =>
+          favoriteMutation.mutate({ promptId, isFavorite })
+        }
+      />
     </div>
   )
 }

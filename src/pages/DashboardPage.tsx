@@ -6,11 +6,13 @@ import {
   TerminalSquare,
   Wand2,
 } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
+import PromptDetailPanel from '../components/PromptDetailPanel'
 import { useActivityLog } from '../hooks/useActivityLog'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
@@ -18,6 +20,7 @@ import { usePromptsQuery } from '../hooks/usePromptsQuery'
 function DashboardPage() {
   const navigate = useNavigate()
   const activityEntries = useActivityLog()
+  const [detailPromptId, setDetailPromptId] = useState<number | null>(null)
   const {
     createPromptMutation,
     updatePromptMutation,
@@ -58,6 +61,7 @@ function DashboardPage() {
   const favoritePrompts = prompts.filter((prompt) => prompt.is_favorite).length
   const latestPrompt = prompts[0]
   const recentPrompts = prompts.slice(0, 3)
+  const detailPrompt = prompts.find((prompt) => prompt.id === detailPromptId) ?? null
 
   const metricCards = [
     {
@@ -166,7 +170,7 @@ function DashboardPage() {
                   key={prompt.id}
                   prompt={prompt}
                   compact
-                  onOpenDetail={() => navigate(`/prompts?prompt=${prompt.id}`)}
+                  onOpenDetail={(nextPrompt) => setDetailPromptId(nextPrompt.id)}
                   onEdit={(promptId, input) =>
                     updatePromptMutation.mutate({ promptId, input })
                   }
@@ -226,6 +230,17 @@ function DashboardPage() {
           </div>
         </DashboardCard>
       </div>
+
+      <PromptDetailPanel
+        prompt={detailPrompt}
+        onClose={() => setDetailPromptId(null)}
+        onEdit={(promptId, input) =>
+          updatePromptMutation.mutate({ promptId, input })
+        }
+        onToggleFavorite={(promptId, isFavorite) =>
+          favoriteMutation.mutate({ promptId, isFavorite })
+        }
+      />
     </div>
   )
 }

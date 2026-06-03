@@ -107,9 +107,7 @@ function PromptCard({
     if (!(target instanceof HTMLElement)) return false
 
     return Boolean(
-      target.closest(
-        'button, a, input, textarea, select, label, [data-no-open-detail]'
-      )
+      target.closest('button, a, input, textarea, select, label, [data-no-open-detail]')
     )
   }
 
