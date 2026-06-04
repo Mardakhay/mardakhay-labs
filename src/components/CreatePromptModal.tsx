@@ -79,21 +79,18 @@ function PromptEditorModal({
     initialCategory ?? 'none'
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [hasRestorableDraft, setHasRestorableDraft] = useState(false)
+  const [hasRestorableDraft, setHasRestorableDraft] = useState(() => {
+    try {
+      return Boolean(window.localStorage.getItem(draftKey))
+    } catch {
+      return false
+    }
+  })
   const canUseTemplates = !initialPrompt.trim()
 
   const resolvedTitle = useMemo(() => {
     return promptTitle.trim() || derivePromptTitle(promptContent)
   }, [promptContent, promptTitle])
-
-  useEffect(() => {
-    try {
-      const rawDraft = window.localStorage.getItem(draftKey)
-      setHasRestorableDraft(Boolean(rawDraft))
-    } catch {
-      setHasRestorableDraft(false)
-    }
-  }, [draftKey])
 
   useEffect(() => {
     const hasMeaningfulDraft =
