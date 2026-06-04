@@ -4,6 +4,8 @@ import type { RefObject } from 'react'
 import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
 import { derivePromptTitle } from '../lib/promptFormatting'
+import { buildUserScopedStorageKey } from '../lib/storageKeys'
+import { useAuthStore } from '../stores/authStore'
 import {
   aiTargetOptions,
   promptCategoryOptions,
@@ -383,7 +385,11 @@ function CreatePromptModal({
   const isControlled = open !== undefined
   const modalOpen = isControlled ? open : internalOpen
   const setModalOpen = onOpenChange ?? setInternalOpen
-  const resolvedDraftKey = draftKey ?? `mardakhay-labs:draft:${initialTitle || 'new'}`
+  const { user } = useAuthStore()
+  const resolvedDraftKey = buildUserScopedStorageKey(
+    draftKey ?? `mardakhay-labs:draft:${initialTitle || 'new'}`,
+    user?.id
+  )
 
   useEffect(() => {
     if (!modalOpen) return

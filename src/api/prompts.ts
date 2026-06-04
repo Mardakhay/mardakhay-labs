@@ -83,7 +83,7 @@ export async function getPrompts() {
     .from('prompts')
     .select(selectPromptColumns())
     .eq('user_id', user.id)
-    .order('created_at', {
+    .order('updated_at', {
       ascending: false,
     })
 

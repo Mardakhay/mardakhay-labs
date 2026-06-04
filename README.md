@@ -108,7 +108,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 ### 3. Apply the database schema
 
-Run the SQL from `supabase/schema.sql` in the Supabase SQL Editor.
+Run the SQL from `supabase/schema.sql` and any files in `supabase/migrations/` in the Supabase SQL Editor.
 
 ### 4. Start the development server
 
