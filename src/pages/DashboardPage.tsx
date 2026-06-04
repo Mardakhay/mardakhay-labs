@@ -1,11 +1,4 @@
-import {
-  Activity,
-  ArrowRight,
-  Clock3,
-  Sparkles,
-  TerminalSquare,
-  Wand2,
-} from 'lucide-react'
+import { Activity, ArrowRight, Clock3, Sparkles, SquareTerminal as TerminalSquare, Wand as Wand2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -92,49 +85,49 @@ function DashboardPage() {
   ]
 
   return (
-    <div className='space-y-6'>
-      <section className='app-surface relative overflow-hidden rounded-2xl border border-white/5 p-4 text-white sm:p-6'>
+    <div className='space-y-5'>
+      <section className='app-surface relative overflow-hidden rounded-xl border border-white/[0.04] p-4 text-white sm:p-6'>
         <div className='relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl'>
-            <span className='inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-violet-100 sm:tracking-[0.28em]'>
-              <Sparkles className='h-3.5 w-3.5' />
+            <span className='inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-300 sm:tracking-[0.28em]'>
+              <Sparkles className='h-3 w-3 text-violet-300' />
               AI Prompt Workspace
             </span>
 
-            <h2 className='mt-4 text-2xl font-semibold tracking-tight sm:text-3xl'>
+            <h2 className='mt-3 text-2xl font-semibold tracking-tight text-zinc-100 sm:text-[28px]'>
               Build, save, and manage your prompt library.
             </h2>
 
-            <p className='mt-3 max-w-xl text-sm leading-6 text-zinc-300'>
+            <p className='mt-2.5 max-w-xl text-[13px] leading-6 text-zinc-400'>
               Mardakhay Labs keeps your prompts organized in a secure cloud workspace
               with fast search, favorites, templates, and portable exports.
             </p>
 
             <div className='mt-4 flex flex-wrap gap-2'>
-              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
-                <Clock3 className='h-3.5 w-3.5' />
+              <span className='inline-flex items-center gap-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-[11px] font-medium text-zinc-400'>
+                <Clock3 className='h-3 w-3' />
                 Stable sync
               </span>
 
-              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
-                <Wand2 className='h-3.5 w-3.5' />
+              <span className='inline-flex items-center gap-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-[11px] font-medium text-zinc-400'>
+                <Wand2 className='h-3 w-3' />
                 Prompt tools
               </span>
 
-              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
-                <TerminalSquare className='h-3.5 w-3.5' />
+              <span className='inline-flex items-center gap-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-[11px] font-medium text-zinc-400'>
+                <TerminalSquare className='h-3 w-3' />
                 Protected by auth
               </span>
             </div>
           </div>
 
-          <div className='relative grid gap-3 sm:flex sm:flex-wrap lg:justify-end'>
+          <div className='relative grid gap-2.5 sm:flex sm:flex-wrap lg:justify-end'>
             <button
               onClick={() => navigate('/prompts')}
-              className='inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10'
+              className='inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-[13px] font-medium text-zinc-200 transition-colors hover:bg-white/[0.05]'
             >
               Open prompt library
-              <ArrowRight className='h-4 w-4' />
+              <ArrowRight className='h-3.5 w-3.5' />
             </button>
 
             <CreatePromptModal
@@ -146,21 +139,21 @@ function DashboardPage() {
         </div>
       </section>
 
-      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
+      <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-4'>
         {metricCards.map((metric) => (
           <DashboardCard key={metric.label} title={metric.label}>
-            <p className='text-3xl font-semibold tracking-tight text-white sm:text-4xl'>
+            <p className='text-3xl font-semibold tracking-tight text-zinc-100 sm:text-4xl'>
               {metric.value}
             </p>
-            <p className='mt-2 text-sm text-zinc-400'>{metric.note}</p>
+            <p className='mt-1.5 text-[13px] text-zinc-500'>{metric.note}</p>
           </DashboardCard>
         ))}
       </div>
 
-      <div className='grid gap-6 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,0.85fr)]'>
+      <div className='grid gap-5 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,0.85fr)]'>
         <DashboardCard title='Recent prompts'>
           {recentPrompts.length === 0 ? (
-            <div className='rounded-2xl border border-dashed border-zinc-700/60 px-5 py-10 text-center text-zinc-400'>
+            <div className='rounded-xl border border-dashed border-white/[0.06] bg-white/[0.01] px-5 py-10 text-center text-zinc-500'>
               Your workspace is empty. Create the first prompt to get started.
             </div>
           ) : (
@@ -185,14 +178,14 @@ function DashboardPage() {
 
         <DashboardCard title='Activity'>
           <div className='space-y-3'>
-            <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
+            <div className='rounded-xl border border-white/[0.04] bg-white/[0.02] p-4'>
               <div className='flex items-center gap-3'>
-                <div className='rounded-xl bg-violet-500/15 p-2 text-violet-200'>
+                <div className='rounded-lg bg-white/[0.04] p-2 text-zinc-400'>
                   <Activity className='h-4 w-4' />
                 </div>
                 <div>
-                  <p className='text-sm font-medium'>Workspace sync</p>
-                  <p className='text-sm text-zinc-400'>
+                  <p className='text-[13px] font-medium text-zinc-200'>Workspace sync</p>
+                  <p className='text-[13px] text-zinc-500'>
                     Your prompts are live in Supabase and scoped to your account.
                   </p>
                 </div>
@@ -203,15 +196,15 @@ function DashboardPage() {
               activityEntries.slice(0, 5).map((entry) => (
                 <div
                   key={entry.id}
-                  className='flex items-start gap-3 rounded-2xl border border-white/5 bg-white/5 p-4'
+                  className='flex items-start gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] p-3.5'
                 >
-                  <div className='mt-0.5 rounded-full bg-violet-500/10 p-2 text-violet-200'>
-                    <Clock3 className='h-4 w-4' />
+                  <div className='mt-0.5 rounded-md bg-white/[0.04] p-1.5 text-zinc-400'>
+                    <Clock3 className='h-3.5 w-3.5' />
                   </div>
                   <div className='min-w-0 flex-1'>
-                    <p className='text-sm font-medium'>{entry.action}</p>
-                    <p className='truncate text-sm text-zinc-400'>{entry.detail}</p>
-                    <p className='mt-1 text-xs text-zinc-600'>
+                    <p className='text-[13px] font-medium text-zinc-200'>{entry.action}</p>
+                    <p className='truncate text-[13px] text-zinc-500'>{entry.detail}</p>
+                    <p className='mt-1 text-[11px] text-zinc-600'>
                       {new Intl.DateTimeFormat('en', {
                         month: 'short',
                         day: 'numeric',
@@ -223,7 +216,7 @@ function DashboardPage() {
                 </div>
               ))
             ) : (
-              <div className='rounded-2xl border border-dashed border-zinc-700 px-5 py-8 text-sm text-zinc-400'>
+              <div className='rounded-xl border border-dashed border-white/[0.06] bg-white/[0.01] px-5 py-8 text-[13px] text-zinc-500'>
                 Activity appears here after you create, update, favorite, import, export, or delete prompts.
               </div>
             )}

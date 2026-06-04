@@ -42,33 +42,33 @@ function FavoritesPage() {
   }
 
   return (
-    <div className='space-y-6'>
-      <section className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:p-5'>
+    <div className='space-y-5'>
+      <section className='flex items-center justify-between gap-4 rounded-xl border border-white/[0.04] bg-white/[0.02] p-4 sm:p-5'>
         <div className='min-w-0'>
-          <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
+          <p className='text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
             Pinned assets
           </p>
-          <h2 className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
+          <h2 className='mt-2 text-xl font-semibold tracking-tight text-zinc-100 sm:text-[22px]'>
             Favorite prompts
           </h2>
         </div>
 
-        <div className='inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white'>
-          <Heart className='h-4 w-4 fill-current text-violet-300' />
+        <div className='inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[13px] text-zinc-200'>
+          <Heart className='h-3.5 w-3.5 fill-current text-violet-300' />
           {favoritePrompts.length}
         </div>
       </section>
 
       {favoritePrompts.length === 0 ? (
         <DashboardCard title='No favorites yet'>
-          <div className='rounded-2xl border border-dashed border-zinc-700 px-6 py-12 text-center text-zinc-400'>
-            <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200'>
-              <Sparkles className='h-5 w-5' />
+          <div className='rounded-xl border border-dashed border-white/[0.06] bg-white/[0.01] px-6 py-12 text-center text-zinc-500'>
+            <div className='mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.04] text-zinc-400'>
+              <Sparkles className='h-4.5 w-4.5' />
             </div>
-            <p className='text-base font-medium text-inherit'>
+            <p className='text-[14px] font-medium text-zinc-300'>
               Pin a prompt to build your favorites library.
             </p>
-            <p className='mt-2 text-sm text-inherit'>
+            <p className='mt-2 text-[13px] text-zinc-500'>
               Use the star button on any prompt to add it here.
             </p>
           </div>
