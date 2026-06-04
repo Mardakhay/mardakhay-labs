@@ -127,7 +127,7 @@ function AppLayout() {
           <button
             type='button'
             onClick={() => setCommandOpen(true)}
-            className='mt-5 flex min-h-10 items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 text-left text-[13px] text-zinc-500 transition-colors hover:bg-white/[0.04] hover:text-zinc-300'
+            className='mt-5 flex min-h-10 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 text-left text-[13px] text-zinc-500 transition-colors hover:bg-white/[0.04] hover:text-zinc-300'
           >
             <span>Search commands</span>
             <span className='rounded-md border border-white/[0.06] bg-white/[0.03] px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-zinc-500'>/</span>
