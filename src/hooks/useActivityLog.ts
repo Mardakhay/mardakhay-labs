@@ -13,7 +13,6 @@ export function useActivityLog() {
     }
 
     refreshActivity()
-
     window.addEventListener('storage', refreshActivity)
     window.addEventListener('mardakhay-labs:activity', refreshActivity)
 

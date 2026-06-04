@@ -12,6 +12,8 @@ import PromptDetailPanel from '../components/PromptDetailPanel'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
 import { addActivity } from '../lib/activityLog'
+import { buildUserScopedStorageKey } from '../lib/storageKeys'
+import { useAuthStore } from '../stores/authStore'
 import {
   downloadTextFile,
   parsePromptImport,
@@ -25,7 +27,6 @@ import {
   type PromptCategory,
 } from '../lib/promptMetadata'
 import { useNotificationStore } from '../stores/notificationStore'
-import { useAuthStore } from '../stores/authStore'
 
 type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
@@ -121,8 +122,8 @@ function PromptsPage() {
     })
 
     return [...filtered].sort((a, b) => {
-      const aDate = new Date(a.created_at).getTime()
-      const bDate = new Date(b.created_at).getTime()
+      const aDate = new Date(a.updated_at ?? a.created_at).getTime()
+      const bDate = new Date(b.updated_at ?? b.created_at).getTime()
 
       return sortOrder === 'recent' ? bDate - aDate : aDate - bDate
     })
@@ -348,7 +349,7 @@ function PromptsPage() {
           </button>
           <CreatePromptModal
             triggerLabel='New prompt'
-            draftKey='mardakhay-labs:draft:new-library'
+            draftKey={buildUserScopedStorageKey('draft:new-library', user?.id)}
             onSave={(input) => createPromptMutation.mutateAsync(input)}
           />
         </div>

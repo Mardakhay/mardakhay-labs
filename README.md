@@ -108,7 +108,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 ### 3. Apply the database schema
 
-Run the SQL from `supabase/schema.sql` and any files in `supabase/migrations/` in the Supabase SQL Editor.
+Run the SQL from `supabase/schema.sql` in the Supabase SQL Editor. The schema already includes the `updated_at` column and trigger used by the app.
 
 ### 4. Start the development server
 

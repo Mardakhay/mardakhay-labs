@@ -15,6 +15,7 @@ import {
 
 import { signOut } from '../api/auth'
 import { usePromptMutations } from '../hooks/usePromptMutations'
+import { buildUserScopedStorageKey } from '../lib/storageKeys'
 import { promptsQueryBaseKey, usePromptsQuery } from '../hooks/usePromptsQuery'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
@@ -301,7 +302,7 @@ function AppLayout() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         hideTrigger
-        draftKey='mardakhay-labs:draft:new-global'
+        draftKey={buildUserScopedStorageKey('draft:new-global', user?.id)}
         onSave={(input) => createPromptMutation.mutateAsync(input)}
       />
     </div>

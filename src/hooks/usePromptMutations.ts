@@ -79,7 +79,7 @@ export function usePromptMutations() {
     },
     onSuccess: (updatedPrompt) => {
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
-        sortPromptsByUpdatedAtDesc(replacePromptInList(current, updatedPrompt))
+        replacePromptInList(current, updatedPrompt)
       )
       addActivity(user?.id, 'Updated prompt', updatedPrompt.title)
       showNotification('Prompt updated successfully!', 'success')
@@ -129,7 +129,7 @@ export function usePromptMutations() {
       const previousPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
 
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
-        sortPromptsByUpdatedAtDesc(togglePromptFavoriteInList(current, promptId))
+        togglePromptFavoriteInList(current, promptId)
       )
 
       return { previousPrompts }
@@ -143,7 +143,7 @@ export function usePromptMutations() {
     },
     onSuccess: (updatedPrompt) => {
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
-        sortPromptsByUpdatedAtDesc(replacePromptInList(current, updatedPrompt))
+        replacePromptInList(current, updatedPrompt)
       )
       addActivity(
         user?.id,

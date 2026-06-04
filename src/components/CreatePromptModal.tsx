@@ -375,6 +375,7 @@ function CreatePromptModal({
   hideTrigger = false,
   draftKey,
 }: CreatePromptModalProps) {
+  const { user } = useAuthStore()
   const [internalOpen, setInternalOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const modalRef = useRef<HTMLDivElement | null>(null)
@@ -385,11 +386,7 @@ function CreatePromptModal({
   const isControlled = open !== undefined
   const modalOpen = isControlled ? open : internalOpen
   const setModalOpen = onOpenChange ?? setInternalOpen
-  const { user } = useAuthStore()
-  const resolvedDraftKey = buildUserScopedStorageKey(
-    draftKey ?? `mardakhay-labs:draft:${initialTitle || 'new'}`,
-    user?.id
-  )
+  const resolvedDraftKey = draftKey ?? buildUserScopedStorageKey(`draft:${initialTitle || 'new'}`, user?.id)
 
   useEffect(() => {
     if (!modalOpen) return
