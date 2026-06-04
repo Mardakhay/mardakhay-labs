@@ -1,163 +1,166 @@
 # Mardakhay Labs
 
-Mardakhay Labs is a secure AI prompt workspace for creating, organizing, editing, searching, and exporting prompts in a user-scoped environment backed by Supabase Auth and PostgreSQL.
+Mardakhay Labs is a modern AI prompt management platform built with React, TypeScript, and Supabase.
 
-The current app is a React + TypeScript frontend with a polished dashboard, a searchable prompt library, favorites, import/export tools, activity tracking, and an account/settings area. Access is protected by Supabase Auth and reinforced with row-level security in the database.
+It provides a secure, user-scoped workspace for creating, organizing, searching, favoriting, importing, and exporting prompts while keeping data isolated through Supabase Authentication and PostgreSQL Row Level Security (RLS).
 
-## Highlights
+## Features
 
-- Sign in and sign out with Supabase Auth.
-- Protected routes for the dashboard, prompt library, favorites, and settings.
-- Create, edit, delete, favorite, and bulk-manage prompts.
-- Search prompts by title, content, AI target, category, and hashtags.
-- Filter by favorites, AI target, category, and tag.
-- Sort prompts by newest or oldest.
-- Select multiple prompts for bulk actions.
-- Import prompts from JSON.
-- Export prompts to JSON or Markdown.
-- Open prompt details in a centered modal.
-- Copy prompt content, Markdown, or JSON with one click.
-- Use keyboard shortcuts for faster navigation.
-- Track workspace activity for create, update, favorite, import, export, delete, and tag-rename actions.
-- View workspace stats in Dashboard and Settings.
+### Prompt Management
+- Create, edit, and delete prompts
+- Automatic title generation
+- Favorite important prompts
+- Rich prompt content support
+- Prompt metadata support
+
+### Organization & Discovery
+- Instant search
+- Filter by AI target
+- Filter by category
+- Filter by favorites
+- Hashtag-based organization
+- Bulk selection and actions
+
+### Import & Export
+- JSON export
+- Markdown export
+- JSON import
+- Metadata preservation during import/export
+
+### Workspace Experience
+- Dashboard overview
+- Activity tracking
+- Keyboard shortcuts
+- Optimistic UI updates
+- Persistent draft support
+- Responsive interface
+
+### Security
+- Supabase Authentication
+- User-scoped data access
+- PostgreSQL Row Level Security (RLS)
+- User-scoped activity history
+- User-scoped local persistence
 
 ## Tech Stack
 
+### Frontend
 - React 19
 - TypeScript 6
 - Vite 8
 - Tailwind CSS 4
 - TanStack Query 5
 - Zustand 5
-- Supabase JS 2
 - React Router 7
-- lucide-react
 
-## Core Pages
+### Backend
+- Supabase
+- PostgreSQL
+- Supabase Auth
 
-### Dashboard
-The dashboard gives a quick workspace overview, recent prompts, and recent activity. It also provides a fast entry point to create a new prompt or jump into the library.
+### Tooling
+- ESLint
+- Vitest
+- GitHub Actions
 
-### Prompts
-The prompt library is the main working area. It supports:
+## Quality Assurance
 
-- Text search
-- Favorite-only browsing
-- AI target filtering
-- Category filtering
-- Hashtag filtering
-- Bulk selection and bulk actions
-- Import and export
-- Tag renaming across prompts
-- Prompt detail inspection and inline editing
+The project includes:
 
-### Favorites
-A focused view for starred prompts.
+- TypeScript type checking
+- ESLint linting
+- Vitest unit tests
+- GitHub Actions CI
 
-### Settings
-The settings area shows account information, security context, and workspace statistics such as prompt counts, favorites, AI targets, categories, hashtags, and the most recent save.
+Current test coverage focuses on:
 
-## Keyboard Shortcuts
+- Prompt formatting
+- Prompt metadata
+- Import/export utilities
+- Prompt cache and optimistic update helpers
 
-- `Ctrl/Cmd + K` opens the command palette.
-- `n` opens the new prompt modal.
-- `/` focuses prompt search in the library.
-- `Enter` opens a prompt detail card when the card is focused or hovered.
-- `Esc` closes modals and menus.
+## Getting Started
 
-## Data Model
-
-The main table is `public.prompts` in `supabase/schema.sql`.
-
-Important fields:
-
-- `id`
-- `created_at`
-- `title`
-- `content`
-- `user_id`
-- `is_favorite`
-- `ai_target`
-- `category`
-- `hashtags`
-
-The database also includes indexes for user, favorites, AI target, and category lookups.
-
-## Security
-
-- Every prompt row is tied to a signed-in Supabase user.
-- Row-level security limits select, insert, update, and delete actions to `auth.uid() = user_id`.
-- Prompt data is filtered and cached per user in the client.
-
-## Setup
-
-### 1. Install dependencies
+### Installation
 
 ```bash
+git clone https://github.com/Mardakhay/mardakhay-labs.git
+cd mardakhay-labs
 npm install
 ```
 
-### 2. Configure environment variables
+### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file:
 
 ```env
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### 3. Apply the database schema
+### Database Setup
 
-Run the SQL from `supabase/schema.sql` in the Supabase SQL Editor. The schema already includes the `updated_at` column and trigger used by the app.
+Apply the SQL schema located in:
 
-### 4. Start the development server
+```text
+supabase/schema.sql
+```
+
+### Development
 
 ```bash
 npm run dev
 ```
 
+### Tests
+
+```bash
+npm test
+```
+
+### Production Build
+
+```bash
+npm run build
+```
+
 ## Scripts
 
-- `npm run dev` — start the Vite development server
-- `npm run build` — run TypeScript and create a production build
-- `npm run lint` — run ESLint
-- `npm run preview` — preview the production build locally
-- `npm run check` — run the full validation pipeline (`build` + `lint`)
-
-## Prompt Import and Export
-
-Prompts can be exported as:
-
-- JSON
-- Markdown
-
-Imports currently accept JSON prompt payloads. Prompt metadata such as AI target and category is preserved where available.
+- `npm run dev`
+- `npm run build`
+- `npm run lint`
+- `npm run test`
+- `npm run preview`
+- `npm run check`
 
 ## Project Structure
 
 ```text
-mardakhay-labs/
-├── public/
-├── supabase/
-│   └── schema.sql
-├── src/
-│   ├── api/
-│   ├── components/
-│   ├── hooks/
-│   ├── lib/
-│   ├── pages/
-│   ├── stores/
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── index.html
-├── package.json
-├── tsconfig.json
-└── vite.config.ts
+src/
+├── api/
+├── components/
+├── hooks/
+├── lib/
+├── pages/
+├── stores/
+└── types/
 ```
 
-## Notes
+## Roadmap
 
-- The app expects valid Supabase environment variables at startup.
-- Prompt data access is enforced at the database layer with RLS.
-- Hashtags and metadata are derived from prompt content and stored in the database for filtering and organization.
+Potential future enhancements:
+
+- Prompt collections
+- Prompt version history
+- Team workspaces
+- AI-powered prompt search
+
+## Status
+
+**Version: 1.0.0**
+
+Mardakhay Labs is considered feature-complete for its initial release.
+
+## License
+
+MIT
