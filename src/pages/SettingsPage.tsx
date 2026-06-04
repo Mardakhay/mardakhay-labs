@@ -15,6 +15,18 @@ function formatDate(dateValue?: string) {
   }).format(new Date(dateValue))
 }
 
+function getLatestPromptDate(prompts: Array<{ created_at: string; updated_at?: string }>) {
+  return prompts.reduce<string | undefined>((latest, prompt) => {
+    const promptDate = prompt.updated_at ?? prompt.created_at
+
+    if (!latest) return promptDate
+
+    return new Date(promptDate).getTime() > new Date(latest).getTime()
+      ? promptDate
+      : latest
+  }, undefined)
+}
+
 function SettingsPage() {
   const { user } = useAuthStore()
   const [copiedEmail, setCopiedEmail] = useState(false)
@@ -39,7 +51,7 @@ function SettingsPage() {
     const aiTargetCount = prompts.filter((prompt) => prompt.ai_target).length
     const categoryCount = prompts.filter((prompt) => prompt.category).length
     const tagCount = new Set(prompts.flatMap((prompt) => prompt.hashtags)).size
-    const latestPromptDate = prompts[0]?.created_at
+    const latestPromptDate = getLatestPromptDate(prompts)
 
     return [
       {
@@ -68,7 +80,7 @@ function SettingsPage() {
         note: 'Lightweight organization',
       },
       {
-        label: 'Latest save',
+        label: 'Latest update',
         value: formatDate(latestPromptDate),
         note: latestPromptDate ? 'Most recent prompt activity' : 'Nothing saved yet',
       },
