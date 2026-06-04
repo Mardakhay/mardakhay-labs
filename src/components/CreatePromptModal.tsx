@@ -187,22 +187,22 @@ function PromptEditorModal({
       aria-modal='true'
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[92vh]'
+      className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[min(92vh,680px)] sm:max-h-[92vh]'
     >
-      <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
+      <div className='flex shrink-0 items-start justify-between gap-3 border-b border-white/5 px-4 py-3 sm:gap-4 sm:px-6 sm:py-5'>
         <div className='min-w-0'>
           <p className='text-xs uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.3em]'>
             Prompt editor
           </p>
           <h2
             id={titleId}
-            className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'
+            className='mt-1 text-lg font-semibold tracking-tight sm:mt-2 sm:text-2xl'
           >
             {title}
           </h2>
           <p
             id={descriptionId}
-            className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'
+            className='mt-1 text-sm leading-5 text-zinc-400 sm:mt-2 sm:leading-6'
           >
             {description}
           </p>
@@ -210,22 +210,22 @@ function PromptEditorModal({
 
         <button
           onClick={onClose}
-          className='flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white'
+          className='flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white sm:min-h-11 sm:min-w-11'
           aria-label='Close dialog'
         >
           <X className='h-4 w-4' />
         </button>
       </div>
 
-      <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6'>
+      <div className='min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6'>
         <div className='space-y-5'>
           {hasRestorableDraft ? (
-            <div className='flex flex-col gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 p-4 text-sm text-violet-100 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex flex-col gap-2 rounded-2xl border border-violet-500/20 bg-violet-500/10 p-3 text-sm text-violet-100 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4'>
               <span>A saved draft is available for this editor.</span>
               <button
                 type='button'
                 onClick={restoreDraft}
-                className='rounded-xl border border-violet-400/30 px-3 py-2 font-medium transition-colors hover:bg-violet-500/15'
+                className='rounded-xl border border-violet-400/30 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-violet-500/15 sm:py-2'
               >
                 Restore draft
               </button>
@@ -320,21 +320,21 @@ function PromptEditorModal({
               value={promptContent}
               onChange={(event) => setPromptContent(event.target.value)}
               rows={10}
-              className='mt-2 h-[42dvh] min-h-52 w-full resize-none rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500 sm:h-64'
+              className='mt-2 min-h-40 w-full resize-none rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500 sm:min-h-52 sm:h-64'
             />
           </div>
         </div>
       </div>
 
-      <div className='flex shrink-0 flex-col gap-4 border-t border-white/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5'>
+      <div className='flex shrink-0 flex-col gap-3 border-t border-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5 sm:gap-4'>
         <p className='hidden text-xs uppercase tracking-[0.26em] text-zinc-500 sm:block'>
           Escape closes this dialog
         </p>
 
-        <div className='grid gap-3 sm:flex sm:justify-end'>
+        <div className='grid grid-cols-2 gap-2 sm:flex sm:justify-end sm:gap-3'>
           <button
             onClick={onClose}
-            className='min-h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            className='min-h-10 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 sm:min-h-12 sm:py-2.5'
             disabled={isSubmitting}
           >
             Cancel
@@ -342,7 +342,7 @@ function PromptEditorModal({
 
           <button
             onClick={handleSubmit}
-            className='inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-60'
+            className='inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-12 sm:py-2.5'
             disabled={isSubmitting}
           >
             {isSubmitting ? (
