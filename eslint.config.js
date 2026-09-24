@@ -24,5 +24,17 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
-  }
+  },
+  {
+    files: ['public/sw.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        caches: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        self: 'readonly',
+      },
+    },
+  },
 )
