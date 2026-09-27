@@ -42,12 +42,15 @@ set hashtags = coalesce(
 where hashtags = '{}';
 
 create or replace function public.set_updated_at()
-returns trigger as $$
+returns trigger
+language plpgsql
+set search_path = public
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$;
 
 drop trigger if exists prompts_set_updated_at on public.prompts;
 create trigger prompts_set_updated_at
@@ -72,31 +75,37 @@ create index if not exists prompts_user_id_category_idx
 
 alter table public.prompts enable row level security;
 
+drop policy if exists "Enable users to view their own data only" on public.prompts;
+drop policy if exists "Users can view own prompts" on public.prompts;
 drop policy if exists "Users can view their own prompts" on public.prompts;
+drop policy if exists "Users can insert own prompts" on public.prompts;
+drop policy if exists "Users can create their own prompts" on public.prompts;
+drop policy if exists "Users can update own prompts" on public.prompts;
+drop policy if exists "Users can update their own prompts" on public.prompts;
+drop policy if exists "Enable delete for users based on user_id" on public.prompts;
+drop policy if exists "Users can delete their own prompts" on public.prompts;
+
 create policy "Users can view their own prompts"
 on public.prompts
 for select
 to authenticated
-using (auth.uid() = user_id);
+using ((select auth.uid()) = user_id);
 
-drop policy if exists "Users can create their own prompts" on public.prompts;
 create policy "Users can create their own prompts"
 on public.prompts
 for insert
 to authenticated
-with check (auth.uid() = user_id);
+with check ((select auth.uid()) = user_id);
 
-drop policy if exists "Users can update their own prompts" on public.prompts;
 create policy "Users can update their own prompts"
 on public.prompts
 for update
 to authenticated
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
-drop policy if exists "Users can delete their own prompts" on public.prompts;
 create policy "Users can delete their own prompts"
 on public.prompts
 for delete
 to authenticated
-using (auth.uid() = user_id);
+using ((select auth.uid()) = user_id);
