@@ -73,6 +73,8 @@ function LoginPage() {
         message = 'This email is already registered. Switch to Sign in.'
       } else if (normalizedMessage.includes('invalid login credentials')) {
         message = 'Invalid email or password.'
+      } else if (normalizedMessage.includes('rate limit')) {
+        message = 'Too many email requests. Please wait a little and try again.'
       } else if (rawMessage) {
         message = rawMessage
       }
