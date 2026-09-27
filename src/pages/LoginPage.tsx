@@ -59,14 +59,25 @@ function LoginPage() {
       navigate(fromPath, { replace: true })
     } catch (error) {
       console.error(error)
-      const message =
-        error instanceof Error && error.message.toLowerCase().includes('email not confirmed')
-          ? 'Please confirm your email address before signing in.'
-          : 'Authentication failed. Check your credentials and try again.'
-      showNotification(message, 'error')
-      if (message.startsWith('Please confirm')) {
+      const rawMessage = error instanceof Error ? error.message : 'Unknown authentication error'
+      const normalizedMessage = rawMessage.toLowerCase()
+
+      let message = isSignup
+        ? 'Could not create your account. Please try again.'
+        : 'Could not sign you in. Please try again.'
+
+      if (normalizedMessage.includes('email not confirmed')) {
+        message = 'Please confirm your email address before signing in.'
         setNeedsConfirmation(true)
+      } else if (normalizedMessage.includes('user already registered')) {
+        message = 'This email is already registered. Switch to Sign in.'
+      } else if (normalizedMessage.includes('invalid login credentials')) {
+        message = 'Invalid email or password.'
+      } else if (rawMessage) {
+        message = rawMessage
       }
+
+      showNotification(message, 'error')
     } finally {
       setIsSubmitting(false)
     }
