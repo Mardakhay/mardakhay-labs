@@ -67,12 +67,6 @@ create index if not exists prompts_user_id_updated_at_idx
 create index if not exists prompts_user_id_is_favorite_idx
   on public.prompts (user_id, is_favorite);
 
-create index if not exists prompts_user_id_ai_target_idx
-  on public.prompts (user_id, ai_target);
-
-create index if not exists prompts_user_id_category_idx
-  on public.prompts (user_id, category);
-
 alter table public.prompts enable row level security;
 
 drop policy if exists "Enable users to view their own data only" on public.prompts;
