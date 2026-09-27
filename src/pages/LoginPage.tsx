@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, Eye, EyeOff, ShieldCheck, Sparkles, SquareTerminal as TerminalSquare, Wand as Wand2 } from 'lucide-react'
 
-import { signIn, signUp } from '../api/auth'
+import { resendSignupConfirmation, signIn, signInWithGoogle, signUp } from '../api/auth'
 import { useNotificationStore } from '../stores/notificationStore'
 
 function LoginPage() {
@@ -16,6 +16,7 @@ function LoginPage() {
   const [isSignup, setIsSignup] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
 
   const fromPath =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
@@ -45,11 +46,8 @@ function LoginPage() {
         : await signIn(email.trim(), password)
 
       if (isSignup && !authResult.session) {
-        showNotification(
-          'If email confirmation is enabled, check your inbox before signing in.',
-          'info'
-        )
-        setIsSignup(false)
+        setNeedsConfirmation(true)
+        showNotification('Check your inbox and confirm your email before signing in.', 'info')
         return
       }
 
@@ -61,7 +59,48 @@ function LoginPage() {
       navigate(fromPath, { replace: true })
     } catch (error) {
       console.error(error)
-      showNotification('Authentication failed. Check your credentials and try again.', 'error')
+      const message =
+        error instanceof Error && error.message.toLowerCase().includes('email not confirmed')
+          ? 'Please confirm your email address before signing in.'
+          : 'Authentication failed. Check your credentials and try again.'
+      showNotification(message, 'error')
+      if (message.startsWith('Please confirm')) {
+        setNeedsConfirmation(true)
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    if (isSubmitting) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await signInWithGoogle()
+    } catch (error) {
+      console.error(error)
+      showNotification('Google sign-in failed. Please try again.', 'error')
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleResendConfirmation() {
+    if (!email.trim() || isSubmitting) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await resendSignupConfirmation(email.trim())
+      showNotification('Confirmation email sent. Check your inbox.', 'success')
+    } catch (error) {
+      console.error(error)
+      showNotification('Could not resend the confirmation email. Please try again.', 'error')
     } finally {
       setIsSubmitting(false)
     }
@@ -152,7 +191,10 @@ function LoginPage() {
               <button
                 type='button'
                 aria-pressed={!isSignup}
-                onClick={() => setIsSignup(false)}
+                onClick={() => {
+                  setIsSignup(false)
+                  setNeedsConfirmation(false)
+                }}
                 className={`${modeToggleItemClass(!isSignup)} min-h-10`}
               >
                 Sign in
@@ -160,7 +202,10 @@ function LoginPage() {
               <button
                 type='button'
                 aria-pressed={isSignup}
-                onClick={() => setIsSignup(true)}
+                onClick={() => {
+                  setIsSignup(true)
+                  setNeedsConfirmation(false)
+                }}
                 className={`${modeToggleItemClass(isSignup)} min-h-10`}
               >
                 Create account
@@ -207,11 +252,7 @@ function LoginPage() {
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     className='absolute inset-y-0 right-1 flex min-w-10 items-center justify-center rounded-lg px-3 text-zinc-500 transition-colors hover:text-zinc-200'
                   >
-                    {showPassword ? (
-                      <EyeOff className='h-4 w-4' />
-                    ) : (
-                      <Eye className='h-4 w-4' />
-                    )}
+                    {showPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
                   </button>
                 </div>
                 <p className='text-xs leading-5 text-zinc-500'>
@@ -226,10 +267,50 @@ function LoginPage() {
                 disabled={isSubmitting}
                 className='inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-violet-500 to-violet-600 px-4 py-3 text-[13px] font-semibold text-white shadow-[0_0_0_1px_rgba(139,92,246,0.3),0_2px_8px_rgba(139,92,246,0.15)] transition-all hover:from-violet-400 hover:to-violet-500 hover:shadow-[0_0_0_1px_rgba(139,92,246,0.4),0_4px_16px_rgba(139,92,246,0.2)] disabled:cursor-not-allowed disabled:opacity-60'
               >
-                {isSubmitting ? (isSignup ? 'Creating...' : 'Signing in...') : isSignup ? 'Create account' : 'Sign in'}
+                {isSubmitting
+                  ? isSignup
+                    ? 'Creating...'
+                    : 'Signing in...'
+                  : isSignup
+                    ? 'Create account'
+                    : 'Sign in'}
                 <ArrowRight className='h-4 w-4' />
               </button>
             </form>
+
+            <div className='my-5 flex items-center gap-3'>
+              <div className='h-px flex-1 bg-white/[0.06]' />
+              <span className='text-[10px] uppercase tracking-[0.2em] text-zinc-600'>or</span>
+              <div className='h-px flex-1 bg-white/[0.06]' />
+            </div>
+
+            <button
+              type='button'
+              onClick={handleGoogleSignIn}
+              disabled={isSubmitting}
+              className='inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60'
+            >
+              <span className='flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-zinc-900'>
+                G
+              </span>
+              Continue with Google
+            </button>
+
+            {needsConfirmation && (
+              <div className='mt-4 rounded-xl border border-violet-400/10 bg-violet-400/[0.04] p-4'>
+                <p className='text-xs leading-5 text-zinc-300'>
+                  Confirm your email address from the message we sent you before signing in.
+                </p>
+                <button
+                  type='button'
+                  onClick={handleResendConfirmation}
+                  disabled={isSubmitting || !email.trim()}
+                  className='mt-3 text-xs font-semibold text-violet-300 transition-colors hover:text-violet-200 disabled:opacity-50'
+                >
+                  Resend confirmation email
+                </button>
+              </div>
+            )}
 
             <p className='mt-6 text-xs leading-6 uppercase tracking-[0.18em] text-zinc-500 sm:tracking-[0.26em]'>
               By continuing, you agree to the terms of service and privacy policy.
