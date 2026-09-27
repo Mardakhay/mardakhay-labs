@@ -59,9 +59,13 @@ function PromptsPage() {
 
   const {
     createPromptMutation,
+    createPromptsMutation,
     updatePromptMutation,
     deletePromptMutation,
     favoriteMutation,
+    bulkFavoriteMutation,
+    bulkDeleteMutation,
+    bulkCategoryMutation,
   } = usePromptMutations()
 
   const {
@@ -194,12 +198,7 @@ function PromptsPage() {
     const raw = await file.text()
     const promptInputs = parsePromptImport(raw)
 
-    for (const input of promptInputs) {
-      await createPromptMutation.mutateAsync(input)
-    }
-
-    addActivity(user?.id, 'Imported prompts', `${promptInputs.length} prompt${promptInputs.length === 1 ? '' : 's'}`)
-    showNotification(`Imported ${promptInputs.length} prompt${promptInputs.length === 1 ? '' : 's'}.`, 'success')
+    await createPromptsMutation.mutateAsync(promptInputs)
   }
 
   async function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
@@ -232,34 +231,54 @@ function PromptsPage() {
     addActivity(user?.id, 'Exported prompts', `${promptsToExport.length} prompt${promptsToExport.length === 1 ? '' : 's'}`)
   }
 
-  function bulkFavorite() {
-    selectedPrompts
+  async function bulkFavorite() {
+    const ids = selectedPrompts
       .filter((prompt) => !prompt.is_favorite)
-      .forEach((prompt) => favoriteMutation.mutate({ promptId: prompt.id, isFavorite: false }))
-    setSelectedPromptIds([])
+      .map((prompt) => prompt.id)
+
+    if (ids.length === 0) {
+      showNotification('All selected prompts are already favorites.', 'info')
+      return
+    }
+
+    try {
+      await bulkFavoriteMutation.mutateAsync(ids)
+      setSelectedPromptIds([])
+    } catch {
+      // The mutation displays the actionable error notification.
+    }
   }
 
-  function bulkDelete() {
-    selectedPrompts.forEach((prompt) => deletePromptMutation.mutate(prompt.id))
-    setSelectedPromptIds([])
+  async function bulkDelete() {
+    const ids = selectedPrompts.map((prompt) => prompt.id)
+
+    if (ids.length === 0) return
+
+    try {
+      await bulkDeleteMutation.mutateAsync(ids)
+      setSelectedPromptIds([])
+    } catch {
+      // The mutation displays the actionable error notification.
+    }
   }
 
-  function applyBulkCategory() {
-    selectedPrompts.forEach((prompt) => {
-      updatePromptMutation.mutate({
-        promptId: prompt.id,
-        input: {
-          title: prompt.title,
-          content: prompt.content,
-          aiTarget: prompt.ai_target,
-          category: bulkCategory === 'none' ? undefined : bulkCategory,
-        },
+  async function applyBulkCategory() {
+    const ids = selectedPrompts.map((prompt) => prompt.id)
+
+    if (ids.length === 0) return
+
+    try {
+      await bulkCategoryMutation.mutateAsync({
+        promptIds: ids,
+        category: bulkCategory === 'none' ? null : bulkCategory,
       })
-    })
-    setSelectedPromptIds([])
+      setSelectedPromptIds([])
+    } catch {
+      // The mutation displays the actionable error notification.
+    }
   }
 
-  function renameTag() {
+  async function renameTag() {
     const fromTag = renameTagFrom.trim().replace(/^#/, '').toLowerCase()
     const toTag = renameTagTo.trim().replace(/^#/, '').toLowerCase()
 
@@ -275,22 +294,30 @@ function PromptsPage() {
       return
     }
 
-    affectedPrompts.forEach((prompt) => {
-      updatePromptMutation.mutate({
-        promptId: prompt.id,
-        input: {
-          title: prompt.title,
-          content: replaceHashtag(prompt.content, fromTag, toTag),
-          aiTarget: prompt.ai_target,
-          category: prompt.category,
-        },
-      })
-    })
+    try {
+      await Promise.all(
+        affectedPrompts.map((prompt) =>
+          updatePromptMutation.mutateAsync({
+            promptId: prompt.id,
+            input: {
+              title: prompt.title,
+              content: replaceHashtag(prompt.content, fromTag, toTag),
+              aiTarget: prompt.ai_target,
+              category: prompt.category,
+            },
+          })
+        )
+      )
 
-    setRenameTagFrom('')
-    setRenameTagTo('')
-    addActivity(user?.id, 'Renamed tag', `#${fromTag} to #${toTag}`)
-    showNotification(`Renamed #${fromTag} in ${affectedPrompts.length} prompt${affectedPrompts.length === 1 ? '' : 's'}.`, 'success')
+      setRenameTagFrom('')
+      setRenameTagTo('')
+      showNotification(
+        `Renamed #${fromTag} in ${affectedPrompts.length} prompt${affectedPrompts.length === 1 ? '' : 's'}.`,
+        'success'
+      )
+    } catch {
+      // The mutation displays the actionable error notification.
+    }
   }
 
   if (isLoading) {
