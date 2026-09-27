@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL as
   | string
   | undefined
+const rawSupabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as
+  | string
+  | undefined
 const rawSupabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined
@@ -29,12 +32,14 @@ function normalizeSupabaseUrl(url: string) {
 const supabaseUrl = normalizeSupabaseUrl(
   getRequiredEnvValue(rawSupabaseUrl, 'VITE_SUPABASE_URL')
 )
-const supabaseAnonKey = getRequiredEnvValue(
-  rawSupabaseAnonKey,
-  'VITE_SUPABASE_ANON_KEY'
+const supabaseKey = getRequiredEnvValue(
+  rawSupabasePublishableKey ?? rawSupabaseAnonKey,
+  rawSupabasePublishableKey
+    ? 'VITE_SUPABASE_PUBLISHABLE_KEY'
+    : 'VITE_SUPABASE_ANON_KEY'
 )
 
 export const supabase = createClient(
   supabaseUrl,
-  supabaseAnonKey
+  supabaseKey
 )
