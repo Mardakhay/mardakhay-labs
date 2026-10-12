@@ -99,7 +99,7 @@ function PromptDetailPanel({
     timeStyle: 'short',
   }).format(new Date(prompt.created_at))
 
-  return (
+  return createPortal(
     <div
       className='app-modal-backdrop fixed inset-0 z-[100] grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
       onPointerDown={(event) => {

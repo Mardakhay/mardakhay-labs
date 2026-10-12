@@ -130,7 +130,7 @@ function AppLayout() {
             className='mt-5 flex min-h-11 items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-3 text-left text-sm text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white'
           >
             <span>Search commands</span>
-            <span className='rounded-lg border border-white/10 px-2 py-1 text-[11px] text-zinc-500'>Ctrl K</span>
+            <span className='rounded-lg border border-white/10 px-2 py-1 text-[11px] text-zinc-500'></span>
           </button>
 
           <nav className='mt-4 space-y-2'>
@@ -209,13 +209,6 @@ function AppLayout() {
               </div>
 
               <div className='flex items-center gap-2'>
-                <button
-                  type='button'
-                  onClick={() => setCommandOpen(true)}
-                  className='hidden min-h-9 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs text-zinc-300 transition-colors hover:bg-white/[0.06] sm:inline-flex'
-                >
-                  Ctrl K
-                </button>
                 <span className='hidden rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.26em] text-zinc-300 sm:inline-flex'>
                   Protected
                 </span>
