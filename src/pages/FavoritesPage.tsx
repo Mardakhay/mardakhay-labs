@@ -1,104 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Heart, Sparkles } from 'lucide-react'
 
-import {
-  deletePrompt,
-  getPrompts,
-  togglePromptFavorite,
-  updatePrompt,
-  type Prompt,
-  type PromptInput,
-} from '../api/prompts'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
-import { togglePromptFavoriteInList } from '../lib/promptCache'
-import { useNotificationStore } from '../stores/notificationStore'
-
-type PromptCacheContext = {
-  previousPrompts?: Prompt[]
-}
+import { usePromptMutations } from '../hooks/usePromptMutations'
+import { usePromptsQuery } from '../hooks/usePromptsQuery'
 
 function FavoritesPage() {
-  const { showNotification } = useNotificationStore()
-  const queryClient = useQueryClient()
+  const {
+    updatePromptMutation,
+    deletePromptMutation,
+    favoriteMutation,
+  } = usePromptMutations()
 
   const {
     data: prompts = [],
     isLoading,
     error,
-  } = useQuery<Prompt[], Error>({
-    queryKey: ['prompts'],
-    queryFn: getPrompts,
-  })
+  } = usePromptsQuery()
 
   const favoritePrompts = prompts.filter((prompt) => prompt.is_favorite)
-
-  const updatePromptMutation = useMutation({
-    mutationFn: ({ promptId, input }: { promptId: number; input: PromptInput }) =>
-      updatePrompt(promptId, input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt updated successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
-    },
-  })
-
-  const deletePromptMutation = useMutation({
-    mutationFn: deletePrompt,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-      showNotification('Prompt deleted successfully!', 'success')
-    },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to delete prompt.', 'error')
-    },
-  })
-
-  const favoriteMutation = useMutation<
-    Prompt,
-    Error,
-    { promptId: number; isFavorite: boolean },
-    PromptCacheContext
-  >({
-    mutationFn: ({ promptId, isFavorite }) => togglePromptFavorite(promptId, isFavorite),
-    onMutate: async ({ promptId }) => {
-      await queryClient.cancelQueries({ queryKey: ['prompts'] })
-      const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
-
-      queryClient.setQueryData<Prompt[]>(['prompts'], (current) =>
-        togglePromptFavoriteInList(current, promptId)
-      )
-
-      return { previousPrompts }
-    },
-    onError: (mutationError: Error, _variables, context) => {
-      if (context?.previousPrompts) {
-        queryClient.setQueryData(['prompts'], context.previousPrompts)
-      }
-
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
-    },
-    onSuccess: () => {
-      showNotification('Prompt favorites updated.', 'success')
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
-    },
-  })
-
-  function handleUpdatePrompt(promptId: number, input: PromptInput) {
-    updatePromptMutation.mutate({ promptId, input })
-  }
-
-  function handleDeletePrompt(promptId: number) {
-    deletePromptMutation.mutate(promptId)
-  }
-
-  function handleToggleFavorite(promptId: number, isFavorite: boolean) {
-    favoriteMutation.mutate({ promptId, isFavorite })
-  }
 
   if (isLoading) {
     return (
@@ -154,9 +74,14 @@ function FavoritesPage() {
             <PromptCard
               key={prompt.id}
               prompt={prompt}
-              onDelete={handleDeletePrompt}
-              onEdit={handleUpdatePrompt}
-              onToggleFavorite={handleToggleFavorite}
+              onDelete={(promptId) => deletePromptMutation.mutate(promptId)}
+              onEdit={(promptId, input) =>
+                updatePromptMutation.mutate({ promptId, input })
+              }
+              onToggleFavorite={(promptId, isFavorite) =>
+                favoriteMutation.mutate({ promptId, isFavorite })
+              }
+              isDeleting={deletePromptMutation.isPending}
             />
           ))}
         </div>

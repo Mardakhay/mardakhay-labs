@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, Clipboard, Hash, ShieldCheck, UserRound } from 'lucide-react'
 
-import { getPrompts, type Prompt } from '../api/prompts'
 import DashboardCard from '../components/DashboardCard'
+import { usePromptsQuery } from '../hooks/usePromptsQuery'
 import { useAuthStore } from '../stores/authStore'
 
 function formatDate(dateValue?: string) {
@@ -32,10 +31,8 @@ function SettingsPage() {
   const {
     data: prompts = [],
     isLoading,
-  } = useQuery<Prompt[], Error>({
-    queryKey: ['prompts'],
-    queryFn: getPrompts,
-  })
+    error,
+  } = usePromptsQuery()
 
   const workspaceStats = useMemo(() => {
     const favoriteCount = prompts.filter((prompt) => prompt.is_favorite).length
@@ -149,6 +146,12 @@ function SettingsPage() {
         </div>
       </section>
 
+      {error ? (
+        <div className='rounded-3xl border border-red-500/20 bg-red-950/80 p-6 text-red-100'>
+          {error.message}
+        </div>
+      ) : null}
+
       <DashboardCard title='Workspace snapshot'>
         <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
           {workspaceStats.map((stat) => (
@@ -160,7 +163,7 @@ function SettingsPage() {
                 {stat.label}
               </p>
               <p className='mt-3 text-xl font-semibold tracking-tight text-white'>
-                {isLoading ? '…' : stat.value}
+                {isLoading ? '...' : stat.value}
               </p>
               <p className='mt-2 text-sm leading-6 text-zinc-500'>{stat.note}</p>
             </div>
