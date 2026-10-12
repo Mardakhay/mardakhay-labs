@@ -8,6 +8,7 @@ import {
   type Prompt,
   type PromptInput,
 } from '../api/prompts'
+import { addActivity } from '../lib/activityLog'
 import {
   applyPromptInputToPrompt,
   removePromptFromList,
@@ -40,6 +41,7 @@ export function usePromptMutations() {
         ...(current ?? []),
       ])
       invalidatePrompts()
+      addActivity('Created prompt', createdPrompt.title)
       showNotification('Prompt added successfully!', 'success')
     },
     onError: (mutationError: Error) => {
@@ -77,6 +79,7 @@ export function usePromptMutations() {
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
         replacePromptInList(current, updatedPrompt)
       )
+      addActivity('Updated prompt', updatedPrompt.title)
       showNotification('Prompt updated successfully!', 'success')
     },
     onSettled: invalidatePrompts,
@@ -87,10 +90,15 @@ export function usePromptMutations() {
     onMutate: async (promptId) => {
       await queryClient.cancelQueries({ queryKey: promptsQueryKey })
       const previousPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
+      const deletedPrompt = previousPrompts?.find((prompt) => prompt.id === promptId)
 
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
         removePromptFromList(current, promptId)
       )
+
+      if (deletedPrompt) {
+        addActivity('Deleted prompt', deletedPrompt.title)
+      }
 
       return { previousPrompts }
     },
@@ -134,6 +142,10 @@ export function usePromptMutations() {
     onSuccess: (updatedPrompt) => {
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
         replacePromptInList(current, updatedPrompt)
+      )
+      addActivity(
+        updatedPrompt.is_favorite ? 'Favorited prompt' : 'Unfavorited prompt',
+        updatedPrompt.title
       )
       showNotification('Prompt favorites updated.', 'success')
     },
