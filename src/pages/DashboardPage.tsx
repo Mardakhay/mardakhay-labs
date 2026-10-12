@@ -11,11 +11,13 @@ import { useNavigate } from 'react-router-dom'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
+import { useActivityLog } from '../hooks/useActivityLog'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
 
 function DashboardPage() {
   const navigate = useNavigate()
+  const activityEntries = useActivityLog()
   const {
     createPromptMutation,
     updatePromptMutation,
@@ -32,12 +34,12 @@ function DashboardPage() {
     return (
       <div className='rounded-3xl border border-zinc-800 bg-zinc-950/80 p-8 text-white'>
         <div className='animate-pulse space-y-4'>
-          <div className='h-6 w-40 rounded-full bg-white/10' />
-          <div className='h-10 w-72 rounded-2xl bg-white/10' />
+          <div className='skeleton-shimmer h-6 w-40 rounded-full bg-white/10' />
+          <div className='skeleton-shimmer h-10 w-72 rounded-2xl bg-white/10' />
           <div className='grid gap-4 lg:grid-cols-3'>
-            <div className='h-32 rounded-2xl bg-white/10' />
-            <div className='h-32 rounded-2xl bg-white/10' />
-            <div className='h-32 rounded-2xl bg-white/10' />
+            <div className='skeleton-shimmer h-32 rounded-2xl bg-white/10' />
+            <div className='skeleton-shimmer h-32 rounded-2xl bg-white/10' />
+            <div className='skeleton-shimmer h-32 rounded-2xl bg-white/10' />
           </div>
         </div>
       </div>
@@ -87,7 +89,7 @@ function DashboardPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/10 p-4 text-white shadow-sm sm:p-6'>
+      <section className='app-surface relative overflow-hidden rounded-2xl border border-white/5 p-4 text-white sm:p-6'>
         <div className='relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl'>
             <span className='inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-violet-100 sm:tracking-[0.28em]'>
@@ -101,7 +103,7 @@ function DashboardPage() {
 
             <p className='mt-3 max-w-xl text-sm leading-6 text-zinc-300'>
               Mardakhay Labs keeps your prompts organized in a secure cloud workspace
-              with fast search, favorites, and a calm product-first dashboard.
+              with fast search, favorites, templates, and portable exports.
             </p>
 
             <div className='mt-4 flex flex-wrap gap-2'>
@@ -133,6 +135,7 @@ function DashboardPage() {
 
             <CreatePromptModal
               triggerLabel='New prompt'
+              draftKey='mardakhay-labs:draft:new-dashboard'
               onSave={(input) => createPromptMutation.mutateAsync(input)}
             />
           </div>
@@ -163,6 +166,7 @@ function DashboardPage() {
                   key={prompt.id}
                   prompt={prompt}
                   compact
+                  onOpenDetail={() => navigate(`/prompts?prompt=${prompt.id}`)}
                   onEdit={(promptId, input) =>
                     updatePromptMutation.mutate({ promptId, input })
                   }
@@ -191,28 +195,32 @@ function DashboardPage() {
               </div>
             </div>
 
-            {recentPrompts.length > 0 ? (
-              recentPrompts.map((prompt, index) => (
+            {activityEntries.length > 0 ? (
+              activityEntries.slice(0, 5).map((entry) => (
                 <div
-                  key={prompt.id}
+                  key={entry.id}
                   className='flex items-start gap-3 rounded-2xl border border-white/5 bg-white/5 p-4'
                 >
                   <div className='mt-0.5 rounded-full bg-violet-500/10 p-2 text-violet-200'>
                     <Clock3 className='h-4 w-4' />
                   </div>
                   <div className='min-w-0 flex-1'>
-                    <p className='text-sm font-medium'>
-                      {index === 0 ? 'Latest prompt saved' : 'Prompt stored'}
-                    </p>
-                    <p className='truncate text-sm text-zinc-400'>
-                      {prompt.title.trim() || prompt.content}
+                    <p className='text-sm font-medium'>{entry.action}</p>
+                    <p className='truncate text-sm text-zinc-400'>{entry.detail}</p>
+                    <p className='mt-1 text-xs text-zinc-600'>
+                      {new Intl.DateTimeFormat('en', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      }).format(new Date(entry.createdAt))}
                     </p>
                   </div>
                 </div>
               ))
             ) : (
               <div className='rounded-2xl border border-dashed border-zinc-700 px-5 py-8 text-sm text-zinc-400'>
-                No activity yet. Add prompts to populate this section.
+                Activity appears here after you create, update, favorite, import, export, or delete prompts.
               </div>
             )}
           </div>
