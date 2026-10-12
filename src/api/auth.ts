@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { normalizeAuthEmail } from '../lib/authUtils'
 
 function getAuthRedirectUrl() {
   return window.location.origin
@@ -6,7 +7,7 @@ function getAuthRedirectUrl() {
 
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: normalizeAuthEmail(email),
     password,
   })
 
@@ -19,7 +20,7 @@ export async function signIn(email: string, password: string) {
 
 export async function signUp(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({
-    email,
+    email: normalizeAuthEmail(email),
     password,
     options: {
       emailRedirectTo: getAuthRedirectUrl(),
@@ -36,7 +37,7 @@ export async function signUp(email: string, password: string) {
 export async function resendSignupConfirmation(email: string) {
   const { error } = await supabase.auth.resend({
     type: 'signup',
-    email,
+    email: normalizeAuthEmail(email),
     options: {
       emailRedirectTo: getAuthRedirectUrl(),
     },

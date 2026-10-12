@@ -36,6 +36,13 @@ export function addActivity(
 
   const activityKey = getActivityKey(userId)
   const next = [entry, ...getActivityLog(userId)].slice(0, 20)
-  window.localStorage.setItem(activityKey, JSON.stringify(next))
-  window.dispatchEvent(new CustomEvent('mardakhay-labs:activity'))
+
+  // Activity history is non-critical; storage restrictions or quota errors
+  // must not make an otherwise successful prompt mutation appear to fail.
+  try {
+    window.localStorage.setItem(activityKey, JSON.stringify(next))
+    window.dispatchEvent(new CustomEvent('mardakhay-labs:activity'))
+  } catch {
+    // Ignore unavailable storage. The in-memory application state remains valid.
+  }
 }

@@ -58,25 +58,46 @@ function LoginPage() {
 
       navigate(fromPath, { replace: true })
     } catch (error) {
-      console.error(error)
-      const rawMessage = error instanceof Error ? error.message : 'Unknown authentication error'
-      const normalizedMessage = rawMessage.toLowerCase()
+      const rawMessage = error instanceof Error ? error.message.toLowerCase() : ''
+      const errorCode =
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        typeof error.code === 'string'
+          ? error.code.toLowerCase()
+          : ''
 
       let message = isSignup
-        ? 'Could not create your account. Please try again.'
+        ? 'Could not create your account. Please check your details and try again.'
         : 'Could not sign you in. Please try again.'
 
-      if (normalizedMessage.includes('email not confirmed')) {
+      if (
+        rawMessage.includes('email not confirmed') ||
+        errorCode === 'email_not_confirmed'
+      ) {
         message = 'Please confirm your email address before signing in.'
         setNeedsConfirmation(true)
-      } else if (normalizedMessage.includes('user already registered')) {
-        message = 'This email is already registered. Switch to Sign in.'
-      } else if (normalizedMessage.includes('invalid login credentials')) {
-        message = 'Invalid email or password.'
-      } else if (normalizedMessage.includes('rate limit')) {
-        message = 'Too many email requests. Please wait a little and try again.'
-      } else if (rawMessage) {
-        message = rawMessage
+      } else if (
+        isSignup &&
+        (rawMessage.includes('user already registered') ||
+          errorCode === 'user_already_exists')
+      ) {
+        message =
+          'An account may already exist for this email. Try signing in or choose Continue with Google.'
+      } else if (
+        !isSignup &&
+        (rawMessage.includes('invalid login credentials') ||
+          errorCode === 'invalid_credentials')
+      ) {
+        message =
+          'Unable to sign in with those credentials. If you use Google for this account, choose Continue with Google.'
+      } else if (
+        rawMessage.includes('rate limit') ||
+        errorCode.includes('rate_limit')
+      ) {
+        message = 'Too many requests. Please wait a little and try again.'
+      } else if (rawMessage.includes('network') || rawMessage.includes('fetch')) {
+        message = 'A network error interrupted authentication. Check your connection and try again.'
       }
 
       showNotification(message, 'error')
@@ -225,7 +246,7 @@ function LoginPage() {
               </button>
             </div>
 
-            <form className='space-y-4' onSubmit={handleAuth}>
+            <form className='space-y-4' onSubmit={handleAuth} aria-busy={isSubmitting}>
               <label className='block space-y-2'>
                 <span className='text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500'>
                   Email address
@@ -271,7 +292,7 @@ function LoginPage() {
                 <p className='text-xs leading-5 text-zinc-500'>
                   {isSignup
                     ? 'Use at least 8 characters for a stronger workspace account.'
-                    : 'Keep your password private. You can show it with the eye icon.'}
+                    : 'If you created your account with Google, choose Continue with Google below.'}
                 </p>
               </label>
 
@@ -310,7 +331,12 @@ function LoginPage() {
             </button>
 
             {needsConfirmation && (
-              <div className='mt-4 rounded-xl border border-violet-400/10 bg-violet-400/[0.04] p-4'>
+              <div
+                className='mt-4 rounded-xl border border-violet-400/10 bg-violet-400/[0.04] p-4'
+                role='status'
+                aria-live='polite'
+                aria-atomic='true'
+              >
                 <p className='text-xs leading-5 text-zinc-300'>
                   Confirm your email address from the message we sent you before signing in.
                 </p>

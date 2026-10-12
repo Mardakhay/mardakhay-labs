@@ -42,6 +42,19 @@ It provides a secure, user-scoped workspace for creating, organizing, searching,
 - User-scoped activity history
 - User-scoped local persistence
 
+### Authentication provider configuration
+
+Email/password and Google are separate Supabase Auth providers. Keep the Email provider enabled when configuring Google; adding OAuth does not require replacing password sign-in.
+
+For a production deployment, verify the following in the Supabase Dashboard:
+
+- **Authentication → Sign In / Providers:** Email/password is enabled and Google is configured with valid provider credentials.
+- **Authentication → URL Configuration:** the production HTTPS origin is the Site URL, and the exact app origin(s) used by sign-in and email confirmation are allow-listed Redirect URLs.
+- **Legacy email accounts:** users whose accounts require email confirmation must confirm that address before password sign-in can succeed.
+- **Identity linking:** Supabase can automatically link OAuth identities when the provider supplies the same verified email as an existing account. Do not merge users based only on an unverified email, write directly to `auth.users`, or create a second application-level identity table.
+
+The client uses `signInWithPassword()` for the email/password flow and Supabase-managed OAuth/session handling for Google. If password sign-in fails despite valid credentials, check provider settings and the Auth user's confirmation/identity state before changing application data.
+
 ## Tech Stack
 
 ### Frontend
@@ -123,6 +136,10 @@ npm test
 ```bash
 npm run build
 ```
+
+## Backup and Recovery
+
+For a low-cost manual backup routine, prompt JSON export instructions, and optional Supabase CLI schema/data dumps, see [Backup and Restore](docs/BACKUP_AND_RESTORE.md). Backups may contain private prompt content and should be stored outside Git.
 
 ## Scripts
 
