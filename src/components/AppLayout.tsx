@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 
+import { useTheme } from '../context/ThemeContext'
+
 type AppLayoutProps = {
   children: ReactNode
 }
@@ -8,8 +10,17 @@ type AppLayoutProps = {
 function AppLayout({
   children,
 }: AppLayoutProps) {
+  const { theme, toggleTheme } =
+    useTheme()
+
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-white">
+    <div
+      className={`flex min-h-screen ${
+        theme === 'dark'
+          ? 'bg-zinc-950 text-white'
+          : 'bg-white text-black'
+      }`}
+    >
       <aside className="w-64 border-r border-zinc-800 p-6">
         <h1 className="mb-8 text-2xl font-bold">
           Mardakhay Labs
@@ -68,6 +79,13 @@ function AppLayout({
             Settings
           </NavLink>
         </nav>
+
+        <button
+          onClick={toggleTheme}
+          className="mt-6 w-full rounded-lg bg-zinc-800 px-4 py-2"
+        >
+          Toggle Theme
+        </button>
       </aside>
 
       <main className="flex-1 p-10">
