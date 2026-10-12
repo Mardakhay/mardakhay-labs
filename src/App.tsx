@@ -1,9 +1,11 @@
 import { Suspense, lazy, useEffect } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import Notification from './components/Notification'
 
+import { promptsQueryBaseKey } from './hooks/usePromptsQuery'
 import { supabase } from './lib/supabase'
 import { useAuthStore } from './stores/authStore'
 
@@ -16,6 +18,7 @@ const PromptsPage = lazy(() => import('./pages/PromptsPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 
 function App() {
+  const queryClient = useQueryClient()
   const { user, isLoading, setUser, setIsLoading } = useAuthStore()
 
   useEffect(() => {
@@ -26,8 +29,13 @@ function App() {
         } = await supabase.auth.getSession()
 
         setUser(session?.user ?? null)
+
+        if (!session?.user) {
+          queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
+        }
       } catch (error) {
         console.error('Failed to load Supabase session', error)
+        queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
         setUser(null)
       } finally {
         setIsLoading(false)
@@ -40,12 +48,16 @@ function App() {
       data: listener,
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+
+      if (!session?.user) {
+        queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
+      }
     })
 
     return () => {
       listener.subscription.unsubscribe()
     }
-  }, [setUser, setIsLoading])
+  }, [queryClient, setUser, setIsLoading])
 
   if (isLoading) {
     return (
