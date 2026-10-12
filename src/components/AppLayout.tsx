@@ -10,59 +10,57 @@ type AppLayoutProps = {
 
 function AppLayout({ children }: AppLayoutProps) {
   const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
+
+  const shellClassName = isDark
+    ? 'bg-zinc-950 text-white'
+    : 'bg-zinc-50 text-zinc-950'
+
+  const sidebarClassName = isDark
+    ? 'border-zinc-800 bg-zinc-950'
+    : 'border-zinc-200 bg-white'
+
+  const navLinkClassName = (isActive: boolean) => {
+    if (isDark) {
+      return `block rounded-lg px-4 py-2 transition-colors ${
+        isActive ? 'bg-zinc-800 text-white' : 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
+      }`
+    }
+
+    return `block rounded-lg px-4 py-2 transition-colors ${
+      isActive ? 'bg-zinc-200 text-zinc-950' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+    }`
+  }
 
   return (
-    <div
-      className={`flex min-h-screen transition-colors ${
-        theme === 'dark' ? 'bg-zinc-950 text-white' : 'bg-white text-black'
-      }`}
-    >
+    <div className={`flex min-h-screen transition-colors ${shellClassName}`}>
       <Notification />
 
-      <aside className='w-64 border-r border-zinc-800 p-6'>
+      <aside className={`w-64 border-r p-6 ${sidebarClassName}`}>
         <h1 className='mb-8 text-2xl font-bold'>Mardakhay Labs</h1>
 
         <nav className='space-y-2'>
-          <NavLink
-            to='/'
-            className={({ isActive }) =>
-              `block rounded-lg px-4 py-2 transition-colors ${
-                isActive ? 'bg-zinc-800' : 'hover:bg-zinc-900'
-              }`
-            }
-          >
+          <NavLink to='/' className={({ isActive }) => navLinkClassName(isActive)}>
             Dashboard
           </NavLink>
 
           <NavLink
             to='/prompts'
-            className={({ isActive }) =>
-              `block rounded-lg px-4 py-2 transition-colors ${
-                isActive ? 'bg-zinc-800' : 'hover:bg-zinc-900'
-              }`
-            }
+            className={({ isActive }) => navLinkClassName(isActive)}
           >
             Prompts
           </NavLink>
 
           <NavLink
             to='/favorites'
-            className={({ isActive }) =>
-              `block rounded-lg px-4 py-2 transition-colors ${
-                isActive ? 'bg-zinc-800' : 'hover:bg-zinc-900'
-              }`
-            }
+            className={({ isActive }) => navLinkClassName(isActive)}
           >
             Favorites
           </NavLink>
 
           <NavLink
             to='/settings'
-            className={({ isActive }) =>
-              `block rounded-lg px-4 py-2 transition-colors ${
-                isActive ? 'bg-zinc-800' : 'hover:bg-zinc-900'
-              }`
-            }
+            className={({ isActive }) => navLinkClassName(isActive)}
           >
             Settings
           </NavLink>
@@ -70,9 +68,13 @@ function AppLayout({ children }: AppLayoutProps) {
 
         <button
           onClick={toggleTheme}
-          className='mt-6 w-full rounded-lg bg-zinc-800 px-4 py-2 transition-colors hover:bg-zinc-700'
+          className={`mt-6 w-full rounded-lg px-4 py-2 transition-colors ${
+            isDark
+              ? 'bg-zinc-800 text-white hover:bg-zinc-700'
+              : 'bg-zinc-200 text-zinc-950 hover:bg-zinc-300'
+          }`}
         >
-          {theme === 'dark' ? 'Light theme' : 'Dark theme'}
+          {isDark ? 'Light theme' : 'Dark theme'}
         </button>
       </aside>
 
