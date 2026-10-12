@@ -21,12 +21,16 @@ import {
   type AiTarget,
   type PromptCategory,
 } from '../lib/promptMetadata'
+import { togglePromptFavoriteInList } from '../lib/promptCache'
 import { useNotificationStore } from '../stores/notificationStore'
 
 type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
 type AiTargetFilter = 'all' | AiTarget
 type CategoryFilter = 'all' | PromptCategory
+type PromptCacheContext = {
+  previousPrompts?: Prompt[]
+}
 
 function PromptsPage() {
   const { showNotification } = useNotificationStore()
@@ -82,20 +86,35 @@ function PromptsPage() {
     },
   })
 
-  const favoriteMutation = useMutation({
-    mutationFn: ({
-      promptId,
-      isFavorite,
-    }: {
-      promptId: number
-      isFavorite: boolean
-    }) => togglePromptFavorite(promptId, isFavorite),
+  const favoriteMutation = useMutation<
+    Prompt,
+    Error,
+    { promptId: number; isFavorite: boolean },
+    PromptCacheContext
+  >({
+    mutationFn: ({ promptId, isFavorite }) => togglePromptFavorite(promptId, isFavorite),
+    onMutate: async ({ promptId }) => {
+      await queryClient.cancelQueries({ queryKey: ['prompts'] })
+      const previousPrompts = queryClient.getQueryData<Prompt[]>(['prompts'])
+
+      queryClient.setQueryData<Prompt[]>(['prompts'], (current) =>
+        togglePromptFavoriteInList(current, promptId)
+      )
+
+      return { previousPrompts }
+    },
+    onError: (mutationError: Error, _variables, context) => {
+      if (context?.previousPrompts) {
+        queryClient.setQueryData(['prompts'], context.previousPrompts)
+      }
+
+      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
       showNotification('Prompt favorites updated.', 'success')
     },
-    onError: (mutationError: Error) => {
-      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
     },
   })
 

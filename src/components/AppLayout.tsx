@@ -51,7 +51,7 @@ function AppLayout() {
   useEffect(() => {
     if (!accountMenuOpen) return
 
-    function handlePointerDown(event: MouseEvent) {
+    function handlePointerDown(event: PointerEvent) {
       if (!accountMenuRef.current?.contains(event.target as Node)) {
         setAccountMenuOpen(false)
       }
@@ -63,11 +63,11 @@ function AppLayout() {
       }
     }
 
-    window.addEventListener('mousedown', handlePointerDown)
+    window.addEventListener('pointerdown', handlePointerDown)
     window.addEventListener('keydown', handleEscape)
 
     return () => {
-      window.removeEventListener('mousedown', handlePointerDown)
+      window.removeEventListener('pointerdown', handlePointerDown)
       window.removeEventListener('keydown', handleEscape)
     }
   }, [accountMenuOpen])

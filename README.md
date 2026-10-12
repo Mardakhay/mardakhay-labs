@@ -11,5 +11,6 @@ Modern AI workspace for organizing prompts and creative workflows.
 
 ## Notes
 
-- The prompts section uses Supabase REST API.
+- The app uses Supabase JS for auth and prompt persistence.
 - Dashboard and prompts are powered by React Query.
+- Prompt metadata is stored inline and rendered from the content layer.

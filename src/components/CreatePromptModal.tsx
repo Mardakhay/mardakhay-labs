@@ -277,7 +277,7 @@ function CreatePromptModal({
       {modalOpen ? (
         <div
           className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:grid sm:place-items-center sm:px-4 sm:py-4'
-          onMouseDown={(event) => {
+          onPointerDown={(event) => {
             if (event.target === event.currentTarget) {
               setModalOpen(false)
             }
