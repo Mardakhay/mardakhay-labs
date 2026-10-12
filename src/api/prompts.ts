@@ -1,11 +1,18 @@
 import { supabase } from '../lib/supabase'
+import { derivePromptTitle } from '../lib/promptFormatting'
 
 export type Prompt = {
   id: number
+  title: string
   content: string
   created_at: string
   user_id: string
   is_favorite: boolean
+}
+
+export type PromptInput = {
+  title: string
+  content: string
 }
 
 async function getCurrentUser() {
@@ -22,12 +29,23 @@ async function getCurrentUser() {
   return data.user
 }
 
+function selectPromptColumns() {
+  return 'id, title, content, created_at, user_id, is_favorite'
+}
+
+function normalizePromptInput(input: PromptInput) {
+  const content = input.content.trim()
+  const title = input.title.trim() || derivePromptTitle(content)
+
+  return { title, content }
+}
+
 export async function getPrompts() {
   const user = await getCurrentUser()
 
   const { data, error } = await supabase
     .from('prompts')
-    .select('id, content, created_at, user_id, is_favorite')
+    .select(selectPromptColumns())
     .eq('user_id', user.id)
     .order('created_at', {
       ascending: false,
@@ -37,20 +55,21 @@ export async function getPrompts() {
     throw error
   }
 
-  return (data ?? []) as Prompt[]
+  return (data ?? []) as unknown as Prompt[]
 }
 
-export async function createPrompt(content: string) {
+export async function createPrompt(input: PromptInput) {
   const user = await getCurrentUser()
+  const prompt = normalizePromptInput(input)
 
   const { data, error } = await supabase
     .from('prompts')
     .insert({
-      content,
+      ...prompt,
       user_id: user.id,
       is_favorite: false,
     })
-    .select('id, content, created_at, user_id, is_favorite')
+    .select(selectPromptColumns())
     .single()
 
   if (error) {
@@ -61,20 +80,19 @@ export async function createPrompt(content: string) {
     throw new Error('Failed to create prompt.')
   }
 
-  return data as Prompt
+  return data as unknown as Prompt
 }
 
-export async function updatePrompt(promptId: number, content: string) {
+export async function updatePrompt(promptId: number, input: PromptInput) {
   const user = await getCurrentUser()
+  const prompt = normalizePromptInput(input)
 
   const { data, error } = await supabase
     .from('prompts')
-    .update({
-      content,
-    })
+    .update(prompt)
     .eq('id', promptId)
     .eq('user_id', user.id)
-    .select('id, content, created_at, user_id, is_favorite')
+    .select(selectPromptColumns())
     .single()
 
   if (error) {
@@ -85,7 +103,7 @@ export async function updatePrompt(promptId: number, content: string) {
     throw new Error('Failed to update prompt.')
   }
 
-  return data as Prompt
+  return data as unknown as Prompt
 }
 
 export async function deletePrompt(promptId: number) {
@@ -115,7 +133,7 @@ export async function togglePromptFavorite(
     })
     .eq('id', promptId)
     .eq('user_id', user.id)
-    .select('id, content, created_at, user_id, is_favorite')
+    .select(selectPromptColumns())
     .single()
 
   if (error) {
@@ -126,5 +144,5 @@ export async function togglePromptFavorite(
     throw new Error('Failed to update prompt favorite.')
   }
 
-  return data as Prompt
+  return data as unknown as Prompt
 }

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-import { createPrompt, getPrompts, type Prompt, updatePrompt } from '../api/prompts'
+import { createPrompt, getPrompts, type Prompt, type PromptInput, updatePrompt } from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
@@ -41,8 +41,8 @@ function DashboardPage() {
   })
 
   const updatePromptMutation = useMutation({
-    mutationFn: ({ promptId, content }: { promptId: number; content: string }) =>
-      updatePrompt(promptId, content),
+    mutationFn: ({ promptId, input }: { promptId: number; input: PromptInput }) =>
+      updatePrompt(promptId, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['prompts'] })
       showNotification('Prompt updated successfully!', 'success')
@@ -52,12 +52,12 @@ function DashboardPage() {
     },
   })
 
-  async function handleAddPrompt(prompt: string) {
-    await createPromptMutation.mutateAsync(prompt)
+  async function handleAddPrompt(input: PromptInput) {
+    await createPromptMutation.mutateAsync(input)
   }
 
-  function handleUpdatePrompt(promptId: number, content: string) {
-    updatePromptMutation.mutate({ promptId, content })
+  function handleUpdatePrompt(promptId: number, input: PromptInput) {
+    updatePromptMutation.mutate({ promptId, input })
   }
 
   if (isLoading) {
@@ -138,18 +138,18 @@ function DashboardPage() {
 
             <p className='mt-3 max-w-xl text-sm leading-6 text-zinc-300'>
               Mardakhay Labs keeps your prompts organized in a secure cloud workspace
-              with fast search, favorites, and a clean AI-first dashboard.
+              with fast search, favorites, and a calm product-first dashboard.
             </p>
 
             <div className='mt-4 flex flex-wrap gap-2'>
               <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
                 <Clock3 className='h-3.5 w-3.5' />
-                Real-time ready
+                Stable sync
               </span>
 
               <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
                 <Wand2 className='h-3.5 w-3.5' />
-                Prompt generation flow
+                Prompt tools
               </span>
 
               <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300'>
@@ -168,7 +168,7 @@ function DashboardPage() {
               <ArrowRight className='h-4 w-4' />
             </button>
 
-            <CreatePromptModal triggerLabel='New prompt' onAddPrompt={handleAddPrompt} />
+            <CreatePromptModal triggerLabel='New prompt' onSave={handleAddPrompt} />
           </div>
         </div>
       </section>
@@ -191,7 +191,12 @@ function DashboardPage() {
           ) : (
             <div className='space-y-3'>
               {recentPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} compact onEdit={handleUpdatePrompt} />
+                <PromptCard
+                  key={prompt.id}
+                  prompt={prompt}
+                  compact
+                  onEdit={handleUpdatePrompt}
+                />
               ))}
             </div>
           )}
@@ -226,7 +231,9 @@ function DashboardPage() {
                     <p className='text-sm font-medium'>
                       {index === 0 ? 'Latest prompt saved' : 'Prompt stored'}
                     </p>
-                    <p className='truncate text-sm text-zinc-400'>{prompt.content}</p>
+                    <p className='truncate text-sm text-zinc-400'>
+                      {prompt.title.trim() || prompt.content}
+                    </p>
                   </div>
                 </div>
               ))
