@@ -1,4 +1,4 @@
-import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Bot,
   Boxes,
@@ -22,6 +22,7 @@ type PromptCardProps = {
   onDelete?: (promptId: number) => void
   onToggleFavorite?: (promptId: number, isFavorite: boolean) => void
   onEdit?: (promptId: number, input: PromptInput) => void | Promise<void>
+  isDeleting?: boolean
   compact?: boolean
 }
 
@@ -30,6 +31,7 @@ function PromptCard({
   onDelete,
   onToggleFavorite,
   onEdit,
+  isDeleting = false,
   compact = false,
 }: PromptCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -56,15 +58,6 @@ function PromptCard({
   function openEditor() {
     if (!onEdit) return
     setShowEditor(true)
-  }
-
-  function handleCardKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
-    if (!onEdit) return
-
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      openEditor()
-    }
   }
 
   async function handleCopy() {
@@ -95,11 +88,7 @@ function PromptCard({
   return (
     <>
       <article
-        role={onEdit ? 'button' : undefined}
-        tabIndex={onEdit ? 0 : undefined}
-        onClick={openEditor}
-        onKeyDown={handleCardKeyDown}
-        className={`group rounded-2xl border border-zinc-800/80 bg-zinc-900/85 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-violet-500/30 ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${onEdit ? 'cursor-pointer' : ''}`}
+        className={`group rounded-2xl border border-zinc-800/80 bg-zinc-900/85 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
       >
         <div className='flex items-start justify-between gap-3 sm:gap-4'>
           <div className='min-w-0 flex-1'>
@@ -161,10 +150,7 @@ function PromptCard({
 
           <button
             type='button'
-            onClick={(event) => {
-              event.stopPropagation()
-              onToggleFavorite?.(prompt.id, prompt.is_favorite)
-            }}
+            onClick={() => onToggleFavorite?.(prompt.id, prompt.is_favorite)}
             className={`shrink-0 self-start inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-150 ${
               prompt.is_favorite
                 ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
@@ -185,10 +171,7 @@ function PromptCard({
           <div className='grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:items-center'>
             <button
               type='button'
-              onClick={(event) => {
-                event.stopPropagation()
-                void handleCopy()
-              }}
+              onClick={() => void handleCopy()}
               className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
               aria-label='Copy prompt content'
               title='Copy prompt content'
@@ -204,10 +187,7 @@ function PromptCard({
             {onEdit ? (
               <button
                 type='button'
-                onClick={(event) => {
-                  event.stopPropagation()
-                  openEditor()
-                }}
+                onClick={openEditor}
                 className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
                 title='Edit prompt'
               >
@@ -218,12 +198,10 @@ function PromptCard({
             {onDelete ? (
               <button
                 type='button'
-                onClick={(event) => {
-                  event.stopPropagation()
-                  setShowDeleteConfirm(true)
-                }}
-                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+                onClick={() => setShowDeleteConfirm(true)}
+                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60'
                 title='Delete prompt'
+                disabled={isDeleting}
               >
                 <Trash2 className='h-4 w-4' />
                 Delete
@@ -254,6 +232,7 @@ function PromptCard({
         title='Delete prompt'
         description='This action permanently removes the prompt from your workspace.'
         confirmLabel='Delete prompt'
+        isLoading={isDeleting}
         onCancel={() => setShowDeleteConfirm(false)}
         onConfirm={() => {
           onDelete?.(prompt.id)
