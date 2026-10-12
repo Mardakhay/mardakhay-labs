@@ -1,40 +1,36 @@
 import { useQuery } from '@tanstack/react-query'
 
-import DashboardCard from '../components/DashboardCard'
-
 import {
   fetchPosts,
   type Post,
 } from '../api/posts'
+import DashboardCard from '../components/DashboardCard'
 
 function DashboardPage() {
   const {
     data: posts,
     isLoading,
     error,
-  } = useQuery<Post[]>({
+  } = useQuery<Post[], Error>({
     queryKey: ['posts'],
     queryFn: fetchPosts,
   })
 
+  if (isLoading) {
+    return <p>Loading posts...</p>
+  }
+
+  if (error) {
+    return <p>Something went wrong.</p>
+  }
+
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {isLoading ? (
-        <p>Loading posts...</p>
-      ) : error ? (
-        <p>Something went wrong.</p>
-      ) : (
-        posts?.map((post) => (
-          <DashboardCard
-            key={post.id}
-            title={post.title}
-          >
-            <p className="text-zinc-400">
-              {post.body}
-            </p>
-          </DashboardCard>
-        ))
-      )}
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
+      {posts?.map((post) => (
+        <DashboardCard key={post.id} title={post.title}>
+          <p className='text-zinc-400'>{post.body}</p>
+        </DashboardCard>
+      ))}
     </div>
   )
 }
