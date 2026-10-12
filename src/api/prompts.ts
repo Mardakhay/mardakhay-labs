@@ -119,6 +119,34 @@ export async function createPrompt(input: PromptInput) {
   return mapPromptRow(data as unknown as PromptRow)
 }
 
+export async function createPrompts(inputs: PromptInput[]) {
+  if (inputs.length === 0) {
+    return []
+  }
+
+  if (inputs.length > 500) {
+    throw new Error('You can import up to 500 prompts at a time.')
+  }
+
+  const user = await getCurrentUser()
+  const rows = inputs.map((input) => ({
+    ...normalizePromptInput(input),
+    user_id: user.id,
+    is_favorite: false,
+  }))
+
+  const { data, error } = await supabase
+    .from('prompts')
+    .insert(rows)
+    .select(selectPromptColumns())
+
+  if (error) {
+    throw error
+  }
+
+  return ((data ?? []) as unknown as PromptRow[]).map(mapPromptRow)
+}
+
 export async function updatePrompt(promptId: number, input: PromptInput) {
   const user = await getCurrentUser()
   const prompt = normalizePromptInput(input)
@@ -149,6 +177,54 @@ export async function deletePrompt(promptId: number) {
     .from('prompts')
     .delete()
     .eq('id', promptId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function deletePrompts(promptIds: number[]) {
+  if (promptIds.length === 0) return
+
+  const user = await getCurrentUser()
+  const { error } = await supabase
+    .from('prompts')
+    .delete()
+    .in('id', promptIds)
+    .eq('user_id', user.id)
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function favoritePrompts(promptIds: number[]) {
+  if (promptIds.length === 0) return
+
+  const user = await getCurrentUser()
+  const { error } = await supabase
+    .from('prompts')
+    .update({ is_favorite: true })
+    .in('id', promptIds)
+    .eq('user_id', user.id)
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function updatePromptCategories(
+  promptIds: number[],
+  category: PromptInput['category'] | null
+) {
+  if (promptIds.length === 0) return
+
+  const user = await getCurrentUser()
+  const { error } = await supabase
+    .from('prompts')
+    .update({ category })
+    .in('id', promptIds)
     .eq('user_id', user.id)
 
   if (error) {

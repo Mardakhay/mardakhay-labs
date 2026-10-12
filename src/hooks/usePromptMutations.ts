@@ -2,9 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import {
   createPrompt,
+  createPrompts,
   deletePrompt,
+  deletePrompts,
+  favoritePrompts,
   togglePromptFavorite,
   updatePrompt,
+  updatePromptCategories,
   type Prompt,
   type PromptInput,
 } from '../api/prompts'
@@ -45,6 +49,28 @@ export function usePromptMutations() {
     },
     onError: (mutationError: Error) => {
       showNotification(mutationError.message || 'Failed to create prompt.', 'error')
+    },
+    onSettled: invalidatePrompts,
+  })
+
+  const createPromptsMutation = useMutation({
+    mutationFn: createPrompts,
+    onSuccess: (createdPrompts) => {
+      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+        sortPromptsByUpdatedAtDesc([...(createdPrompts ?? []), ...(current ?? [])])
+      )
+      addActivity(
+        user?.id,
+        'Imported prompts',
+        `${createdPrompts.length} prompt${createdPrompts.length === 1 ? '' : 's'}`
+      )
+      showNotification(
+        `Imported ${createdPrompts.length} prompt${createdPrompts.length === 1 ? '' : 's'}.`,
+        'success'
+      )
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to import prompts.', 'error')
     },
     onSettled: invalidatePrompts,
   })
@@ -98,11 +124,7 @@ export function usePromptMutations() {
         removePromptFromList(current, promptId)
       )
 
-      if (deletedPrompt) {
-        addActivity(user?.id, 'Deleted prompt', deletedPrompt.title)
-      }
-
-      return { previousPrompts }
+      return { previousPrompts, deletedPrompt }
     },
     onError: (mutationError: Error, _promptId, context) => {
       if (context?.previousPrompts) {
@@ -111,7 +133,10 @@ export function usePromptMutations() {
 
       showNotification(mutationError.message || 'Failed to delete prompt.', 'error')
     },
-    onSuccess: () => {
+    onSuccess: (_result, _promptId, context) => {
+      if (context?.deletedPrompt) {
+        addActivity(user?.id, 'Deleted prompt', context.deletedPrompt.title)
+      }
       showNotification('Prompt deleted successfully!', 'success')
     },
     onSettled: invalidatePrompts,
@@ -155,15 +180,90 @@ export function usePromptMutations() {
     onSettled: invalidatePrompts,
   })
 
+  const bulkFavoriteMutation = useMutation({
+    mutationFn: favoritePrompts,
+    onSuccess: (_result, promptIds) => {
+      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+        (current ?? []).map((prompt) =>
+          promptIds.includes(prompt.id)
+            ? { ...prompt, is_favorite: true, updated_at: new Date().toISOString() }
+            : prompt
+        )
+      )
+      addActivity(
+        user?.id,
+        'Favorited prompts',
+        `${promptIds.length} prompt${promptIds.length === 1 ? '' : 's'}`
+      )
+      showNotification('Selected prompts added to favorites.', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to favorite prompts.', 'error')
+    },
+    onSettled: invalidatePrompts,
+  })
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: deletePrompts,
+    onSuccess: (_result, promptIds) => {
+      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+        (current ?? []).filter((prompt) => !promptIds.includes(prompt.id))
+      )
+      addActivity(
+        user?.id,
+        'Deleted prompts',
+        `${promptIds.length} prompt${promptIds.length === 1 ? '' : 's'}`
+      )
+      showNotification('Selected prompts deleted.', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to delete prompts.', 'error')
+    },
+    onSettled: invalidatePrompts,
+  })
+
+  const bulkCategoryMutation = useMutation({
+    mutationFn: ({
+      promptIds,
+      category,
+    }: {
+      promptIds: number[]
+      category: Prompt['category'] | null
+    }) => updatePromptCategories(promptIds, category),
+    onSuccess: (_result, { promptIds, category }) => {
+      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+        (current ?? []).map((prompt) =>
+          promptIds.includes(prompt.id)
+            ? { ...prompt, category: category ?? undefined, updated_at: new Date().toISOString() }
+            : prompt
+        )
+      )
+      addActivity(
+        user?.id,
+        'Updated prompt categories',
+        `${promptIds.length} prompt${promptIds.length === 1 ? '' : 's'}`
+      )
+      showNotification('Selected prompt categories updated.', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to update prompt categories.', 'error')
+    },
+    onSettled: invalidatePrompts,
+  })
+
   function clearPromptQueries() {
     queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
   }
 
   return {
     createPromptMutation,
+    createPromptsMutation,
     updatePromptMutation,
     deletePromptMutation,
     favoriteMutation,
+    bulkFavoriteMutation,
+    bulkDeleteMutation,
+    bulkCategoryMutation,
     clearPromptQueries,
   }
 }
