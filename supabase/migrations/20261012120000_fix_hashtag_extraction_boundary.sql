@@ -1,5 +1,7 @@
 -- Correct hashtag extraction for rows that were left without extracted tags.
 -- The negative lookahead prevents accepting a 32-character prefix of a longer tag.
+-- Only update rows where a hashtag can actually be extracted, preserving updated_at
+-- for prompts that legitimately contain no hashtags.
 update public.prompts
 set hashtags = coalesce(
   array(
@@ -8,7 +10,7 @@ set hashtags = coalesce(
       select distinct lower(substring(match[2] from 1 for 32)) as tag
       from regexp_matches(
         content,
-        '(^|\s)#([A-Za-z][A-Za-z0-9_-]{0,31})(?![A-Za-z0-9_-])',
+        '(^|\\s)#([A-Za-z][A-Za-z0-9_-]{0,31})(?![A-Za-z0-9_-])',
         'g'
       ) as match
     ) extracted_tags
@@ -16,4 +18,5 @@ set hashtags = coalesce(
   ),
   '{}'::text[]
 )
-where hashtags = '{}'::text[];
+where hashtags = '{}'::text[]
+  and content ~ '(^|\\s)#([A-Za-z][A-Za-z0-9_-]{0,31})(?![A-Za-z0-9_-])';
