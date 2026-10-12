@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Bell, LogOut, Moon, ShieldCheck, UserRound, Workflow } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 import { signOut } from '../api/auth'
 import DashboardCard from '../components/DashboardCard'
@@ -8,9 +9,10 @@ import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
 
 function SettingsPage() {
+  const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
-  const { userEmail, clearUserEmail } = useAuthStore()
+  const { user, setUser } = useAuthStore()
   const { showNotification } = useNotificationStore()
 
   const [emailAlerts, setEmailAlerts] = useState(true)
@@ -23,8 +25,9 @@ function SettingsPage() {
   async function handleLogout() {
     try {
       await signOut()
-      clearUserEmail()
+      setUser(null)
       showNotification('You have been signed out.', 'success')
+      navigate('/login', { replace: true })
     } catch (error) {
       showNotification(
         error instanceof Error ? error.message : 'Failed to sign out.',
@@ -51,7 +54,7 @@ function SettingsPage() {
                   Account
                 </p>
                 <h3 className='mt-2 text-2xl font-semibold tracking-tight'>
-                  {userEmail ?? 'Workspace user'}
+                  {user?.email ?? 'Workspace user'}
                 </h3>
                 <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
                   Your session is protected by Supabase Auth and routed through the

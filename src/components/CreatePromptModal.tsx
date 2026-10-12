@@ -7,18 +7,26 @@ type CreatePromptModalProps = {
   onAddPrompt: (prompt: string) => Promise<void> | void
   triggerLabel?: string
   compact?: boolean
+  initialPrompt?: string
+  title?: string
+  description?: string
+  submitLabel?: string
 }
 
 function CreatePromptModal({
   onAddPrompt,
   triggerLabel = 'New Prompt',
   compact = false,
+  initialPrompt = '',
+  title = 'Create Prompt',
+  description = 'Add a new AI prompt to your workspace library.',
+  submitLabel = 'Create Prompt',
 }: CreatePromptModalProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
   const [isOpen, setIsOpen] = useState(false)
-  const [prompt, setPrompt] = useState('')
+  const [prompt, setPrompt] = useState(initialPrompt)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -69,7 +77,10 @@ function CreatePromptModal({
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setPrompt(initialPrompt)
+          setIsOpen(true)
+        }}
         className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
           compact
             ? isDark
@@ -103,10 +114,10 @@ function CreatePromptModal({
                   Prompt workspace
                 </p>
                 <h2 className='mt-2 text-2xl font-semibold tracking-tight'>
-                  Create Prompt
+                  {title}
                 </h2>
                 <p className='mt-2 text-sm leading-6 text-zinc-400'>
-                  Add a new AI prompt to your workspace library.
+                  {description}
                 </p>
               </div>
 
@@ -155,7 +166,7 @@ function CreatePromptModal({
                     Creating...
                   </>
                 ) : (
-                  'Create Prompt'
+                  submitLabel
                 )}
               </button>
             </div>
