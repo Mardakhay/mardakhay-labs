@@ -5,18 +5,13 @@ export type Prompt = {
   content: string
   created_at: string
   user_id: string
+  is_favorite: boolean
 }
 
-type PromptRow = {
-  id: number
-  content: string
-  created_at: string
-  user_id: string
-}
+type PromptRow = Prompt
 
 async function getCurrentUser() {
-  const { data, error } =
-    await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
 
   if (error) {
     throw error
@@ -29,45 +24,40 @@ async function getCurrentUser() {
   return data.user
 }
 
-function normalizePrompt(row: PromptRow): Prompt {
+function toPrompt(row: PromptRow): Prompt {
   return row
 }
 
 export async function getPrompts() {
   const user = await getCurrentUser()
 
-  const { data, error } =
-    await supabase
-      .from('prompts')
-      .select('id, content, created_at, user_id')
-      .eq('user_id', user.id)
-      .order('created_at', {
-        ascending: false,
-      })
+  const { data, error } = await supabase
+    .from('prompts')
+    .select('id, content, created_at, user_id, is_favorite')
+    .eq('user_id', user.id)
+    .order('created_at', {
+      ascending: false,
+    })
 
   if (error) {
     throw error
   }
 
-  return (data ?? []).map(
-    (row) => normalizePrompt(row as PromptRow)
-  )
+  return (data ?? []).map((row) => toPrompt(row as PromptRow))
 }
 
-export async function createPrompt(
-  content: string
-) {
+export async function createPrompt(content: string) {
   const user = await getCurrentUser()
 
-  const { data, error } =
-    await supabase
-      .from('prompts')
-      .insert({
-        content,
-        user_id: user.id,
-      })
-      .select('id, content, created_at, user_id')
-      .single()
+  const { data, error } = await supabase
+    .from('prompts')
+    .insert({
+      content,
+      user_id: user.id,
+      is_favorite: false,
+    })
+    .select('id, content, created_at, user_id, is_favorite')
+    .single()
 
   if (error) {
     throw error
@@ -77,20 +67,46 @@ export async function createPrompt(
     throw new Error('Failed to create prompt.')
   }
 
-  return normalizePrompt(data as PromptRow)
+  return toPrompt(data as PromptRow)
 }
 
 export async function deletePrompt(promptId: number) {
   const user = await getCurrentUser()
 
-  const { error } =
-    await supabase
-      .from('prompts')
-      .delete()
-      .eq('id', promptId)
-      .eq('user_id', user.id)
+  const { error } = await supabase
+    .from('prompts')
+    .delete()
+    .eq('id', promptId)
+    .eq('user_id', user.id)
 
   if (error) {
     throw error
   }
+}
+
+export async function togglePromptFavorite(
+  promptId: number,
+  isFavorite: boolean
+) {
+  const user = await getCurrentUser()
+
+  const { data, error } = await supabase
+    .from('prompts')
+    .update({
+      is_favorite: !isFavorite,
+    })
+    .eq('id', promptId)
+    .eq('user_id', user.id)
+    .select('id, content, created_at, user_id, is_favorite')
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('Failed to update prompt favorite.')
+  }
+
+  return toPrompt(data as PromptRow)
 }

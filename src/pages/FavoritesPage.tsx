@@ -1,16 +1,137 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Heart, Sparkles } from 'lucide-react'
+
+import {
+  deletePrompt,
+  getPrompts,
+  togglePromptFavorite,
+  type Prompt,
+} from '../api/prompts'
 import DashboardCard from '../components/DashboardCard'
-import { useTheme } from '../context/ThemeContext'
+import PromptCard from '../components/PromptCard'
+import { useTheme } from '../context/useTheme'
+import { useNotificationStore } from '../stores/notificationStore'
 
 function FavoritesPage() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
+  const { showNotification } = useNotificationStore()
+  const queryClient = useQueryClient()
+
+  const {
+    data: prompts = [],
+    isLoading,
+    error,
+  } = useQuery<Prompt[], Error>({
+    queryKey: ['prompts'],
+    queryFn: getPrompts,
+  })
+
+  const favoritePrompts = prompts.filter((prompt) => prompt.is_favorite)
+
+  const deletePromptMutation = useMutation({
+    mutationFn: deletePrompt,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt deleted successfully!', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to delete prompt.', 'error')
+    },
+  })
+
+  const favoriteMutation = useMutation({
+    mutationFn: ({
+      promptId,
+      isFavorite,
+    }: {
+      promptId: number
+      isFavorite: boolean
+    }) => togglePromptFavorite(promptId, isFavorite),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt favorites updated.', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
+    },
+  })
+
+  function handleDeletePrompt(promptId: number) {
+    deletePromptMutation.mutate(promptId)
+  }
+
+  function handleToggleFavorite(promptId: number, isFavorite: boolean) {
+    favoriteMutation.mutate({ promptId, isFavorite })
+  }
+
+  if (isLoading) {
+    return (
+      <DashboardCard title='Loading favorites'>
+        <div className='h-40 animate-pulse rounded-3xl bg-white/5' />
+      </DashboardCard>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='rounded-3xl border border-red-500/20 bg-red-950/80 p-6 text-red-100'>
+        {error.message}
+      </div>
+    )
+  }
 
   return (
-    <DashboardCard title='Favorite Prompts'>
-      <p className={isDark ? 'text-zinc-400' : 'text-zinc-600'}>
-        You have no favorite prompts yet.
-      </p>
-    </DashboardCard>
+    <div className='space-y-6'>
+      <DashboardCard title='Favorite prompts'>
+        <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
+          <div className='max-w-2xl'>
+            <p className={`text-sm uppercase tracking-[0.28em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+              Pinned assets
+            </p>
+            <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
+              Your most valuable prompts stay close at hand.
+            </h3>
+            <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Save the prompts you reuse most often so they are easy to revisit, edit,
+              and refine.
+            </p>
+          </div>
+
+          <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${isDark ? 'border-white/10 bg-white/5 text-white' : 'border-zinc-200 bg-white text-zinc-950'}`}>
+            <Heart className='h-4 w-4 fill-current text-violet-300' />
+            {favoritePrompts.length} saved
+          </div>
+        </div>
+      </DashboardCard>
+
+      {favoritePrompts.length === 0 ? (
+        <DashboardCard title='No favorites yet'>
+          <div className={`rounded-3xl border border-dashed px-6 py-12 text-center ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+            <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200'>
+              <Sparkles className='h-5 w-5' />
+            </div>
+            <p className='text-base font-medium text-inherit'>
+              Pin a prompt to build your favorites library.
+            </p>
+            <p className='mt-2 text-sm text-inherit'>
+              Use the star button on any prompt to add it here.
+            </p>
+          </div>
+        </DashboardCard>
+      ) : (
+        <div className='grid gap-4 xl:grid-cols-2'>
+          {favoritePrompts.map((prompt) => (
+            <PromptCard
+              key={prompt.id}
+              prompt={prompt}
+              onDelete={handleDeletePrompt}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

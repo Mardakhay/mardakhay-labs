@@ -1,21 +1,32 @@
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowUpDown, Filter, Search, Plus } from 'lucide-react'
 
-import CreatePromptModal from '../components/CreatePromptModal'
-import DashboardCard from '../components/DashboardCard'
-import { useTheme } from '../context/ThemeContext'
-import { useNotificationStore } from '../stores/notificationStore'
 import {
   createPrompt,
   deletePrompt,
   getPrompts,
+  togglePromptFavorite,
   type Prompt,
 } from '../api/prompts'
+import CreatePromptModal from '../components/CreatePromptModal'
+import DashboardCard from '../components/DashboardCard'
+import PromptCard from '../components/PromptCard'
+import { useTheme } from '../context/useTheme'
+import { useNotificationStore } from '../stores/notificationStore'
+
+type SortOrder = 'recent' | 'oldest'
+type ViewFilter = 'all' | 'favorites'
 
 function PromptsPage() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const { showNotification } = useNotificationStore()
   const queryClient = useQueryClient()
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
+  const [viewFilter, setViewFilter] = useState<ViewFilter>('all')
 
   const {
     data: prompts = [],
@@ -29,30 +40,39 @@ function PromptsPage() {
   const createPromptMutation = useMutation({
     mutationFn: createPrompt,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['prompts'],
-      })
-      showNotification('Prompt added successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt added successfully!', 'success')
     },
     onError: (mutationError: Error) => {
-      showNotification(
-        mutationError.message || 'Failed to create prompt.'
-      )
+      showNotification(mutationError.message || 'Failed to create prompt.', 'error')
     },
   })
 
   const deletePromptMutation = useMutation({
     mutationFn: deletePrompt,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['prompts'],
-      })
-      showNotification('Prompt deleted successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt deleted successfully!', 'success')
     },
     onError: (mutationError: Error) => {
-      showNotification(
-        mutationError.message || 'Failed to delete prompt.'
-      )
+      showNotification(mutationError.message || 'Failed to delete prompt.', 'error')
+    },
+  })
+
+  const favoriteMutation = useMutation({
+    mutationFn: ({
+      promptId,
+      isFavorite,
+    }: {
+      promptId: number
+      isFavorite: boolean
+    }) => togglePromptFavorite(promptId, isFavorite),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['prompts'] })
+      showNotification('Prompt favorites updated.', 'success')
+    },
+    onError: (mutationError: Error) => {
+      showNotification(mutationError.message || 'Failed to update prompt.', 'error')
     },
   })
 
@@ -64,74 +84,158 @@ function PromptsPage() {
     deletePromptMutation.mutate(promptId)
   }
 
+  function handleToggleFavorite(promptId: number, isFavorite: boolean) {
+    favoriteMutation.mutate({ promptId, isFavorite })
+  }
+
+  const filteredPrompts = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+
+    const filtered = prompts.filter((prompt) => {
+      const matchesSearch = !normalizedQuery
+        || prompt.content.toLowerCase().includes(normalizedQuery)
+
+      const matchesView =
+        viewFilter === 'all' || (viewFilter === 'favorites' && prompt.is_favorite)
+
+      return matchesSearch && matchesView
+    })
+
+    return [...filtered].sort((a, b) => {
+      const aDate = new Date(a.created_at).getTime()
+      const bDate = new Date(b.created_at).getTime()
+
+      return sortOrder === 'recent' ? bDate - aDate : aDate - bDate
+    })
+  }, [prompts, searchQuery, sortOrder, viewFilter])
+
   if (isLoading) {
     return (
-      <div
-        className={`rounded-2xl border p-6 ${
-          isDark
-            ? 'border-zinc-800 bg-zinc-900 text-white'
-            : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
-        }`}
-      >
-        Loading prompts...
-      </div>
+      <DashboardCard title='Loading prompts'>
+        <div className='space-y-4'>
+          <div className='h-12 rounded-2xl bg-white/5 animate-pulse' />
+          <div className='grid gap-4 lg:grid-cols-2'>
+            <div className='h-56 rounded-3xl bg-white/5 animate-pulse' />
+            <div className='h-56 rounded-3xl bg-white/5 animate-pulse' />
+          </div>
+        </div>
+      </DashboardCard>
     )
   }
 
   if (error) {
     return (
-      <div className='rounded-2xl border border-red-900 bg-red-950 p-6 text-red-200'>
+      <div className='rounded-3xl border border-red-500/20 bg-red-950/80 p-6 text-red-100'>
         {error.message}
       </div>
     )
   }
 
-  const promptItemClassName = isDark
-    ? 'bg-zinc-800 text-white'
-    : 'bg-zinc-100 text-zinc-950'
-
-  const emptyStateClassName = isDark
-    ? 'border-zinc-700 text-zinc-400'
-    : 'border-zinc-300 text-zinc-500'
-
   return (
-    <DashboardCard title='All Prompts'>
-      <div className='space-y-4'>
-        <div className='flex justify-end'>
-          <CreatePromptModal onAddPrompt={handleAddPrompt} />
+    <div className='space-y-6'>
+      <DashboardCard title='Prompt library'>
+        <div className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
+          <div className='max-w-2xl'>
+            <p className={`text-sm uppercase tracking-[0.28em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+              Workspace tools
+            </p>
+            <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
+              Manage your prompt assets with search, filters, and favorites.
+            </h3>
+            <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Build a reusable prompt library for workflows, experiments, and AI output
+              that stays in sync with your Supabase data layer.
+            </p>
+          </div>
+
+          <CreatePromptModal
+            triggerLabel='New prompt'
+            onAddPrompt={handleAddPrompt}
+          />
+        </div>
+      </DashboardCard>
+
+      <div className='grid gap-4 lg:grid-cols-[1.4fr_auto_auto]'>
+        <label
+          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+            isDark
+              ? 'border-zinc-800 bg-zinc-900/90 text-white'
+              : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
+          }`}
+        >
+          <Search className='h-4 w-4 shrink-0 text-zinc-500' />
+          <input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder='Search prompts...'
+            className='w-full bg-transparent text-sm outline-none placeholder:text-zinc-500'
+          />
+        </label>
+
+        <div
+          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+            isDark
+              ? 'border-zinc-800 bg-zinc-900/90 text-white'
+              : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
+          }`}
+        >
+          <Filter className='h-4 w-4 shrink-0 text-zinc-500' />
+          <select
+            value={viewFilter}
+            onChange={(event) => setViewFilter(event.target.value as ViewFilter)}
+            className='bg-transparent text-sm outline-none'
+          >
+            <option value='all'>All prompts</option>
+            <option value='favorites'>Favorites</option>
+          </select>
         </div>
 
-        {prompts.length === 0 ? (
-          <div className={`rounded-lg border border-dashed px-4 py-6 text-center ${emptyStateClassName}`}>
-            No prompts yet. Add the first one.
+        <div
+          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+            isDark
+              ? 'border-zinc-800 bg-zinc-900/90 text-white'
+              : 'border-zinc-200 bg-white text-zinc-950 shadow-sm'
+          }`}
+        >
+          <ArrowUpDown className='h-4 w-4 shrink-0 text-zinc-500' />
+          <select
+            value={sortOrder}
+            onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+            className='bg-transparent text-sm outline-none'
+          >
+            <option value='recent'>Most recent</option>
+            <option value='oldest'>Oldest first</option>
+          </select>
+        </div>
+      </div>
+
+      <DashboardCard title={`Prompts (${filteredPrompts.length})`}>
+        {filteredPrompts.length === 0 ? (
+          <div className={`rounded-2xl border border-dashed px-6 py-12 text-center ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+            <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200'>
+              <Plus className='h-5 w-5' />
+            </div>
+            <p className='text-base font-medium text-inherit'>
+              No prompts match your current search.
+            </p>
+            <p className='mt-2 text-sm text-inherit'>
+              Clear the filters or create a new prompt to populate the library.
+            </p>
           </div>
         ) : (
-          prompts.map((prompt) => (
-            <div
-              key={prompt.id}
-              className={`flex items-start justify-between gap-4 rounded-lg p-4 ${promptItemClassName}`}
-            >
-              <div className='min-w-0'>
-                <span className='block break-words'>
-                  {prompt.content}
-                </span>
-                <span className='mt-2 block text-xs text-zinc-500'>
-                  {new Date(prompt.created_at).toLocaleString()}
-                </span>
-              </div>
-
-              <button
-                onClick={() => handleDeletePrompt(prompt.id)}
-                disabled={deletePromptMutation.isPending}
-                className='shrink-0 rounded-md bg-red-500 px-3 py-1 text-sm text-white transition-colors hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60'
-              >
-                Delete
-              </button>
-            </div>
-          ))
+          <div className='grid gap-4 xl:grid-cols-2'>
+            {filteredPrompts.map((prompt) => (
+              <PromptCard
+                key={prompt.id}
+                prompt={prompt}
+                onDelete={handleDeletePrompt}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            ))}
+          </div>
         )}
-      </div>
-    </DashboardCard>
+      </DashboardCard>
+    </div>
   )
 }
 

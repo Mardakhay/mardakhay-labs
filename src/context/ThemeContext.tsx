@@ -1,48 +1,47 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
-type Theme = 'dark' | 'light'
+import { ThemeContext, type Theme } from './theme-context'
 
-type ThemeContextType = {
-  theme: Theme
-  toggleTheme: () => void
-}
-
-const ThemeContext = createContext<ThemeContextType | null>(null)
+const THEME_STORAGE_KEY = 'mardakhay-labs-theme'
 
 type ThemeProviderProps = {
   children: ReactNode
 }
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>('dark')
-
-  function toggleTheme() {
-    setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'))
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') {
+    return 'dark'
   }
 
-  return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        toggleTheme,
-      }}
-    >
-      {children}
-    </ThemeContext.Provider>
-  )
+  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+
+  if (storedTheme === 'light' || storedTheme === 'dark') {
+    return storedTheme
+  }
+
+  return 'dark'
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext)
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(getInitialTheme)
 
-  if (!context) {
-    throw new Error('useTheme must be used inside ThemeProvider')
-  }
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    document.documentElement.style.colorScheme = theme
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
 
-  return context
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      toggleTheme: () =>
+        setTheme((currentTheme) =>
+          currentTheme === 'dark' ? 'light' : 'dark'
+        ),
+    }),
+    [theme]
+  )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

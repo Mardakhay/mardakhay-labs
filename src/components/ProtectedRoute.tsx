@@ -8,14 +8,10 @@ type ProtectedRouteProps = {
   children: ReactNode
 }
 
-function ProtectedRoute({
-  children,
-}: ProtectedRouteProps) {
+function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation()
-  const { userEmail, setUserEmail, clearUserEmail } =
-    useAuthStore()
-  const [isCheckingSession, setIsCheckingSession] =
-    useState(true)
+  const { userEmail, setUserEmail, clearUserEmail } = useAuthStore()
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
 
   useEffect(() => {
     let isMounted = true
@@ -46,8 +42,8 @@ function ProtectedRoute({
 
     void hydrateSession()
 
-    const { data: authListener } =
-      supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
         const email = session?.user?.email ?? null
 
         if (email) {
@@ -57,7 +53,8 @@ function ProtectedRoute({
         }
 
         setIsCheckingSession(false)
-      })
+      }
+    )
 
     return () => {
       isMounted = false
@@ -68,7 +65,9 @@ function ProtectedRoute({
   if (isCheckingSession) {
     return (
       <div className='flex min-h-screen items-center justify-center bg-zinc-950 text-white'>
-        Loading workspace...
+        <div className='rounded-3xl border border-white/10 bg-white/5 px-6 py-4 text-sm backdrop-blur-xl'>
+          Loading workspace...
+        </div>
       </div>
     )
   }
