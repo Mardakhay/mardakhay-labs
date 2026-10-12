@@ -14,9 +14,12 @@ import {
 } from 'lucide-react'
 
 import { signOut } from '../api/auth'
-import { promptsQueryBaseKey } from '../hooks/usePromptsQuery'
+import { usePromptMutations } from '../hooks/usePromptMutations'
+import { promptsQueryBaseKey, usePromptsQuery } from '../hooks/usePromptsQuery'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
+import CommandPalette from './CommandPalette'
+import CreatePromptModal from './CreatePromptModal'
 
 const navigation = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -25,13 +28,22 @@ const navigation = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ] as const
 
+function isTypingTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable
+}
+
 function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, setUser } = useAuthStore()
   const { showNotification } = useNotificationStore()
+  const { createPromptMutation } = usePromptMutations()
+  const { data: prompts = [] } = usePromptsQuery()
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [commandOpen, setCommandOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement | null>(null)
 
   const activeRoute =
@@ -51,6 +63,24 @@ function AppLayout() {
       )
     }
   }
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setCommandOpen(true)
+        return
+      }
+
+      if (!isTypingTarget(event.target) && event.key.toLowerCase() === 'n') {
+        event.preventDefault()
+        setCreateOpen(true)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   useEffect(() => {
     if (!accountMenuOpen) return
@@ -94,7 +124,16 @@ function AppLayout() {
             </div>
           </div>
 
-          <nav className='mt-8 space-y-2'>
+          <button
+            type='button'
+            onClick={() => setCommandOpen(true)}
+            className='mt-6 flex min-h-11 items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-3 text-left text-sm text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white'
+          >
+            <span>Search commands</span>
+            <span className='rounded-lg border border-white/10 px-2 py-1 text-[11px] text-zinc-500'>Ctrl K</span>
+          </button>
+
+          <nav className='mt-5 space-y-2'>
             {navigation.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
@@ -168,6 +207,13 @@ function AppLayout() {
               </div>
 
               <div className='flex items-center gap-2'>
+                <button
+                  type='button'
+                  onClick={() => setCommandOpen(true)}
+                  className='hidden min-h-9 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs text-zinc-300 transition-colors hover:bg-white/[0.06] sm:inline-flex'
+                >
+                  Ctrl K
+                </button>
                 <span className='hidden rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.26em] text-zinc-300 sm:inline-flex'>
                   Protected
                 </span>
@@ -249,6 +295,23 @@ function AppLayout() {
           </main>
         </div>
       </div>
+
+      <CommandPalette
+        open={commandOpen}
+        prompts={prompts}
+        onClose={() => setCommandOpen(false)}
+        onCreatePrompt={() => setCreateOpen(true)}
+        onNavigate={(path) => navigate(path)}
+        onOpenPrompt={(promptId) => navigate(`/prompts?prompt=${promptId}`)}
+      />
+
+      <CreatePromptModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        hideTrigger
+        draftKey='mardakhay-labs:draft:new-global'
+        onSave={(input) => createPromptMutation.mutateAsync(input)}
+      />
     </div>
   )
 }
