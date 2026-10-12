@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
-import SidebarButton from './components/SidebarButton';
-import DashboardCard from './components/DashboardCard'
+import DashboardPage from './pages/DashboardPage'
+import PromptsPage from './pages/PromptsPage'
+import FavoritesPage from './pages/FavoritesPage'
+import SettingsPage from './pages/SettingsPage'
+import {
+  Routes,
+  Route,
+  NavLink,
+} from 'react-router-dom'
 
 function App() {
-
-  const [activeTab, setActiveTab] = useState('Dashboard')
 
   const [prompts, setPrompts] = useState<string[]>(() => {
     const savedPrompts =
@@ -57,125 +62,96 @@ function App() {
         </h1>
 
         <nav className="space-y-2">
-          <SidebarButton
-            title="Dashboard"
-            active={activeTab === 'Dashboard'}
-            onClick={() => setActiveTab('Dashboard')}
-          />
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Dashboard
+          </NavLink>
 
-          <SidebarButton
-            title="Prompts"
-            active={activeTab === 'Prompts'}
-            onClick={() => setActiveTab('Prompts')}
-          />
+          <NavLink
+            to="/prompts"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Prompts
+          </NavLink>
 
-          <SidebarButton
-            title="Favorites"
-            active={activeTab === 'Favorites'}
-            onClick={() => setActiveTab('Favorites')}
-          />
+          <NavLink
+            to="/favorites"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Favorites
+          </NavLink>
 
-          <SidebarButton
-            title="Settings"
-            active={activeTab === 'Settings'}
-            onClick={() => setActiveTab('Settings')}
-          />
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `block rounded-lg px-4 py-2 transition-colors ${
+                isActive
+                  ? 'bg-zinc-800'
+                  : 'hover:bg-zinc-900'
+              }`
+            }
+          >
+            Settings
+          </NavLink>
         </nav>
       </aside>
 
       <main className="flex-1 p-10">
         <h2 className="mb-6 text-3xl font-bold">
-          {activeTab}
+          Mardakhay Labs
         </h2>
+          <Routes>
+            <Route
+              path="/"
+              element={<DashboardPage />}
+            />
 
-        {activeTab === 'Dashboard' && (
-          <div className="grid grid-cols-3 gap-6">
-            <DashboardCard title="Prompt Collection">
-              <p className="text-zinc-400">
-                Organize and manage your AI prompts.
-              </p>
-            </DashboardCard>
-
-            <DashboardCard title="Favorite Prompts">
-              <p className="text-zinc-400">
-                Quick access to saved prompts.
-              </p>
-            </DashboardCard>
-
-            <DashboardCard title="AI Notes">
-              <p className="text-zinc-400">
-                Store ideas and AI-generated notes.
-              </p>
-            </DashboardCard>
-          </div>
-        )}
-
-        {activeTab === 'Prompts' && (
-          <DashboardCard title="All Prompts">
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Enter new prompt..."
-                  value={newPrompt}
-                  onChange={(event) =>
-                    setNewPrompt(event.target.value)
-                  }
-                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 outline-none"
+            <Route
+              path="/prompts"
+              element={
+                <PromptsPage
+                  prompts={prompts}
+                  newPrompt={newPrompt}
+                  setNewPrompt={setNewPrompt}
+                  handleAddPrompt={handleAddPrompt}
+                  handleDeletePrompt={handleDeletePrompt}
                 />
+              }
+            />
 
-                <button
-                  onClick={handleAddPrompt}
-                  className="rounded-lg bg-white px-4 py-2 text-black"
-                >
-                  Add
-                </button>
-              </div>
-              {prompts.map((prompt) => (
-                <div
-                  key={prompt}
-                  className="flex items-center justify-between rounded-lg bg-zinc-800 p-4"
-                >
-                  <span>{prompt}</span>
+            <Route
+              path="/favorites"
+              element={<FavoritesPage />}
+            />
 
-                  <button
-                    onClick={() =>
-                      handleDeletePrompt(prompt)
-                    }
-                    className="rounded-md bg-red-500 px-3 py-1 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
+            <Route
+              path="/settings"
+              element={<SettingsPage />}
+            />
+          </Routes>
+              </main>
             </div>
-          </DashboardCard>
-        )}
-
-        {activeTab === 'Favorites' && (
-          <DashboardCard title="Favorite Prompts">
-            <p className="text-zinc-400">
-              You have no favorite prompts yet.
-            </p>
-          </DashboardCard>
-        )}
-
-        {activeTab === 'Settings' && (
-          <DashboardCard title="Settings">
-            <div className="space-y-4">
-              <button className="rounded-lg bg-zinc-800 px-4 py-2">
-                Dark Theme
-              </button>
-
-              <button className="rounded-lg bg-zinc-800 px-4 py-2">
-                Account Settings
-              </button>
-            </div>
-          </DashboardCard>
-        )}
-      </main>
-    </div>
-  )
-}
+          )
+        }
 
 export default App
