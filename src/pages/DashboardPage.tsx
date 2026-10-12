@@ -182,14 +182,14 @@ function DashboardPage() {
         ))}
       </div>
 
-      <div className='grid gap-6 lg:grid-cols-[1.7fr_1fr]'>
+      <div className='grid gap-6 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,0.85fr)]'>
         <DashboardCard title='Recent prompts'>
           {recentPrompts.length === 0 ? (
             <div className='rounded-2xl border border-dashed border-zinc-700/60 px-5 py-10 text-center text-zinc-400'>
               Your workspace is empty. Create the first prompt to get started.
             </div>
           ) : (
-            <div className='space-y-4'>
+            <div className='space-y-3'>
               {recentPrompts.map((prompt) => (
                 <PromptCard key={prompt.id} prompt={prompt} compact onEdit={handleUpdatePrompt} />
               ))}
@@ -198,7 +198,7 @@ function DashboardPage() {
         </DashboardCard>
 
         <DashboardCard title='Activity'>
-          <div className='space-y-4'>
+          <div className='space-y-3'>
             <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
               <div className='flex items-center gap-3'>
                 <div className='rounded-xl bg-violet-500/15 p-2 text-violet-200'>

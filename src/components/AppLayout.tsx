@@ -59,7 +59,7 @@ function AppLayout() {
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
+                  `flex items-center rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
                     isActive
                       ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
                       : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.03]'
@@ -67,9 +67,6 @@ function AppLayout() {
                 }
               >
                 <span>{label}</span>
-                <span className='text-[11px] uppercase tracking-[0.28em] text-zinc-500'>
-                  {label === 'Dashboard' ? 'Home' : 'Open'}
-                </span>
               </NavLink>
             ))}
           </nav>
