@@ -1,3 +1,6 @@
+import SidebarButton from './components/SidebarButton';
+import DashboardCard from './components/DashboardCard'
+
 function App() {
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
@@ -7,21 +10,10 @@ function App() {
         </h1>
 
         <nav className="space-y-2">
-          <button className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-left">
-            Dashboard
-          </button>
-
-          <button className="w-full rounded-lg px-4 py-2 text-left hover:bg-zinc-900">
-            Prompts
-          </button>
-
-          <button className="w-full rounded-lg px-4 py-2 text-left hover:bg-zinc-900">
-            Favorites
-          </button>
-
-          <button className="w-full rounded-lg px-4 py-2 text-left hover:bg-zinc-900">
-            Settings
-          </button>
+          <SidebarButton title="Dashboard" active />
+          <SidebarButton title="Prompts" />
+          <SidebarButton title="Favorites" />
+          <SidebarButton title="Settings" />
         </nav>
       </aside>
 
@@ -31,17 +23,23 @@ function App() {
         </h2>
 
         <div className="grid grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            Prompt Collection
-          </div>
+          <DashboardCard title="Prompt Collection">
+            <p className="text-zinc-400">
+              Organize and manage your AI prompts.
+            </p>
+          </DashboardCard>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            Favorite Prompts
-          </div>
+          <DashboardCard title="Favorite Prompts">
+            <p className="text-zinc-400">
+              Quick access to saved prompts.
+            </p>
+          </DashboardCard>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            AI Notes
-          </div>
+          <DashboardCard title="AI Notes">
+            <p className="text-zinc-400">
+              Store ideas and AI-generated notes.
+            </p>
+          </DashboardCard>
         </div>
       </main>
     </div>
