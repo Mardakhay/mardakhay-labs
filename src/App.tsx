@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SidebarButton from './components/SidebarButton';
 import DashboardCard from './components/DashboardCard'
 
@@ -6,11 +6,20 @@ function App() {
 
   const [activeTab, setActiveTab] = useState('Dashboard')
 
-  const [prompts, setPrompts] = useState([
-    'Marketing Prompt',
-    'Copywriting Prompt',
-    'Startup Ideas Prompt',
-  ])
+  const [prompts, setPrompts] = useState<string[]>(() => {
+    const savedPrompts =
+      localStorage.getItem('prompts')
+
+    if (savedPrompts) {
+      return JSON.parse(savedPrompts)
+    }
+
+    return [
+      'Marketing Prompt',
+      'Copywriting Prompt',
+      'Startup Ideas Prompt',
+    ]
+  })
 
   const [newPrompt, setNewPrompt] = useState('')
 
@@ -32,6 +41,13 @@ function App() {
       )
     )
   }
+
+  useEffect(() => {
+    localStorage.setItem(
+      'prompts',
+      JSON.stringify(prompts)
+    )
+  }, [prompts])
 
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white">
