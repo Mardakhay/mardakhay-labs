@@ -314,15 +314,15 @@ function PromptsPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='app-surface flex flex-col gap-4 rounded-2xl border border-white/5 p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between'>
+      <section className='app-surface flex flex-col gap-4 rounded-xl border border-white/[0.04] p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between'>
         <div className='max-w-2xl'>
-          <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
+          <p className='text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
             Workspace tools
           </p>
-          <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
+          <h3 className='mt-2 text-xl font-semibold tracking-tight text-zinc-100 sm:text-[22px]'>
             Prompt library
           </h3>
-          <p className='mt-2 text-sm leading-6 text-zinc-400'>
+          <p className='mt-2 text-[13px] leading-6 text-zinc-400'>
             Search, edit, favorite, organize, import, and export your AI prompts.
           </p>
         </div>
@@ -331,17 +331,17 @@ function PromptsPage() {
           <button
             type='button'
             onClick={() => fileInputRef.current?.click()}
-            className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-800'
+            className='inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white'
           >
-            <Upload className='h-4 w-4' />
+            <Upload className='h-3.5 w-3.5' />
             Import
           </button>
           <button
             type='button'
             onClick={() => exportPrompts('json', filteredPrompts)}
-            className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-800'
+            className='inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white'
           >
-            <Download className='h-4 w-4' />
+            <Download className='h-3.5 w-3.5' />
             Export all
           </button>
           <CreatePromptModal
@@ -360,8 +360,8 @@ function PromptsPage() {
       </section>
 
       <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.8fr)_repeat(4,minmax(0,0.85fr))]'>
-        <label className='flex min-h-12 items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white sm:col-span-2 lg:col-span-1'>
-          <Search className='h-4 w-4 shrink-0 text-zinc-500' />
+        <label className='flex min-h-10 items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3 text-white sm:col-span-2 lg:col-span-1'>
+          <Search className='h-3.5 w-3.5 shrink-0 text-zinc-500' />
           <input
             ref={searchInputRef}
             value={searchQuery}

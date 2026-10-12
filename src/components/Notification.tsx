@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { CheckCircle2, CircleAlert, Info, X } from 'lucide-react'
+import { CircleCheck as CheckCircle2, CircleAlert, Info, X } from 'lucide-react'
 
 import {
   type NotificationVariant,
@@ -16,17 +16,17 @@ const variantConfig: Record<
   success: {
     icon: CheckCircle2,
     className:
-      'border-emerald-500/20 bg-emerald-950/90 text-emerald-100 shadow-2xl shadow-emerald-950/40',
+      'border-emerald-500/20 bg-emerald-950/80 text-emerald-200 shadow-2xl shadow-emerald-950/30',
   },
   error: {
     icon: CircleAlert,
     className:
-      'border-red-500/20 bg-red-950/90 text-red-100 shadow-2xl shadow-red-950/40',
+      'border-red-500/20 bg-red-950/80 text-red-200 shadow-2xl shadow-red-950/30',
   },
   info: {
     icon: Info,
     className:
-      'border-zinc-700/80 bg-zinc-900/95 text-white shadow-2xl shadow-black/40',
+      'border-white/[0.06] bg-white/[0.04] text-zinc-200 shadow-2xl shadow-black/40',
   },
 }
 
@@ -53,14 +53,14 @@ function Notification() {
       role={variant === 'error' ? 'alert' : 'status'}
       aria-live={variant === 'error' ? 'assertive' : 'polite'}
     >
-      <div className={`rounded-2xl border px-4 py-3 backdrop-blur-xl ${variantConfig[variant].className}`}>
+      <div className={`rounded-xl border px-4 py-3 backdrop-blur-2xl ${variantConfig[variant].className}`}>
         <div className='flex items-start gap-3'>
-          <div className='mt-0.5 rounded-full bg-white/5 p-2 ring-1 ring-white/5'>
-            <Icon className='h-4 w-4' />
+          <div className='mt-0.5 rounded-md bg-white/[0.06] p-1.5'>
+            <Icon className='h-3.5 w-3.5' />
           </div>
 
           <div className='min-w-0 flex-1'>
-            <p className='text-sm font-medium leading-5'>{message}</p>
+            <p className='text-[13px] font-medium leading-5'>{message}</p>
           </div>
 
           <button

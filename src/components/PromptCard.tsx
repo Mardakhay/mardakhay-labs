@@ -151,7 +151,7 @@ function PromptCard({
               }
             : undefined
         }
-        className={`app-surface group rounded-2xl border border-zinc-800/80 text-white transition-all duration-200 hover:-translate-y-0.5 ${onOpenDetail ? 'cursor-pointer' : ''} ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
+        className={`app-surface group rounded-xl border border-white/[0.04] text-white transition-all duration-200 hover:-translate-y-px ${onOpenDetail ? 'cursor-pointer' : ''} ${compact ? 'p-3.5' : 'p-3.5 sm:p-4'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
       >
         <div className='flex items-start justify-between gap-3 sm:gap-4'>
           {selectable ? (
@@ -169,34 +169,34 @@ function PromptCard({
           ) : null}
 
           <div className='min-w-0 flex-1'>
-            <div className='mb-3 flex flex-wrap items-center gap-2'>
-              <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-zinc-300'>
-                <Hash className='h-3.5 w-3.5' />
+            <div className='mb-2.5 flex flex-wrap items-center gap-1.5'>
+              <span className='inline-flex items-center gap-1 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400'>
+                <Hash className='h-3 w-3' />
                 Prompt
               </span>
 
               {!compact ? (
-                <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-zinc-300'>
+                <span className='inline-flex items-center gap-1 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400'>
                   {wordCount} words
                 </span>
               ) : null}
 
               {prompt.is_favorite ? (
-                <span className='inline-flex items-center gap-1 rounded-full border border-violet-500/20 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-violet-200'>
+                <span className='inline-flex items-center gap-1 rounded-md border border-violet-500/20 bg-violet-500/[0.06] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-violet-300'>
                   Favorite
                 </span>
               ) : null}
 
               {prompt.ai_target ? (
-                <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/70 px-2.5 py-1 text-[11px] font-medium text-zinc-300'>
-                  <Bot className='h-3.5 w-3.5' />
+                <span className='inline-flex items-center gap-1 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-medium text-zinc-400'>
+                  <Bot className='h-3 w-3' />
                   {prompt.ai_target}
                 </span>
               ) : null}
 
               {prompt.category ? (
-                <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/70 px-2.5 py-1 text-[11px] font-medium text-zinc-300'>
-                  <Boxes className='h-3.5 w-3.5' />
+                <span className='inline-flex items-center gap-1 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-medium text-zinc-400'>
+                  <Boxes className='h-3 w-3' />
                   {prompt.category}
                 </span>
               ) : null}
@@ -209,34 +209,34 @@ function PromptCard({
                 className='block max-w-full text-left'
               >
                 <h3
-                  className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}
+                  className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-[13px]' : 'text-[15px] sm:text-base'}`}
                 >
                   <HighlightedText text={promptTitle} query={searchQuery} />
                 </h3>
               </button>
             ) : (
               <h3
-                className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}
+                className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-[13px]' : 'text-[15px] sm:text-base'}`}
               >
                 <HighlightedText text={promptTitle} query={searchQuery} />
               </h3>
             )}
 
             <p
-              className={`mt-3 whitespace-pre-wrap text-sm ${compact ? 'leading-5 text-zinc-300/90' : 'leading-6 text-zinc-300'}`}
+              className={`mt-2 whitespace-pre-wrap text-[13px] ${compact ? 'leading-5 text-zinc-400' : 'leading-6 text-zinc-400'}`}
             >
               <HighlightedText text={promptPreview} query={searchQuery} />
             </p>
 
-            <div className='mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500'>
+            <div className='mt-3 flex flex-wrap items-center gap-2.5 text-[11px] text-zinc-500'>
               <span className='inline-flex items-center gap-1.5'>
-                <CalendarDays className='h-3.5 w-3.5' />
+                <CalendarDays className='h-3 w-3' />
                 {createdLabel}
               </span>
 
               {prompt.hashtags.slice(0, compact ? 2 : 4).map((tag) => (
                 <span key={tag} className='inline-flex items-center gap-1.5'>
-                  <Tag className='h-3.5 w-3.5' />
+                  <Tag className='h-3 w-3' />
                   <HighlightedText text={`#${tag}`} query={searchQuery} />
                 </span>
               ))}
@@ -246,10 +246,10 @@ function PromptCard({
           <button
             type='button'
             onClick={() => onToggleFavorite?.(prompt.id, prompt.is_favorite)}
-            className={`shrink-0 self-start inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 ${
+            className={`shrink-0 self-start inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200 sm:h-10 sm:w-10 ${
               prompt.is_favorite
-                ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 shadow-[0_0_28px_rgba(139,92,246,0.16)] hover:bg-violet-500/20'
-                : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                ? 'border-violet-500/20 bg-violet-500/[0.08] text-violet-300 shadow-[0_0_16px_rgba(139,92,246,0.1)] hover:bg-violet-500/15'
+                : 'border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:border-white/[0.1] hover:text-zinc-200'
             }`}
             aria-label={
               prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'
@@ -260,19 +260,19 @@ function PromptCard({
           </button>
         </div>
 
-        <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-3 sm:pt-4'>
-          <div className='flex w-full flex-wrap items-center gap-2'>
+        <div className='mt-3 flex items-center justify-end gap-2 border-t border-white/[0.04] pt-3 sm:pt-3.5'>
+          <div className='flex w-full flex-wrap items-center gap-1.5'>
             <button
               type='button'
               onClick={() => void handleCopy()}
-              className='inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 sm:min-h-11 sm:gap-2'
+              className='inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[12px] font-medium text-zinc-300 transition-all duration-200 hover:bg-white/[0.05] hover:text-white sm:min-h-9 sm:gap-2 sm:px-3 sm:text-[13px]'
               aria-label='Copy prompt content'
               title='Copy prompt content'
             >
               {copied ? (
-                <Check className='h-4 w-4 text-emerald-300' />
+                <Check className='h-3.5 w-3.5 text-emerald-400' />
               ) : (
-                <Clipboard className='h-4 w-4' />
+                <Clipboard className='h-3.5 w-3.5' />
               )}
               <span className='hidden sm:inline'>{copied ? 'Copied' : 'Copy'}</span>
             </button>
@@ -281,10 +281,10 @@ function PromptCard({
               <button
                 type='button'
                 onClick={openDetail}
-                className='inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 sm:min-h-11 sm:gap-2'
+                className='inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[12px] font-medium text-zinc-300 transition-all duration-200 hover:bg-white/[0.05] hover:text-white sm:min-h-9 sm:gap-2 sm:px-3 sm:text-[13px]'
                 title='Open prompt detail'
               >
-                <Maximize2 className='h-4 w-4' />
+                <Maximize2 className='h-3.5 w-3.5' />
                 <span className='hidden sm:inline'>Open</span>
               </button>
             ) : null}
@@ -293,7 +293,7 @@ function PromptCard({
               <button
                 type='button'
                 onClick={openEditor}
-                className='inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 sm:min-h-11 sm:gap-2'
+                className='inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[12px] font-medium text-zinc-300 transition-all duration-200 hover:bg-white/[0.05] hover:text-white sm:min-h-9 sm:gap-2 sm:px-3 sm:text-[13px]'
                 title='Edit prompt'
               >
                 Edit
@@ -304,11 +304,11 @@ function PromptCard({
               <button
                 type='button'
                 onClick={() => setShowDeleteConfirm(true)}
-                className='ml-auto inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:gap-2'
+                className='ml-auto inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/[0.06] px-2.5 py-1.5 text-[12px] font-medium text-red-300 transition-all duration-200 hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-9 sm:gap-2 sm:px-3 sm:text-[13px]'
                 title='Delete prompt'
                 disabled={isDeleting}
               >
-                <Trash2 className='h-4 w-4' />
+                <Trash2 className='h-3.5 w-3.5' />
                 <span className='hidden sm:inline'>Delete</span>
               </button>
             ) : null}

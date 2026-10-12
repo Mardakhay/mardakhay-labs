@@ -1,15 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  Sparkles,
-  TerminalSquare,
-  Wand2,
-} from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, ShieldCheck, Sparkles, SquareTerminal as TerminalSquare, Wand as Wand2 } from 'lucide-react'
 
 import { signIn, signUp } from '../api/auth'
 import { useNotificationStore } from '../stores/notificationStore'
@@ -76,61 +68,61 @@ function LoginPage() {
   }
 
   const shellClassName =
-    'bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.12),_transparent_28%),#09090b] text-white'
+    'bg-[radial-gradient(ellipse_80%_50%_at_12%_10%,rgba(99,102,241,0.1),transparent),radial-gradient(ellipse_60%_50%_at_88%_8%,rgba(56,189,248,0.06),transparent),#030305] text-white'
 
-  const panelClassName = 'border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20'
+  const panelClassName = 'border-white/[0.06] bg-white/[0.02] text-white shadow-2xl shadow-black/40'
 
   const inputClassName =
-    'border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-violet-500 focus:bg-white/[0.07]'
+    'border-white/[0.06] bg-white/[0.02] text-white placeholder:text-zinc-600 focus:border-violet-500/40 focus:bg-white/[0.04]'
 
   const modeToggleItemClass = (active: boolean) =>
     [
-      'min-w-0 rounded-xl px-3 py-2.5 text-xs font-medium transition-all sm:px-4 sm:text-sm',
+      'min-w-0 rounded-lg px-3 py-2.5 text-xs font-medium transition-all sm:px-4 sm:text-[13px]',
       active
-        ? 'bg-white/10 text-white shadow-sm shadow-black/10'
-        : 'text-zinc-400 hover:text-white',
+        ? 'bg-white/[0.07] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
+        : 'text-zinc-500 hover:text-zinc-200',
     ].join(' ')
 
   return (
     <div className={`min-h-screen ${shellClassName}`}>
       <div className='grid min-h-screen lg:grid-cols-2'>
-        <section className='relative hidden overflow-hidden border-r border-white/5 lg:flex'>
+        <section className='relative hidden overflow-hidden border-r border-white/[0.03] lg:flex'>
           <div className='relative z-10 flex w-full flex-col justify-between p-12 xl:p-16'>
             <div className='flex items-center gap-3'>
-              <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20'>
+              <div className='flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-sky-500/10 text-white ring-1 ring-white/[0.08]'>
                 <Sparkles className='h-5 w-5' />
               </div>
               <div>
-                <h1 className='text-2xl font-semibold tracking-tight'>Mardakhay Labs</h1>
-                <p className='text-xs uppercase tracking-[0.3em] text-zinc-400'>
+                <h1 className='text-xl font-semibold tracking-tight text-zinc-100'>Mardakhay Labs</h1>
+                <p className='text-[10px] font-medium uppercase tracking-[0.32em] text-zinc-500'>
                   AI prompt workspace
                 </p>
               </div>
             </div>
 
             <div className='max-w-xl'>
-              <p className='text-xs font-semibold uppercase tracking-[0.32em] text-violet-200'>
+              <p className='text-[10px] font-semibold uppercase tracking-[0.34em] text-violet-300/80'>
                 Product-first workspace
               </p>
-              <h2 className='mt-4 text-5xl font-semibold tracking-tight xl:text-6xl'>
+              <h2 className='mt-4 text-4xl font-semibold tracking-tight leading-[1.1] text-zinc-100 xl:text-5xl'>
                 Keep your prompts organized in one calm place.
               </h2>
-              <p className='mt-5 max-w-lg text-base leading-7 text-zinc-300'>
+              <p className='mt-5 max-w-lg text-[15px] leading-7 text-zinc-400'>
                 Sign in to access your prompt library, favorites, and workspace tools
                 with a stable dark interface designed to stay out of your way.
               </p>
 
-              <div className='mt-8 flex flex-wrap gap-3'>
-                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200'>
-                  <TerminalSquare className='h-3.5 w-3.5' />
+              <div className='mt-8 flex flex-wrap gap-2.5'>
+                <span className='inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-[11px] font-medium text-zinc-300'>
+                  <TerminalSquare className='h-3.5 w-3.5 text-zinc-400' />
                   Secure workspace
                 </span>
-                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200'>
-                  <Wand2 className='h-3.5 w-3.5' />
+                <span className='inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-[11px] font-medium text-zinc-300'>
+                  <Wand2 className='h-3.5 w-3.5 text-zinc-400' />
                   Prompt tools
                 </span>
-                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200'>
-                  <ShieldCheck className='h-3.5 w-3.5' />
+                <span className='inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-[11px] font-medium text-zinc-300'>
+                  <ShieldCheck className='h-3.5 w-3.5 text-zinc-400' />
                   Supabase Auth
                 </span>
               </div>
@@ -139,29 +131,29 @@ function LoginPage() {
         </section>
 
         <section className='flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-6 sm:px-6 sm:py-10 lg:px-10'>
-          <div className={`w-full min-w-0 max-w-[22rem] overflow-hidden rounded-3xl border p-5 sm:max-w-md sm:p-8 ${panelClassName}`}>
+          <div className={`w-full min-w-0 max-w-[22rem] overflow-hidden rounded-2xl border p-5 sm:max-w-md sm:p-8 ${panelClassName}`}>
             <div className='mb-7 flex items-start justify-between gap-4 sm:mb-8'>
               <div className='min-w-0'>
-                <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.3em]'>
+                <p className='text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500 sm:tracking-[0.3em]'>
                   Secure access
                 </p>
-                <h2 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
+                <h2 className='mt-2 text-2xl font-semibold tracking-tight text-zinc-100 sm:text-[28px]'>
                   {heading}
                 </h2>
                 <p className='mt-2 text-sm leading-6 text-zinc-400'>{description}</p>
               </div>
 
-              <div className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 sm:h-12 sm:w-12'>
-                <Sparkles className='h-5 w-5' />
+              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-sky-500/10 text-violet-200 ring-1 ring-white/[0.06]'>
+                <Sparkles className='h-4 w-4' />
               </div>
             </div>
 
-            <div className='mb-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] rounded-2xl border border-white/10 bg-white/5 p-1'>
+            <div className='mb-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] rounded-xl border border-white/[0.06] bg-white/[0.02] p-1'>
               <button
                 type='button'
                 aria-pressed={!isSignup}
                 onClick={() => setIsSignup(false)}
-                className={`${modeToggleItemClass(!isSignup)} min-h-11`}
+                className={`${modeToggleItemClass(!isSignup)} min-h-10`}
               >
                 Sign in
               </button>
@@ -169,7 +161,7 @@ function LoginPage() {
                 type='button'
                 aria-pressed={isSignup}
                 onClick={() => setIsSignup(true)}
-                className={`${modeToggleItemClass(isSignup)} min-h-11`}
+                className={`${modeToggleItemClass(isSignup)} min-h-10`}
               >
                 Create account
               </button>
@@ -177,7 +169,7 @@ function LoginPage() {
 
             <form className='space-y-4' onSubmit={handleAuth}>
               <label className='block space-y-2'>
-                <span className='text-xs font-medium uppercase tracking-[0.28em] text-zinc-500'>
+                <span className='text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500'>
                   Email address
                 </span>
                 <input
@@ -190,12 +182,12 @@ function LoginPage() {
                   autoCapitalize='none'
                   required
                   disabled={isSubmitting}
-                  className={`min-h-12 w-full rounded-2xl border px-4 py-3.5 text-sm outline-none transition-colors ${inputClassName}`}
+                  className={`min-h-11 w-full rounded-xl border px-4 py-3 text-[13px] outline-none transition-colors ${inputClassName}`}
                 />
               </label>
 
               <label className='block space-y-2'>
-                <span className='text-xs font-medium uppercase tracking-[0.28em] text-zinc-500'>
+                <span className='text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500'>
                   Password
                 </span>
                 <div className='relative'>
@@ -207,13 +199,13 @@ function LoginPage() {
                     autoComplete={isSignup ? 'new-password' : 'current-password'}
                     required
                     disabled={isSubmitting}
-                    className={`min-h-12 w-full rounded-2xl border px-4 py-3.5 pr-12 text-sm outline-none transition-colors ${inputClassName}`}
+                    className={`min-h-11 w-full rounded-xl border px-4 py-3 pr-12 text-[13px] outline-none transition-colors ${inputClassName}`}
                   />
                   <button
                     type='button'
                     onClick={() => setShowPassword((current) => !current)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className='absolute inset-y-0 right-1 flex min-w-11 items-center justify-center rounded-xl px-3 text-zinc-400 transition-colors hover:text-white'
+                    className='absolute inset-y-0 right-1 flex min-w-10 items-center justify-center rounded-lg px-3 text-zinc-500 transition-colors hover:text-zinc-200'
                   >
                     {showPassword ? (
                       <EyeOff className='h-4 w-4' />
@@ -232,7 +224,7 @@ function LoginPage() {
               <button
                 type='submit'
                 disabled={isSubmitting}
-                className='inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-70'
+                className='inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-violet-500 to-violet-600 px-4 py-3 text-[13px] font-semibold text-white shadow-[0_0_0_1px_rgba(139,92,246,0.3),0_2px_8px_rgba(139,92,246,0.15)] transition-all hover:from-violet-400 hover:to-violet-500 hover:shadow-[0_0_0_1px_rgba(139,92,246,0.4),0_4px_16px_rgba(139,92,246,0.2)] disabled:cursor-not-allowed disabled:opacity-60'
               >
                 {isSubmitting ? (isSignup ? 'Creating...' : 'Signing in...') : isSignup ? 'Create account' : 'Sign in'}
                 <ArrowRight className='h-4 w-4' />

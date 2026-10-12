@@ -184,16 +184,16 @@ function PromptEditorModal({
       aria-modal='true'
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[min(92vh,680px)] sm:max-h-[92vh]'
+      className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0a0c] text-white shadow-2xl shadow-black/60 max-h-[min(92vh,680px)] sm:max-h-[92vh]'
     >
-      <div className='flex shrink-0 items-start justify-between gap-3 border-b border-white/5 px-4 py-3 sm:gap-4 sm:px-6 sm:py-5'>
+      <div className='flex shrink-0 items-start justify-between gap-3 border-b border-white/[0.04] px-4 py-3 sm:gap-4 sm:px-6 sm:py-5'>
         <div className='min-w-0'>
-          <p className='text-xs uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.3em]'>
+          <p className='text-[10px] font-medium uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.3em]'>
             Prompt editor
           </p>
           <h2
             id={titleId}
-            className='mt-1 text-lg font-semibold tracking-tight sm:mt-2 sm:text-2xl'
+            className='mt-1 text-lg font-semibold tracking-tight text-zinc-100 sm:mt-2 sm:text-xl'
           >
             {title}
           </h2>
@@ -207,7 +207,7 @@ function PromptEditorModal({
 
         <button
           onClick={onClose}
-          className='flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white sm:min-h-11 sm:min-w-11'
+          className='flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] p-2 text-zinc-400 transition-colors hover:text-zinc-200 sm:min-h-10 sm:min-w-10'
           aria-label='Close dialog'
         >
           <X className='h-4 w-4' />
@@ -217,7 +217,7 @@ function PromptEditorModal({
       <div className='min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6'>
         <div className='space-y-5'>
           {hasRestorableDraft ? (
-            <div className='flex flex-col gap-2 rounded-2xl border border-violet-500/20 bg-violet-500/10 p-3 text-sm text-violet-100 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4'>
+            <div className='flex flex-col gap-2 rounded-xl border border-violet-500/15 bg-violet-500/[0.06] p-3 text-[13px] text-violet-200 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4'>
               <span>A saved draft is available for this editor.</span>
               <button
                 type='button'
@@ -261,7 +261,7 @@ function PromptEditorModal({
               value={promptTitle}
               onChange={(event) => setPromptTitle(event.target.value)}
               placeholder='Summarize the prompt in a short title'
-              className='mt-2 min-h-12 w-full rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500'
+              className='mt-2 min-h-12 w-full rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-violet-500/40'
             />
             <p className='mt-2 text-xs leading-5 text-zinc-500'>
               Leave it blank to auto-generate the title from the first line.
@@ -317,21 +317,21 @@ function PromptEditorModal({
               value={promptContent}
               onChange={(event) => setPromptContent(event.target.value)}
               rows={10}
-              className='mt-2 min-h-40 w-full resize-none rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-violet-500 sm:min-h-52 sm:h-64'
+              className='mt-2 min-h-40 w-full resize-none rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-6 text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-violet-500/40 sm:min-h-52 sm:h-64'
             />
           </div>
         </div>
       </div>
 
-      <div className='flex shrink-0 flex-col gap-3 border-t border-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5 sm:gap-4'>
-        <p className='hidden text-xs uppercase tracking-[0.26em] text-zinc-500 sm:block'>
+      <div className='flex shrink-0 flex-col gap-3 border-t border-white/[0.04] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 sm:gap-4'>
+        <p className='hidden text-[10px] uppercase tracking-[0.26em] text-zinc-600 sm:block'>
           Escape closes this dialog
         </p>
 
-        <div className='grid grid-cols-2 gap-2 sm:flex sm:justify-end sm:gap-3'>
+        <div className='grid grid-cols-2 gap-2 sm:flex sm:justify-end sm:gap-2'>
           <button
             onClick={onClose}
-            className='min-h-10 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 sm:min-h-12 sm:py-2.5'
+            className='min-h-9 rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white sm:min-h-10 sm:py-2.5'
             disabled={isSubmitting}
           >
             Cancel
@@ -339,7 +339,7 @@ function PromptEditorModal({
 
           <button
             onClick={handleSubmit}
-            className='inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-12 sm:py-2.5'
+            className='inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-violet-500 to-violet-600 px-4 py-2 text-[13px] font-semibold text-white shadow-[0_0_0_1px_rgba(139,92,246,0.3),0_2px_8px_rgba(139,92,246,0.15)] transition-all hover:from-violet-400 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-10 sm:py-2.5'
             disabled={isSubmitting}
           >
             {isSubmitting ? (
