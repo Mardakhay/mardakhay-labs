@@ -280,6 +280,11 @@ function PromptsPage() {
 
     const affectedPrompts = prompts.filter((prompt) => prompt.hashtags.includes(fromTag))
 
+    if (affectedPrompts.length === 0) {
+      showNotification(`No prompts contain #${fromTag}.`, 'info')
+      return
+    }
+
     affectedPrompts.forEach((prompt) => {
       updatePromptMutation.mutate({
         promptId: prompt.id,
