@@ -1,0 +1,194 @@
+import { useEffect, useRef, useState } from 'react'
+import { Check, Clipboard, Code2, Download, FileJson, FileText, Star, StarOff, X } from 'lucide-react'
+
+import type { Prompt, PromptInput } from '../api/prompts'
+import { copyText, downloadTextFile, promptToJson, promptToMarkdown } from '../lib/promptExport'
+import CreatePromptModal from './CreatePromptModal'
+import HighlightedText from './HighlightedText'
+
+type PromptDetailPanelProps = {
+  prompt: Prompt | null
+  searchQuery?: string
+  onClose: () => void
+  onEdit: (promptId: number, input: PromptInput) => void | Promise<void>
+  onToggleFavorite: (promptId: number, isFavorite: boolean) => void
+}
+
+function PromptDetailPanel({
+  prompt,
+  searchQuery = '',
+  onClose,
+  onEdit,
+  onToggleFavorite,
+}: PromptDetailPanelProps) {
+  const [showEditor, setShowEditor] = useState(false)
+  const [copiedMode, setCopiedMode] = useState<string | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (!prompt) return
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    closeButtonRef.current?.focus()
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, prompt])
+
+  if (!prompt) return null
+
+  async function handleCopy(label: string, value: string) {
+    await copyText(value)
+    setCopiedMode(label)
+    window.setTimeout(() => setCopiedMode(null), 1400)
+  }
+
+  const markdown = promptToMarkdown(prompt)
+  const json = promptToJson(prompt)
+  const createdLabel = new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(prompt.created_at))
+
+  return (
+    <div className='app-modal-backdrop fixed inset-0 z-40 flex justify-end bg-black/50 backdrop-blur-sm'>
+      <aside
+        ref={panelRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='prompt-detail-title'
+        className='app-modal-panel flex h-full w-full max-w-2xl flex-col border-l border-white/10 bg-zinc-950 text-white shadow-2xl shadow-black/60'
+      >
+        <div className='flex items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6'>
+          <div className='min-w-0'>
+            <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>Prompt detail</p>
+            <h2 id='prompt-detail-title' className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
+              <HighlightedText text={prompt.title} query={searchQuery} />
+            </h2>
+            <p className='mt-2 text-sm text-zinc-500'>{createdLabel}</p>
+          </div>
+
+          <button
+            ref={closeButtonRef}
+            type='button'
+            onClick={onClose}
+            className='flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 transition-colors hover:text-white'
+            aria-label='Close prompt detail'
+          >
+            <X className='h-4 w-4' />
+          </button>
+        </div>
+
+        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6'>
+          <div className='mb-5 flex flex-wrap gap-2'>
+            {prompt.ai_target ? (
+              <span className='rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-300'>
+                {prompt.ai_target}
+              </span>
+            ) : null}
+            {prompt.category ? (
+              <span className='rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-300'>
+                {prompt.category}
+              </span>
+            ) : null}
+            {prompt.hashtags.map((tag) => (
+              <span key={tag} className='rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs text-violet-100'>
+                #{tag}
+              </span>
+            ))}
+          </div>
+
+          <pre className='whitespace-pre-wrap rounded-2xl border border-white/5 bg-white/[0.03] p-4 text-sm leading-7 text-zinc-200'>
+            <HighlightedText text={prompt.content} query={searchQuery} />
+          </pre>
+        </div>
+
+        <div className='border-t border-white/5 px-4 py-4 sm:px-6'>
+          <div className='grid gap-2 sm:grid-cols-3'>
+            <button
+              type='button'
+              onClick={() => void handleCopy('prompt', prompt.content)}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            >
+              {copiedMode === 'prompt' ? <Check className='h-4 w-4 text-emerald-300' /> : <Clipboard className='h-4 w-4' />}
+              Prompt
+            </button>
+            <button
+              type='button'
+              onClick={() => void handleCopy('markdown', markdown)}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            >
+              {copiedMode === 'markdown' ? <Check className='h-4 w-4 text-emerald-300' /> : <FileText className='h-4 w-4' />}
+              Markdown
+            </button>
+            <button
+              type='button'
+              onClick={() => void handleCopy('json', json)}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            >
+              {copiedMode === 'json' ? <Check className='h-4 w-4 text-emerald-300' /> : <FileJson className='h-4 w-4' />}
+              JSON
+            </button>
+          </div>
+
+          <div className='mt-3 grid gap-2 sm:grid-cols-4'>
+            <button
+              type='button'
+              onClick={() => onToggleFavorite(prompt.id, prompt.is_favorite)}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/10 px-3 text-sm font-medium text-violet-100 transition-colors hover:bg-violet-500/20'
+            >
+              {prompt.is_favorite ? <Star className='h-4 w-4 fill-current' /> : <StarOff className='h-4 w-4' />}
+              Favorite
+            </button>
+            <button
+              type='button'
+              onClick={() => setShowEditor(true)}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            >
+              <Code2 className='h-4 w-4' />
+              Edit
+            </button>
+            <button
+              type='button'
+              onClick={() => downloadTextFile(`${prompt.title || 'prompt'}.md`, markdown)}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            >
+              <Download className='h-4 w-4' />
+              MD
+            </button>
+            <button
+              type='button'
+              onClick={() => downloadTextFile(`${prompt.title || 'prompt'}.json`, json, 'application/json')}
+              className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+            >
+              <Download className='h-4 w-4' />
+              JSON
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <CreatePromptModal
+        open={showEditor}
+        onOpenChange={setShowEditor}
+        hideTrigger
+        initialTitle={prompt.title}
+        initialPrompt={prompt.content}
+        initialAiTarget={prompt.ai_target}
+        initialCategory={prompt.category}
+        title='Edit prompt'
+        description='Refine the title and content, then save the updated version back to your workspace.'
+        submitLabel='Save changes'
+        onSave={(input) => onEdit(prompt.id, input)}
+      />
+    </div>
+  )
+}
+
+export default PromptDetailPanel
