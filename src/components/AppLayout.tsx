@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-
 import { useTheme } from '../context/ThemeContext'
+import Notification from './Notification'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -21,6 +21,7 @@ function AppLayout({
           : 'bg-white text-black'
       }`}
     >
+      <Notification />
       <aside className="w-64 border-r border-zinc-800 p-6">
         <h1 className="mb-8 text-2xl font-bold">
           Mardakhay Labs
