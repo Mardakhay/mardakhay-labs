@@ -83,7 +83,7 @@ export function serializePromptContent(
 }
 
 export function extractHashtags(content: string) {
-  const matches = content.match(/(^|\s)#([a-zA-Z][\w-]{0,31})\b/g) ?? []
+  const matches = content.match(/(^|\s)#([a-zA-Z][\w-]{0,31})(?![a-zA-Z0-9_-])/g) ?? []
 
   return Array.from(
     new Set(

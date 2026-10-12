@@ -18,6 +18,14 @@ describe('promptMetadata', () => {
     it('returns an empty array when there are no hashtags', () => {
       expect(extractHashtags('plain text only')).toEqual([])
     })
+
+    it('allows hashtags ending in a hyphen', () => {
+      expect(extractHashtags('Use #prompt-tag- today')).toEqual(['prompt-tag-'])
+    })
+
+    it('rejects hashtags longer than 32 characters instead of truncating them', () => {
+      expect(extractHashtags(`#${'a'.repeat(33)}`)).toEqual([])
+    })
   })
 
   describe('serializePromptContent', () => {
