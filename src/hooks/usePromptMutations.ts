@@ -28,6 +28,10 @@ type PromptCacheContext = {
   previousPrompts?: Prompt[]
 }
 
+type DeletePromptCacheContext = PromptCacheContext & {
+  deletedPrompt?: Prompt
+}
+
 export function usePromptMutations() {
   const { user } = useAuthStore()
   const { showNotification } = useNotificationStore()
@@ -113,7 +117,7 @@ export function usePromptMutations() {
     onSettled: invalidatePrompts,
   })
 
-  const deletePromptMutation = useMutation<void, Error, number, PromptCacheContext>({
+  const deletePromptMutation = useMutation<void, Error, number, DeletePromptCacheContext>({
     mutationFn: deletePrompt,
     onMutate: async (promptId) => {
       await queryClient.cancelQueries({ queryKey: promptsQueryKey })
