@@ -13,7 +13,11 @@ import {
 } from 'lucide-react'
 
 import type { Prompt, PromptInput } from '../api/prompts'
-import { countPromptWords, derivePromptTitle, formatPromptPreview } from '../lib/promptFormatting'
+import {
+  countPromptWords,
+  derivePromptTitle,
+  formatPromptPreview,
+} from '../lib/promptFormatting'
 import { copyText } from '../lib/promptExport'
 import ConfirmModal from './ConfirmModal'
 import CreatePromptModal from './CreatePromptModal'
@@ -72,6 +76,20 @@ function PromptCard({
     setShowEditor(true)
   }
 
+  function openDetail() {
+    onOpenDetail?.(prompt)
+  }
+
+  function isInteractiveTarget(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) return false
+
+    return Boolean(
+      target.closest(
+        'button, a, input, textarea, select, label, [role="button"], [data-no-open-detail]'
+      )
+    )
+  }
+
   async function handleCopy() {
     await copyText(prompt.content)
     setCopied(true)
@@ -88,7 +106,29 @@ function PromptCard({
   return (
     <>
       <article
-        className={`app-surface group rounded-2xl border border-zinc-800/80 text-white transition-all duration-200 hover:-translate-y-0.5 ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
+        role={onOpenDetail ? 'button' : undefined}
+        tabIndex={onOpenDetail ? 0 : undefined}
+        aria-label={onOpenDetail ? `Open prompt ${promptTitle}` : undefined}
+        onClick={
+          onOpenDetail
+            ? (event) => {
+                if (!isInteractiveTarget(event.target)) {
+                  openDetail()
+                }
+              }
+            : undefined
+        }
+        onKeyDown={
+          onOpenDetail
+            ? (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return
+                if (isInteractiveTarget(event.target)) return
+                event.preventDefault()
+                openDetail()
+              }
+            : undefined
+        }
+        className={`app-surface group rounded-2xl border border-zinc-800/80 text-white transition-all duration-200 hover:-translate-y-0.5 ${onOpenDetail ? 'cursor-pointer' : ''} ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
       >
         <div className='flex items-start justify-between gap-3 sm:gap-4'>
           {selectable ? (
@@ -96,7 +136,9 @@ function PromptCard({
               <input
                 type='checkbox'
                 checked={selected}
-                onChange={(event) => onSelectChange?.(prompt.id, event.target.checked)}
+                onChange={(event) =>
+                  onSelectChange?.(prompt.id, event.target.checked)
+                }
                 className='h-4 w-4 accent-violet-500'
                 aria-label={`Select ${promptTitle}`}
               />
@@ -140,20 +182,26 @@ function PromptCard({
             {onOpenDetail ? (
               <button
                 type='button'
-                onClick={() => onOpenDetail(prompt)}
+                onClick={openDetail}
                 className='block max-w-full text-left'
               >
-                <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
+                <h3
+                  className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}
+                >
                   <HighlightedText text={promptTitle} query={searchQuery} />
                 </h3>
               </button>
             ) : (
-              <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
+              <h3
+                className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}
+              >
                 <HighlightedText text={promptTitle} query={searchQuery} />
               </h3>
             )}
 
-            <p className={`mt-3 whitespace-pre-wrap text-sm ${compact ? 'leading-5 text-zinc-300/90' : 'leading-6 text-zinc-300'}`}>
+            <p
+              className={`mt-3 whitespace-pre-wrap text-sm ${compact ? 'leading-5 text-zinc-300/90' : 'leading-6 text-zinc-300'}`}
+            >
               <HighlightedText text={promptPreview} query={searchQuery} />
             </p>
 
@@ -180,7 +228,9 @@ function PromptCard({
                 ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 shadow-[0_0_28px_rgba(139,92,246,0.16)] hover:bg-violet-500/20'
                 : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
             }`}
-            aria-label={prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-label={
+              prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'
+            }
             aria-pressed={prompt.is_favorite}
           >
             <Star className={`h-4 w-4 ${prompt.is_favorite ? 'fill-current' : ''}`} />
@@ -207,7 +257,7 @@ function PromptCard({
             {onOpenDetail ? (
               <button
                 type='button'
-                onClick={() => onOpenDetail(prompt)}
+                onClick={openDetail}
                 className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
                 title='Open prompt detail'
               >
