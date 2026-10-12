@@ -13,15 +13,13 @@ import {
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
-import { useTheme } from '../context/useTheme'
 import { useNotificationStore } from '../stores/notificationStore'
 
 type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
 
 function PromptsPage() {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
   const { showNotification } = useNotificationStore()
   const queryClient = useQueryClient()
 

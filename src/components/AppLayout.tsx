@@ -8,12 +8,9 @@ import {
   Star,
   Settings2,
   Layers3,
-  SunMedium,
-  MoonStar,
 } from 'lucide-react'
 
 import { signOut } from '../api/auth'
-import { useTheme } from '../context/useTheme'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
 
@@ -25,17 +22,13 @@ const navigation = [
 ] as const
 
 function AppLayout() {
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
   const location = useLocation()
   const navigate = useNavigate()
   const { user, setUser } = useAuthStore()
   const { showNotification } = useNotificationStore()
 
   const activeRoute = useMemo(() => {
-    return (
-      navigation.find((item) => item.to === location.pathname)?.label ?? 'Dashboard'
-    )
+    return navigation.find((item) => item.to === location.pathname)?.label ?? 'Dashboard'
   }, [location.pathname])
 
   async function handleLogout() {
@@ -53,14 +46,9 @@ function AppLayout() {
   }
 
   return (
-    <div className={isDark ? 'min-h-screen bg-zinc-950 text-white' : 'min-h-screen bg-zinc-50 text-zinc-950'}>
-
+    <div className='min-h-screen bg-zinc-950 text-white'>
       <div className='flex min-h-screen'>
-        <aside
-          className={`hidden w-72 flex-col border-r p-6 xl:flex ${
-            isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-white'
-          }`}
-        >
+        <aside className='hidden w-72 flex-col border-r border-white/5 bg-white/5 p-6 xl:flex'>
           <div className='flex items-center gap-3'>
             <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
               <Sparkles className='h-5 w-5' />
@@ -75,7 +63,7 @@ function AppLayout() {
             </div>
           </div>
 
-          <div className={`mt-8 rounded-3xl border p-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'}`}>
+          <div className='mt-8 rounded-3xl border border-white/5 bg-white/5 p-4'>
             <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
               Navigation
             </p>
@@ -89,9 +77,7 @@ function AppLayout() {
                     `flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
                       isActive
                         ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
-                        : isDark
-                          ? 'border-white/5 bg-white/0 text-zinc-300 hover:border-white/10 hover:bg-white/5'
-                          : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-100'
+                        : 'border-white/5 bg-white/0 text-zinc-300 hover:border-white/10 hover:bg-white/5'
                     }`
                   }
                 >
@@ -105,7 +91,7 @@ function AppLayout() {
           </div>
 
           <div className='mt-auto space-y-4 pt-6'>
-            <div className={`rounded-3xl border p-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-zinc-200 bg-zinc-50'}`}>
+            <div className='rounded-3xl border border-white/5 bg-white/5 p-4'>
               <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
                 Workspace
               </p>
@@ -122,36 +108,19 @@ function AppLayout() {
               </div>
             </div>
 
-            <div className='flex items-center gap-3'>
-              <button
-                onClick={toggleTheme}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
-                  isDark
-                    ? 'border-white/10 bg-white/5 hover:bg-white/10'
-                    : 'border-zinc-200 bg-white hover:bg-zinc-100'
-                }`}
-              >
-                {isDark ? <SunMedium className='h-4 w-4' /> : <MoonStar className='h-4 w-4' />}
-                {isDark ? 'Light' : 'Dark'}
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className='inline-flex items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
-                aria-label='Sign out'
-              >
-                <LogOut className='h-4 w-4' />
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className='inline-flex items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+              aria-label='Sign out'
+            >
+              <LogOut className='h-4 w-4' />
+              Sign out
+            </button>
           </div>
         </aside>
 
         <div className='flex min-h-screen flex-1 flex-col'>
-          <header
-            className={`sticky top-0 z-20 border-b px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8 ${
-              isDark ? 'border-white/5 bg-zinc-950/80' : 'border-zinc-200 bg-zinc-50/90'
-            }`}
-          >
+          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8'>
             <div className='flex items-center justify-between gap-4'>
               <div>
                 <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
@@ -162,25 +131,9 @@ function AppLayout() {
                 </h2>
               </div>
 
-              <div className='flex items-center gap-3'>
-                <span className={`hidden rounded-full border px-3 py-1 text-xs uppercase tracking-[0.26em] sm:inline-flex ${
-                  isDark ? 'border-white/10 bg-white/5 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-500'
-                }`}>
-                  Protected
-                </span>
-
-                <button
-                  onClick={toggleTheme}
-                  className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition-colors xl:hidden ${
-                    isDark
-                      ? 'border-white/10 bg-white/5 hover:bg-white/10'
-                      : 'border-zinc-200 bg-white hover:bg-zinc-100'
-                  }`}
-                >
-                  {isDark ? <SunMedium className='h-4 w-4' /> : <MoonStar className='h-4 w-4' />}
-                  Theme
-                </button>
-              </div>
+              <span className='hidden rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.26em] text-zinc-300 sm:inline-flex'>
+                Protected
+              </span>
             </div>
 
             <nav className='mt-4 flex gap-2 overflow-x-auto pb-1 xl:hidden'>
@@ -192,9 +145,7 @@ function AppLayout() {
                     `whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                       isActive
                         ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
-                        : isDark
-                          ? 'border-white/10 bg-white/5 text-zinc-300'
-                          : 'border-zinc-200 bg-white text-zinc-600'
+                        : 'border-white/10 bg-white/5 text-zinc-300'
                     }`
                   }
                 >

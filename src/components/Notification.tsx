@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { CheckCircle2, CircleAlert, Info, X } from 'lucide-react'
 
-import { useTheme } from '../context/useTheme'
 import {
   type NotificationVariant,
   useNotificationStore,
@@ -32,9 +31,7 @@ const variantConfig: Record<
 }
 
 function Notification() {
-  const { theme } = useTheme()
   const { message, variant, clearNotification } = useNotificationStore()
-  const isDark = theme === 'dark'
 
   useEffect(() => {
     if (!message) return
@@ -52,11 +49,7 @@ function Notification() {
 
   return (
     <div className='fixed right-4 top-4 z-[100] w-[min(92vw,420px)]'>
-      <div
-        className={`rounded-2xl border px-4 py-3 backdrop-blur-xl ${
-          variantConfig[variant].className
-        } ${isDark ? '' : 'shadow-xl'}`}
-      >
+      <div className={`rounded-2xl border px-4 py-3 backdrop-blur-xl ${variantConfig[variant].className}`}>
         <div className='flex items-start gap-3'>
           <div className='mt-0.5 rounded-full bg-white/5 p-2'>
             <Icon className='h-4 w-4' />

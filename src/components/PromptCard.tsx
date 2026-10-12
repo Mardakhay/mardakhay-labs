@@ -7,7 +7,6 @@ import {
   Trash2,
 } from 'lucide-react'
 
-import { useTheme } from '../context/useTheme'
 import CreatePromptModal from './CreatePromptModal'
 import type { Prompt } from '../api/prompts'
 
@@ -39,19 +38,10 @@ function PromptCard({
   onEdit,
   compact = false,
 }: PromptCardProps) {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
-
-  const cardClassName = isDark
-    ? 'border-zinc-800 bg-zinc-900/90 text-white shadow-black/10'
-    : 'border-zinc-200 bg-white text-zinc-950 shadow-lg shadow-zinc-950/5'
-
-  const badgeClassName = isDark
-    ? 'border-zinc-700 bg-zinc-800/80 text-zinc-300'
-    : 'border-zinc-200 bg-zinc-100 text-zinc-600'
-
-  const previewClassName = isDark ? 'text-zinc-300' : 'text-zinc-700'
-  const metaClassName = isDark ? 'text-zinc-500' : 'text-zinc-500'
+  const cardClassName = 'border-zinc-800 bg-zinc-900/90 text-white shadow-black/10'
+  const badgeClassName = 'border-zinc-700 bg-zinc-800/80 text-zinc-300'
+  const previewClassName = 'text-zinc-300'
+  const metaClassName = 'text-zinc-500'
 
   const wordCount = prompt.content.trim().split(/\s+/).filter(Boolean).length
   const promptTitle = formatPromptTitle(prompt.content)
@@ -63,9 +53,7 @@ function PromptCard({
 
   return (
     <article
-      className={`group rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl ${
-        cardClassName
-      } ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
+      className={`group rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl ${cardClassName} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
     >
       <div className='flex items-start justify-between gap-4'>
         <div className='min-w-0 flex-1'>
@@ -107,9 +95,7 @@ function PromptCard({
           className={`rounded-full border p-2 transition-all ${
             prompt.is_favorite
               ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
-              : isDark
-                ? 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
-                : 'border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-zinc-300 hover:text-zinc-950'
+              : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
           }`}
           aria-label={prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
         >
