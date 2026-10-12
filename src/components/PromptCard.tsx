@@ -138,15 +138,21 @@ function PromptCard({
               ) : null}
             </div>
 
-            <button
-              type='button'
-              onClick={() => onOpenDetail?.(prompt)}
-              className='block max-w-full text-left'
-            >
+            {onOpenDetail ? (
+              <button
+                type='button'
+                onClick={() => onOpenDetail(prompt)}
+                className='block max-w-full text-left'
+              >
+                <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
+                  <HighlightedText text={promptTitle} query={searchQuery} />
+                </h3>
+              </button>
+            ) : (
               <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
                 <HighlightedText text={promptTitle} query={searchQuery} />
               </h3>
-            </button>
+            )}
 
             <p className={`mt-3 whitespace-pre-wrap text-sm ${compact ? 'leading-5 text-zinc-300/90' : 'leading-6 text-zinc-300'}`}>
               <HighlightedText text={promptPreview} query={searchQuery} />
@@ -187,7 +193,7 @@ function PromptCard({
         </div>
 
         <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-4'>
-          <div className='grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto sm:items-center'>
+          <div className='grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:items-center'>
             <button
               type='button'
               onClick={() => void handleCopy()}
@@ -203,15 +209,17 @@ function PromptCard({
               <span className='hidden sm:inline'>{copied ? 'Copied' : 'Copy'}</span>
             </button>
 
-            <button
-              type='button'
-              onClick={() => onOpenDetail?.(prompt)}
-              className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
-              title='Open prompt detail'
-            >
-              <Maximize2 className='h-4 w-4' />
-              <span className='hidden sm:inline'>Open</span>
-            </button>
+            {onOpenDetail ? (
+              <button
+                type='button'
+                onClick={() => onOpenDetail(prompt)}
+                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
+                title='Open prompt detail'
+              >
+                <Maximize2 className='h-4 w-4' />
+                <span className='hidden sm:inline'>Open</span>
+              </button>
+            ) : null}
 
             {onEdit ? (
               <button
@@ -249,6 +257,7 @@ function PromptCard({
           initialPrompt={prompt.content}
           initialAiTarget={prompt.ai_target}
           initialCategory={prompt.category}
+          draftKey={`mardakhay-labs:draft:edit-${prompt.id}`}
           title='Edit prompt'
           description='Refine the title and content, then save the updated version back to your workspace.'
           submitLabel='Save changes'
