@@ -10,6 +10,18 @@ import { useActivityLog } from '../hooks/useActivityLog'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
 
+function getLatestPromptDate(prompts: Array<{ created_at: string; updated_at?: string }>) {
+  return prompts.reduce<string | undefined>((latest, prompt) => {
+    const promptDate = prompt.updated_at ?? prompt.created_at
+
+    if (!latest) return promptDate
+
+    return new Date(promptDate).getTime() > new Date(latest).getTime()
+      ? promptDate
+      : latest
+  }, undefined)
+}
+
 function DashboardPage() {
   const navigate = useNavigate()
   const activityEntries = useActivityLog()
@@ -52,7 +64,7 @@ function DashboardPage() {
 
   const totalPrompts = prompts.length
   const favoritePrompts = prompts.filter((prompt) => prompt.is_favorite).length
-  const latestPrompt = prompts[0]
+  const latestPromptDate = getLatestPromptDate(prompts)
   const recentPrompts = prompts.slice(0, 3)
   const detailPrompt = prompts.find((prompt) => prompt.id === detailPromptId) ?? null
 
@@ -69,13 +81,11 @@ function DashboardPage() {
     },
     {
       label: 'Latest update',
-      value: latestPrompt ? 'Fresh' : '-',
-      note: latestPrompt
-        ? new Date(latestPrompt.created_at).toLocaleDateString('en', {
-            month: 'short',
-            day: 'numeric',
-          })
-        : 'No activity yet',
+      value: latestPromptDate ? new Date(latestPromptDate).toLocaleDateString('en', {
+        month: 'short',
+        day: 'numeric',
+      }) : '-',
+      note: latestPromptDate ? 'Most recent prompt activity' : 'No activity yet',
     },
     {
       label: 'Workspace',
