@@ -85,7 +85,7 @@ function LoginPage() {
 
   const modeToggleItemClass = (active: boolean) =>
     [
-      'rounded-xl px-4 py-2.5 text-sm font-medium transition-all',
+      'min-w-0 rounded-xl px-3 py-2.5 text-xs font-medium transition-all sm:px-4 sm:text-sm',
       active
         ? 'bg-white/10 text-white shadow-sm shadow-black/10'
         : 'text-zinc-400 hover:text-white',
@@ -138,28 +138,30 @@ function LoginPage() {
           </div>
         </section>
 
-        <section className='flex items-center justify-center px-4 py-10 sm:px-6 lg:px-10'>
-          <div className={`w-full max-w-md rounded-3xl border p-6 sm:p-8 ${panelClassName}`}>
-            <div className='mb-8 flex items-start justify-between gap-4'>
-              <div>
-                <p className='text-xs uppercase tracking-[0.3em] text-zinc-500'>
+        <section className='flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-6 sm:px-6 sm:py-10 lg:px-10'>
+          <div className={`w-full min-w-0 max-w-[22rem] overflow-hidden rounded-3xl border p-5 sm:max-w-md sm:p-8 ${panelClassName}`}>
+            <div className='mb-7 flex items-start justify-between gap-4 sm:mb-8'>
+              <div className='min-w-0'>
+                <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.3em]'>
                   Secure access
                 </p>
-                <h2 className='mt-2 text-3xl font-semibold tracking-tight'>{heading}</h2>
+                <h2 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
+                  {heading}
+                </h2>
                 <p className='mt-2 text-sm leading-6 text-zinc-400'>{description}</p>
               </div>
 
-              <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+              <div className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 sm:h-12 sm:w-12'>
                 <Sparkles className='h-5 w-5' />
               </div>
             </div>
 
-            <div className='mb-6 grid grid-cols-2 rounded-2xl border border-white/10 bg-white/5 p-1'>
+            <div className='mb-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] rounded-2xl border border-white/10 bg-white/5 p-1'>
               <button
                 type='button'
                 aria-pressed={!isSignup}
                 onClick={() => setIsSignup(false)}
-                className={modeToggleItemClass(!isSignup)}
+                className={`${modeToggleItemClass(!isSignup)} min-h-11`}
               >
                 Sign in
               </button>
@@ -167,7 +169,7 @@ function LoginPage() {
                 type='button'
                 aria-pressed={isSignup}
                 onClick={() => setIsSignup(true)}
-                className={modeToggleItemClass(isSignup)}
+                className={`${modeToggleItemClass(isSignup)} min-h-11`}
               >
                 Create account
               </button>
@@ -188,7 +190,7 @@ function LoginPage() {
                   autoCapitalize='none'
                   required
                   disabled={isSubmitting}
-                  className={`w-full rounded-2xl border px-4 py-3.5 text-sm outline-none transition-colors ${inputClassName}`}
+                  className={`min-h-12 w-full rounded-2xl border px-4 py-3.5 text-sm outline-none transition-colors ${inputClassName}`}
                 />
               </label>
 
@@ -205,13 +207,13 @@ function LoginPage() {
                     autoComplete={isSignup ? 'new-password' : 'current-password'}
                     required
                     disabled={isSubmitting}
-                    className={`w-full rounded-2xl border px-4 py-3.5 pr-12 text-sm outline-none transition-colors ${inputClassName}`}
+                    className={`min-h-12 w-full rounded-2xl border px-4 py-3.5 pr-12 text-sm outline-none transition-colors ${inputClassName}`}
                   />
                   <button
                     type='button'
                     onClick={() => setShowPassword((current) => !current)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className='absolute inset-y-0 right-1 flex items-center justify-center rounded-xl px-3 text-zinc-400 transition-colors hover:text-white'
+                    className='absolute inset-y-0 right-1 flex min-w-11 items-center justify-center rounded-xl px-3 text-zinc-400 transition-colors hover:text-white'
                   >
                     {showPassword ? (
                       <EyeOff className='h-4 w-4' />
@@ -230,14 +232,14 @@ function LoginPage() {
               <button
                 type='submit'
                 disabled={isSubmitting}
-                className='inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-70'
+                className='inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-70'
               >
                 {isSubmitting ? (isSignup ? 'Creating...' : 'Signing in...') : isSignup ? 'Create account' : 'Sign in'}
                 <ArrowRight className='h-4 w-4' />
               </button>
             </form>
 
-            <p className='mt-6 text-xs leading-6 uppercase tracking-[0.26em] text-zinc-500'>
+            <p className='mt-6 text-xs leading-6 uppercase tracking-[0.18em] text-zinc-500 sm:tracking-[0.26em]'>
               By continuing, you agree to the terms of service and privacy policy.
             </p>
           </div>

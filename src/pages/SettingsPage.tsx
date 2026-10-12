@@ -15,17 +15,17 @@ function SettingsPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='rounded-2xl border border-white/5 bg-white/[0.03] p-5'>
+      <section className='rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:p-5'>
         <div className='flex items-start gap-4'>
           <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
             <UserRound className='h-5 w-5' />
           </div>
 
           <div className='min-w-0 flex-1'>
-            <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+            <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
               Account
             </p>
-            <h2 className='mt-2 text-2xl font-semibold tracking-tight'>
+            <h2 className='mt-2 truncate text-xl font-semibold tracking-tight sm:text-2xl'>
               {user?.email ?? 'Workspace user'}
             </h2>
             <p className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
@@ -39,8 +39,8 @@ function SettingsPage() {
       <div className='grid gap-6 lg:grid-cols-2'>
         <DashboardCard title='Notifications'>
           <div className='space-y-4'>
-            <div className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
-              <div>
+            <div className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='min-w-0'>
                 <p className='font-medium'>Email alerts</p>
                 <p className='text-sm text-zinc-500'>
                   Receive product updates and account activity summaries.
@@ -49,14 +49,14 @@ function SettingsPage() {
 
               <button
                 onClick={() => setEmailAlerts((current) => !current)}
-                className={`${toggleButtonClass} min-w-[92px]`}
+                className={`${toggleButtonClass} min-h-11 w-full sm:w-auto sm:min-w-[92px]`}
               >
                 {emailAlerts ? 'Enabled' : 'Disabled'}
               </button>
             </div>
 
-            <div className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
-              <div>
+            <div className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='min-w-0'>
                 <p className='font-medium'>In-app alerts</p>
                 <p className='text-sm text-zinc-500'>
                   Show real-time prompt creation and sync notifications.
@@ -65,7 +65,7 @@ function SettingsPage() {
 
               <button
                 onClick={() => setInAppAlerts((current) => !current)}
-                className={`${toggleButtonClass} min-w-[92px]`}
+                className={`${toggleButtonClass} min-h-11 w-full sm:w-auto sm:min-w-[92px]`}
               >
                 {inAppAlerts ? 'Enabled' : 'Disabled'}
               </button>

@@ -148,9 +148,9 @@ function PromptsPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5 lg:flex-row lg:items-end lg:justify-between'>
+      <section className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between'>
         <div className='max-w-2xl'>
-          <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+          <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
             Workspace tools
           </p>
           <h3 className='mt-2 text-2xl font-semibold tracking-tight sm:text-3xl'>
@@ -165,7 +165,7 @@ function PromptsPage() {
       </section>
 
       <div className='grid gap-4 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.85fr)_minmax(0,0.85fr)]'>
-        <label className='flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
+        <label className='flex min-h-12 items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
           <Search className='h-4 w-4 shrink-0 text-zinc-500' />
           <input
             value={searchQuery}

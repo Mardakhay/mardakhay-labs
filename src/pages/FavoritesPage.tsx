@@ -98,17 +98,17 @@ function FavoritesPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5'>
-        <div>
-          <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+      <section className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:p-5'>
+        <div className='min-w-0'>
+          <p className='text-xs uppercase tracking-[0.22em] text-zinc-500 sm:tracking-[0.28em]'>
             Pinned assets
           </p>
-          <h2 className='mt-2 text-2xl font-semibold tracking-tight'>
+          <h2 className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
             Favorite prompts
           </h2>
         </div>
 
-        <div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white'>
+        <div className='inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white'>
           <Heart className='h-4 w-4 fill-current text-violet-300' />
           {favoritePrompts.length}
         </div>

@@ -119,15 +119,10 @@ function DashboardPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/10 p-5 text-white shadow-sm sm:p-6'>
-        <div className='absolute inset-0 opacity-35'>
-          <div className='absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl' />
-          <div className='absolute bottom-0 left-1/2 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl' />
-        </div>
-
+      <section className='relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/10 p-4 text-white shadow-sm sm:p-6'>
         <div className='relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
           <div className='max-w-2xl'>
-            <span className='inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-violet-100'>
+            <span className='inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-violet-100 sm:tracking-[0.28em]'>
               <Sparkles className='h-3.5 w-3.5' />
               AI Prompt Workspace
             </span>
@@ -159,10 +154,10 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className='relative flex flex-wrap gap-3 lg:justify-end'>
+          <div className='relative grid gap-3 sm:flex sm:flex-wrap lg:justify-end'>
             <button
               onClick={() => navigate('/prompts')}
-              className='inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10'
+              className='inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10'
             >
               Open prompt library
               <ArrowRight className='h-4 w-4' />
@@ -176,7 +171,9 @@ function DashboardPage() {
       <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
         {metricCards.map((metric) => (
           <DashboardCard key={metric.label} title={metric.label}>
-            <p className='text-4xl font-semibold tracking-tight text-white'>{metric.value}</p>
+            <p className='text-3xl font-semibold tracking-tight text-white sm:text-4xl'>
+              {metric.value}
+            </p>
             <p className='mt-2 text-sm text-zinc-400'>{metric.note}</p>
           </DashboardCard>
         ))}

@@ -1,15 +1,26 @@
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Menu, Sparkles } from 'lucide-react'
+import {
+  ChevronDown,
+  Heart,
+  LayoutDashboard,
+  Library,
+  LogOut,
+  Menu,
+  Settings,
+  Sparkles,
+  UserRound,
+} from 'lucide-react'
 
 import { signOut } from '../api/auth'
 import { useAuthStore } from '../stores/authStore'
 import { useNotificationStore } from '../stores/notificationStore'
 
 const navigation = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/prompts', label: 'Prompts' },
-  { to: '/favorites', label: 'Favorites' },
-  { to: '/settings', label: 'Settings' },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/prompts', label: 'Prompts', icon: Library },
+  { to: '/favorites', label: 'Favorites', icon: Heart },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ] as const
 
 function AppLayout() {
@@ -17,6 +28,8 @@ function AppLayout() {
   const navigate = useNavigate()
   const { user, setUser } = useAuthStore()
   const { showNotification } = useNotificationStore()
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement | null>(null)
 
   const activeRoute =
     navigation.find((item) => item.to === location.pathname)?.label ?? 'Dashboard'
@@ -34,6 +47,30 @@ function AppLayout() {
       )
     }
   }
+
+  useEffect(() => {
+    if (!accountMenuOpen) return
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setAccountMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('mousedown', handlePointerDown)
+    window.addEventListener('keydown', handleEscape)
+
+    return () => {
+      window.removeEventListener('mousedown', handlePointerDown)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [accountMenuOpen])
 
   return (
     <div className='min-h-screen bg-zinc-950 text-white'>
@@ -54,18 +91,19 @@ function AppLayout() {
           </div>
 
           <nav className='mt-8 space-y-2'>
-            {navigation.map(({ to, label }) => (
+            {navigation.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
+                  `flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
                     isActive
                       ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
                       : 'border-white/5 bg-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.03]'
                   }`
                 }
               >
+                <Icon className='h-4 w-4' />
                 <span>{label}</span>
               </NavLink>
             ))}
@@ -105,43 +143,103 @@ function AppLayout() {
         </aside>
 
         <div className='flex min-h-screen flex-1 flex-col'>
-          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/90 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8'>
-            <div className='flex items-center justify-between gap-4'>
-              <div>
-                <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
-                  Workspace
-                </p>
-                <h2 className='mt-1 text-xl font-semibold tracking-tight sm:text-2xl'>
-                  {activeRoute}
-                </h2>
+          <header className='sticky top-0 z-20 border-b border-white/5 bg-zinc-950/95 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4 lg:px-8'>
+            <div className='flex items-center justify-between gap-3'>
+              <div className='flex min-w-0 items-center gap-3'>
+                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200 xl:hidden'>
+                  <Sparkles className='h-4 w-4' />
+                </div>
+
+                <div className='min-w-0'>
+                  <p className='truncate text-sm font-semibold tracking-tight text-white xl:hidden'>
+                    Mardakhay Labs
+                  </p>
+                  <p className='hidden text-xs uppercase tracking-[0.28em] text-zinc-500 xl:block'>
+                    Workspace
+                  </p>
+                  <h2 className='truncate text-xs font-medium text-zinc-500 sm:text-2xl sm:font-semibold sm:text-white xl:mt-1 xl:block'>
+                    {activeRoute}
+                  </h2>
+                </div>
               </div>
 
-              <span className='hidden rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.26em] text-zinc-300 sm:inline-flex'>
-                Protected
-              </span>
+              <div className='flex items-center gap-2'>
+                <span className='hidden rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.26em] text-zinc-300 sm:inline-flex'>
+                  Protected
+                </span>
+
+                <div ref={accountMenuRef} className='relative xl:hidden'>
+                  <button
+                    type='button'
+                    onClick={() => setAccountMenuOpen((current) => !current)}
+                    className='inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-white transition-colors hover:bg-white/[0.07]'
+                    aria-haspopup='menu'
+                    aria-expanded={accountMenuOpen}
+                    aria-label='Open account menu'
+                  >
+                    <UserRound className='h-4 w-4 text-violet-200' />
+                    <span className='hidden max-w-32 truncate sm:inline'>
+                      {user?.email ?? 'Account'}
+                    </span>
+                    <ChevronDown
+                      className={`h-4 w-4 text-zinc-500 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {accountMenuOpen ? (
+                    <div
+                      role='menu'
+                      className='absolute right-0 top-[calc(100%+0.5rem)] w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-2 shadow-2xl shadow-black/50'
+                    >
+                      <div className='px-3 py-3'>
+                        <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>
+                          Signed in
+                        </p>
+                        <p className='mt-1 truncate text-sm font-medium text-white'>
+                          {user?.email ?? 'Workspace user'}
+                        </p>
+                      </div>
+
+                      <button
+                        type='button'
+                        onClick={() => {
+                          setAccountMenuOpen(false)
+                          void handleLogout()
+                        }}
+                        className='flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20'
+                        role='menuitem'
+                      >
+                        <LogOut className='h-4 w-4' />
+                        Sign out
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
 
-            <nav className='mt-4 flex gap-2 overflow-x-auto pb-1 xl:hidden'>
-              {navigation.map(({ to, label }) => (
+            <nav className='mt-3 grid grid-cols-4 gap-2 xl:hidden'>
+              {navigation.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                    `flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2 text-[11px] font-medium transition-colors sm:min-h-11 sm:flex-row sm:gap-2 sm:rounded-full sm:text-sm ${
                       isActive
                         ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
                         : 'border-white/10 bg-white/[0.03] text-zinc-300'
                     }`
                   }
                 >
-                  {label}
+                  <Icon className='h-4 w-4 shrink-0' />
+                  <span className='truncate'>{label}</span>
                 </NavLink>
               ))}
             </nav>
           </header>
 
-          <main className='flex-1 px-4 py-6 sm:px-6 lg:px-8'>
-            <div className='mx-auto flex w-full max-w-7xl flex-col gap-6'>
+          <main className='flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8'>
+            <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6'>
               <Outlet />
             </div>
           </main>
