@@ -1,3 +1,5 @@
+import { buildUserScopedStorageKey } from './storageKeys'
+
 export type ActivityEntry = {
   id: string
   action: string
@@ -5,11 +7,13 @@ export type ActivityEntry = {
   createdAt: string
 }
 
-const activityKey = 'mardakhay-labs:activity'
+function getActivityKey(userId?: string | null) {
+  return buildUserScopedStorageKey('activity', userId)
+}
 
-export function getActivityLog(): ActivityEntry[] {
+export function getActivityLog(userId?: string | null): ActivityEntry[] {
   try {
-    const raw = window.localStorage.getItem(activityKey)
+    const raw = window.localStorage.getItem(getActivityKey(userId))
     if (!raw) return []
     const parsed = JSON.parse(raw) as ActivityEntry[]
     return Array.isArray(parsed) ? parsed.slice(0, 20) : []
@@ -18,7 +22,11 @@ export function getActivityLog(): ActivityEntry[] {
   }
 }
 
-export function addActivity(action: string, detail: string) {
+export function addActivity(
+  userId: string | null | undefined,
+  action: string,
+  detail: string
+) {
   const entry: ActivityEntry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     action,
@@ -26,7 +34,8 @@ export function addActivity(action: string, detail: string) {
     createdAt: new Date().toISOString(),
   }
 
-  const next = [entry, ...getActivityLog()].slice(0, 20)
+  const activityKey = getActivityKey(userId)
+  const next = [entry, ...getActivityLog(userId)].slice(0, 20)
   window.localStorage.setItem(activityKey, JSON.stringify(next))
   window.dispatchEvent(new CustomEvent('mardakhay-labs:activity'))
 }
