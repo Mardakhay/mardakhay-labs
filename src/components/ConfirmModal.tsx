@@ -81,14 +81,21 @@ function ConfirmModal({
   if (!open) return null
 
   return (
-    <div className='app-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:items-center sm:px-4'>
+    <div
+      className='app-modal-backdrop fixed inset-0 z-50 grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget && !isLoading) {
+          onCancel()
+        }
+      }}
+    >
       <div
         ref={modalRef}
         role='dialog'
         aria-modal='true'
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className='app-modal-panel w-full max-w-md rounded-t-3xl border border-white/10 bg-zinc-950 p-5 shadow-2xl shadow-black/50 sm:rounded-3xl sm:p-6'
+        className='app-modal-panel w-full max-w-md rounded-3xl border border-white/10 bg-zinc-950 p-5 shadow-2xl shadow-black/50 sm:p-6'
       >
         <div className='flex items-start gap-4'>
           <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-200 shadow-[0_0_32px_rgba(239,68,68,0.12)]'>
