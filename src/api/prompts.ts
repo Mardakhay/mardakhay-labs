@@ -8,8 +8,6 @@ export type Prompt = {
   is_favorite: boolean
 }
 
-type PromptRow = Prompt
-
 async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser()
 
@@ -22,10 +20,6 @@ async function getCurrentUser() {
   }
 
   return data.user
-}
-
-function toPrompt(row: PromptRow): Prompt {
-  return row
 }
 
 export async function getPrompts() {
@@ -43,7 +37,7 @@ export async function getPrompts() {
     throw error
   }
 
-  return (data ?? []).map((row) => toPrompt(row as PromptRow))
+  return (data ?? []) as Prompt[]
 }
 
 export async function createPrompt(content: string) {
@@ -67,9 +61,8 @@ export async function createPrompt(content: string) {
     throw new Error('Failed to create prompt.')
   }
 
-  return toPrompt(data as PromptRow)
+  return data as Prompt
 }
-
 
 export async function updatePrompt(promptId: number, content: string) {
   const user = await getCurrentUser()
@@ -92,7 +85,7 @@ export async function updatePrompt(promptId: number, content: string) {
     throw new Error('Failed to update prompt.')
   }
 
-  return toPrompt(data as PromptRow)
+  return data as Prompt
 }
 
 export async function deletePrompt(promptId: number) {
@@ -133,5 +126,5 @@ export async function togglePromptFavorite(
     throw new Error('Failed to update prompt favorite.')
   }
 
-  return toPrompt(data as PromptRow)
+  return data as Prompt
 }

@@ -34,55 +34,35 @@ function SettingsPage() {
 
   return (
     <div className='space-y-6'>
-      <DashboardCard title='Profile settings'>
-        <div className='grid gap-4 lg:grid-cols-[1.4fr_1fr]'>
-          <div className='rounded-3xl border border-white/5 bg-white/5 p-5'>
-            <div className='flex items-start gap-4'>
-              <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
-                <UserRound className='h-5 w-5' />
-              </div>
-              <div className='min-w-0 flex-1'>
-                <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
-                  Account
-                </p>
-                <h3 className='mt-2 text-2xl font-semibold tracking-tight'>
-                  {user?.email ?? 'Workspace user'}
-                </h3>
-                <p className='mt-2 text-sm leading-6 text-zinc-400'>
-                  Your session is protected by Supabase Auth and routed through the
-                  authenticated workspace shell.
-                </p>
-              </div>
-            </div>
+      <section className='rounded-2xl border border-white/5 bg-white/[0.03] p-5'>
+        <div className='flex items-start gap-4'>
+          <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+            <UserRound className='h-5 w-5' />
           </div>
 
-          <div className='rounded-3xl border border-white/5 bg-white/5 p-5'>
-            <p className='text-sm uppercase tracking-[0.28em] text-zinc-500'>
-              Workspace
+          <div className='min-w-0 flex-1'>
+            <p className='text-xs uppercase tracking-[0.28em] text-zinc-500'>
+              Account
             </p>
-            <div className='mt-4 space-y-3 text-sm'>
-              <div className='flex items-center justify-between gap-3'>
-                <span className='text-zinc-400'>Appearance</span>
-                <span className='inline-flex rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-violet-100'>
-                  Dark-only
-                </span>
-              </div>
+            <h2 className='mt-2 text-2xl font-semibold tracking-tight'>
+              {user?.email ?? 'Workspace user'}
+            </h2>
+            <p className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
+              Your session is protected by Supabase Auth and routed through the
+              authenticated workspace shell.
+            </p>
+          </div>
 
-              <div className='flex items-center justify-between gap-3'>
-                <span className='text-zinc-400'>Workspace state</span>
-                <span className='inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-200'>
-                  Live
-                </span>
-              </div>
-            </div>
+          <div className='hidden rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.26em] text-zinc-500 sm:inline-flex'>
+            Dark-only
           </div>
         </div>
-      </DashboardCard>
+      </section>
 
       <div className='grid gap-6 lg:grid-cols-2'>
         <DashboardCard title='Notifications'>
           <div className='space-y-4'>
-            <div className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-4 py-4'>
+            <div className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
               <div>
                 <p className='font-medium'>Email alerts</p>
                 <p className='text-sm text-zinc-500'>
@@ -98,7 +78,7 @@ function SettingsPage() {
               </button>
             </div>
 
-            <div className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-4 py-4'>
+            <div className='flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
               <div>
                 <p className='font-medium'>In-app alerts</p>
                 <p className='text-sm text-zinc-500'>
@@ -118,7 +98,7 @@ function SettingsPage() {
 
         <DashboardCard title='Security'>
           <div className='space-y-4'>
-            <div className='flex items-start gap-4 rounded-2xl border border-white/5 bg-white/5 px-4 py-4'>
+            <div className='flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
               <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
                 <ShieldCheck className='h-5 w-5' />
               </div>
@@ -149,7 +129,7 @@ function SettingsPage() {
 
       <DashboardCard title='Workspace preferences'>
         <div className='grid gap-4 lg:grid-cols-3'>
-          <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
+          <div className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
                 <Workflow className='h-4 w-4' />
@@ -161,7 +141,7 @@ function SettingsPage() {
             </div>
           </div>
 
-          <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
+          <div className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
                 <Sparkles className='h-4 w-4' />
@@ -173,7 +153,7 @@ function SettingsPage() {
             </div>
           </div>
 
-          <div className='rounded-2xl border border-white/5 bg-white/5 p-4'>
+          <div className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
                 <Bell className='h-4 w-4' />
