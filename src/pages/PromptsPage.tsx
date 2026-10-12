@@ -12,6 +12,8 @@ import PromptDetailPanel from '../components/PromptDetailPanel'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
 import { addActivity } from '../lib/activityLog'
+import { buildUserScopedStorageKey } from '../lib/storageKeys'
+import { useAuthStore } from '../stores/authStore'
 import {
   downloadTextFile,
   parsePromptImport,
@@ -40,6 +42,7 @@ function replaceHashtag(content: string, fromTag: string, toTag: string) {
 function PromptsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { showNotification } = useNotificationStore()
+  const { user } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all')
@@ -119,8 +122,8 @@ function PromptsPage() {
     })
 
     return [...filtered].sort((a, b) => {
-      const aDate = new Date(a.created_at).getTime()
-      const bDate = new Date(b.created_at).getTime()
+      const aDate = new Date(a.updated_at ?? a.created_at).getTime()
+      const bDate = new Date(b.updated_at ?? b.created_at).getTime()
 
       return sortOrder === 'recent' ? bDate - aDate : aDate - bDate
     })
@@ -195,7 +198,7 @@ function PromptsPage() {
       await createPromptMutation.mutateAsync(input)
     }
 
-    addActivity('Imported prompts', `${promptInputs.length} prompt${promptInputs.length === 1 ? '' : 's'}`)
+    addActivity(user?.id, 'Imported prompts', `${promptInputs.length} prompt${promptInputs.length === 1 ? '' : 's'}`)
     showNotification(`Imported ${promptInputs.length} prompt${promptInputs.length === 1 ? '' : 's'}.`, 'success')
   }
 
@@ -226,7 +229,7 @@ function PromptsPage() {
       downloadTextFile('mardakhay-prompts.md', promptsToMarkdown(promptsToExport), 'text/markdown')
     }
 
-    addActivity('Exported prompts', `${promptsToExport.length} prompt${promptsToExport.length === 1 ? '' : 's'}`)
+    addActivity(user?.id, 'Exported prompts', `${promptsToExport.length} prompt${promptsToExport.length === 1 ? '' : 's'}`)
   }
 
   function bulkFavorite() {
@@ -286,7 +289,7 @@ function PromptsPage() {
 
     setRenameTagFrom('')
     setRenameTagTo('')
-    addActivity('Renamed tag', `#${fromTag} to #${toTag}`)
+    addActivity(user?.id, 'Renamed tag', `#${fromTag} to #${toTag}`)
     showNotification(`Renamed #${fromTag} in ${affectedPrompts.length} prompt${affectedPrompts.length === 1 ? '' : 's'}.`, 'success')
   }
 
@@ -342,11 +345,11 @@ function PromptsPage() {
             className='inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white'
           >
             <Download className='h-3.5 w-3.5' />
-            Export all
+            Export filtered
           </button>
           <CreatePromptModal
             triggerLabel='New prompt'
-            draftKey='mardakhay-labs:draft:new-library'
+            draftKey={buildUserScopedStorageKey('draft:new-library', user?.id)}
             onSave={(input) => createPromptMutation.mutateAsync(input)}
           />
         </div>

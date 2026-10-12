@@ -13,6 +13,7 @@ import {
   applyPromptInputToPrompt,
   removePromptFromList,
   replacePromptInList,
+  sortPromptsByUpdatedAtDesc,
   togglePromptFavoriteInList,
 } from '../lib/promptCache'
 import { useAuthStore } from '../stores/authStore'
@@ -36,11 +37,10 @@ export function usePromptMutations() {
   const createPromptMutation = useMutation({
     mutationFn: createPrompt,
     onSuccess: (createdPrompt) => {
-      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) => [
-        createdPrompt,
-        ...(current ?? []),
-      ])
-      addActivity('Created prompt', createdPrompt.title)
+      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+        sortPromptsByUpdatedAtDesc([createdPrompt, ...(current ?? [])])
+      )
+      addActivity(user?.id, 'Created prompt', createdPrompt.title)
       showNotification('Prompt added successfully!', 'success')
     },
     onError: (mutationError: Error) => {
@@ -61,8 +61,10 @@ export function usePromptMutations() {
       const previousPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
 
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
-        (current ?? []).map((prompt) =>
-          prompt.id === promptId ? applyPromptInputToPrompt(prompt, input) : prompt
+        sortPromptsByUpdatedAtDesc(
+          (current ?? []).map((prompt) =>
+            prompt.id === promptId ? applyPromptInputToPrompt(prompt, input) : prompt
+          )
         )
       )
 
@@ -79,7 +81,7 @@ export function usePromptMutations() {
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
         replacePromptInList(current, updatedPrompt)
       )
-      addActivity('Updated prompt', updatedPrompt.title)
+      addActivity(user?.id, 'Updated prompt', updatedPrompt.title)
       showNotification('Prompt updated successfully!', 'success')
     },
     onSettled: invalidatePrompts,
@@ -97,7 +99,7 @@ export function usePromptMutations() {
       )
 
       if (deletedPrompt) {
-        addActivity('Deleted prompt', deletedPrompt.title)
+        addActivity(user?.id, 'Deleted prompt', deletedPrompt.title)
       }
 
       return { previousPrompts }
@@ -144,6 +146,7 @@ export function usePromptMutations() {
         replacePromptInList(current, updatedPrompt)
       )
       addActivity(
+        user?.id,
         updatedPrompt.is_favorite ? 'Favorited prompt' : 'Unfavorited prompt',
         updatedPrompt.title
       )

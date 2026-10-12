@@ -2,11 +2,14 @@ import { Activity, ArrowRight, Clock3, Sparkles, SquareTerminal as TerminalSquar
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+
 import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import PromptCard from '../components/PromptCard'
 import PromptDetailPanel from '../components/PromptDetailPanel'
 import { useActivityLog } from '../hooks/useActivityLog'
+import { buildUserScopedStorageKey } from '../lib/storageKeys'
+import { useAuthStore } from '../stores/authStore'
 import { usePromptMutations } from '../hooks/usePromptMutations'
 import { usePromptsQuery } from '../hooks/usePromptsQuery'
 
@@ -24,6 +27,7 @@ function getLatestPromptDate(prompts: Array<{ created_at: string; updated_at?: s
 
 function DashboardPage() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const activityEntries = useActivityLog()
   const [detailPromptId, setDetailPromptId] = useState<number | null>(null)
   const {
@@ -142,7 +146,7 @@ function DashboardPage() {
 
             <CreatePromptModal
               triggerLabel='New prompt'
-              draftKey='mardakhay-labs:draft:new-dashboard'
+              draftKey={buildUserScopedStorageKey('draft:new-dashboard', user?.id)}
               onSave={(input) => createPromptMutation.mutateAsync(input)}
             />
           </div>

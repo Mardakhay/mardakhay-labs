@@ -13,6 +13,8 @@ import {
 } from 'lucide-react'
 
 import type { Prompt, PromptInput } from '../api/prompts'
+import { buildUserScopedStorageKey } from '../lib/storageKeys'
+import { useAuthStore } from '../stores/authStore'
 import {
   countPromptWords,
   derivePromptTitle,
@@ -55,6 +57,7 @@ function PromptCard({
   isDeleting = false,
   compact = false,
 }: PromptCardProps) {
+  const { user } = useAuthStore()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -325,7 +328,7 @@ function PromptCard({
           initialPrompt={prompt.content}
           initialAiTarget={prompt.ai_target}
           initialCategory={prompt.category}
-          draftKey={`mardakhay-labs:draft:edit-${prompt.id}`}
+          draftKey={buildUserScopedStorageKey(`draft:edit-${prompt.id}`, user?.id)}
           title='Edit prompt'
           description='Refine the title and content, then save the updated version back to your workspace.'
           submitLabel='Save changes'
