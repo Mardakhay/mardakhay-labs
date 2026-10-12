@@ -8,6 +8,8 @@
     radial-gradient(circle at top right, rgba(168, 85, 247, 0.08), transparent 24%),
     #09090b;
   --app-fg: #ffffff;
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce-soft: cubic-bezier(0.2, 0.9, 0.24, 1.12);
 }
 
 html,
@@ -54,6 +56,19 @@ button {
   cursor: pointer;
 }
 
+button,
+a,
+input,
+textarea,
+select {
+  transition-timing-function: var(--ease-out-soft);
+}
+
+button:active:not(:disabled),
+a:active {
+  transform: translateY(1px) scale(0.99);
+}
+
 input,
 textarea,
 select {
@@ -68,7 +83,6 @@ input::placeholder,
 textarea::placeholder {
   color: #71717a;
 }
-
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -96,6 +110,62 @@ a {
   text-decoration: none;
 }
 
+.app-page {
+  animation: page-in 360ms var(--ease-out-soft) both;
+}
+
+.app-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.022)),
+    rgba(24, 24, 27, 0.42);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.045) inset,
+    0 24px 80px rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 220ms var(--ease-out-soft),
+    background 220ms var(--ease-out-soft),
+    box-shadow 220ms var(--ease-out-soft),
+    transform 220ms var(--ease-out-soft);
+}
+
+.app-surface:hover {
+  border-color: rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 28px 90px rgba(0, 0, 0, 0.24);
+}
+
+.app-menu {
+  animation: menu-in 180ms var(--ease-bounce-soft) both;
+  transform-origin: top center;
+}
+
+.app-toast {
+  animation: toast-in 280ms var(--ease-bounce-soft) both;
+}
+
+.app-modal-backdrop {
+  animation: fade-in 180ms ease-out both;
+}
+
+.app-modal-panel {
+  animation: modal-in 260ms var(--ease-bounce-soft) both;
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 1.55s infinite;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -113,4 +183,79 @@ a {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(161, 161, 170, 0.5);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  button:active:not(:disabled),
+  a:active {
+    transform: none;
+  }
 }
