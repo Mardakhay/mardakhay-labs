@@ -6,6 +6,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Notification from './components/Notification'
 
 import { promptsQueryBaseKey } from './hooks/usePromptsQuery'
+import { useNotificationStore } from './stores/notificationStore'
 import { supabase } from './lib/supabase'
 import { useAuthStore } from './stores/authStore'
 
@@ -20,6 +21,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 function App() {
   const queryClient = useQueryClient()
   const { user, isLoading, setUser, setIsLoading } = useAuthStore()
+  const { showNotification } = useNotificationStore()
 
   useEffect(() => {
     async function loadSession() {
@@ -37,6 +39,7 @@ function App() {
         console.error('Failed to load Supabase session', error)
         queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
         setUser(null)
+        showNotification('Failed to restore your session. Please sign in again.', 'error')
       } finally {
         setIsLoading(false)
       }
@@ -57,7 +60,7 @@ function App() {
     return () => {
       listener.subscription.unsubscribe()
     }
-  }, [queryClient, setUser, setIsLoading])
+  }, [queryClient, setUser, setIsLoading, showNotification])
 
   if (isLoading) {
     return (

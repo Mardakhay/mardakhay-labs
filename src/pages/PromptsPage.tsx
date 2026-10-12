@@ -1,21 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import {
-  ArrowUpDown,
-  Bot,
-  Boxes,
-  Download,
-  Filter,
-  FileJson,
-  FileText,
-  Plus,
-  Search,
-  Star,
-  Tag,
-  Trash2,
-  Upload,
-} from 'lucide-react'
+import { ArrowUpDown, Bot, Boxes, Download, ListFilter as Filter, File as FileJson, FileText, Plus, Search, Star, Tag, Trash2, Upload } from 'lucide-react'
 
 import type { Prompt } from '../api/prompts'
 import CreatePromptModal from '../components/CreatePromptModal'
@@ -61,7 +47,7 @@ function PromptsPage() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
   const [hashtagFilter, setHashtagFilter] = useState('all')
   const [selectedPromptIds, setSelectedPromptIds] = useState<number[]>([])
-  const [detailPromptId, setDetailPromptId] = useState<number | null>(null)
+  const [localDetailPromptId, setLocalDetailPromptId] = useState<number | null>(null)
   const [bulkCategory, setBulkCategory] = useState<PromptCategory | 'none'>('none')
   const [renameTagFrom, setRenameTagFrom] = useState('')
   const [renameTagTo, setRenameTagTo] = useState('')
@@ -81,10 +67,11 @@ function PromptsPage() {
     error,
   } = usePromptsQuery()
 
-  useEffect(() => {
-    const promptId = Number(searchParams.get('prompt'))
-    setDetailPromptId(Number.isFinite(promptId) && promptId > 0 ? promptId : null)
-  }, [searchParams])
+  const urlDetailId = (() => {
+    const id = Number(searchParams.get('prompt'))
+    return Number.isFinite(id) && id > 0 ? id : null
+  })()
+  const detailPromptId = urlDetailId ?? localDetailPromptId
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -196,7 +183,7 @@ function PromptsPage() {
   }
 
   function closeDetail() {
-    setDetailPromptId(null)
+    setLocalDetailPromptId(null)
     setSearchParams({})
   }
 
@@ -245,7 +232,7 @@ function PromptsPage() {
   function bulkFavorite() {
     selectedPrompts
       .filter((prompt) => !prompt.is_favorite)
-      .forEach((prompt) => favoriteMutation.mutate({ promptId: prompt.id, isFavorite: prompt.is_favorite }))
+      .forEach((prompt) => favoriteMutation.mutate({ promptId: prompt.id, isFavorite: false }))
     setSelectedPromptIds([])
   }
 
@@ -372,8 +359,8 @@ function PromptsPage() {
         />
       </section>
 
-      <div className='grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_repeat(4,minmax(0,0.85fr))]'>
-        <label className='flex min-h-12 items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
+      <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.8fr)_repeat(4,minmax(0,0.85fr))]'>
+        <label className='flex min-h-12 items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white sm:col-span-2 lg:col-span-1'>
           <Search className='h-4 w-4 shrink-0 text-zinc-500' />
           <input
             ref={searchInputRef}
@@ -624,7 +611,7 @@ function PromptsPage() {
                 onSelectChange={toggleSelectPrompt}
                 searchQuery={searchQuery}
                 onOpenDetail={(nextPrompt) => {
-                  setDetailPromptId(nextPrompt.id)
+                  setLocalDetailPromptId(nextPrompt.id)
                   setSearchParams({ prompt: String(nextPrompt.id) })
                 }}
                 onDelete={(promptId) => deletePromptMutation.mutate(promptId)}

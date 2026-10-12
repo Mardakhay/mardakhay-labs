@@ -39,9 +39,11 @@ function DropdownMenu<T extends string>({
   className = '',
 }: DropdownMenuProps<T>) {
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null)
 
   const selectedLabel = useMemo(
@@ -49,7 +51,29 @@ function DropdownMenu<T extends string>({
     [items, label, value]
   )
 
-  function updateMenuPosition() {
+  function handleSelect(nextValue: T) {
+    onChange(nextValue)
+    setOpen(false)
+    setActiveIndex(-1)
+  }
+
+  function handleOpenToggle() {
+    setOpen((current) => {
+      if (!current) {
+        setActiveIndex(-1)
+        itemRefs.current = []
+      }
+      return !current
+    })
+  }
+
+  function navigateItem(index: number) {
+    setActiveIndex(index)
+    itemRefs.current[index]?.focus()
+  }
+
+  useLayoutEffect(() => {
+    if (!open) return
     const button = buttonRef.current
     if (!button) return
 
@@ -76,12 +100,6 @@ function DropdownMenu<T extends string>({
       right,
       width,
     })
-  }
-
-  useLayoutEffect(() => {
-    if (!open) return
-
-    updateMenuPosition()
   }, [open, items.length, align])
 
   useEffect(() => {
@@ -94,36 +112,59 @@ function DropdownMenu<T extends string>({
 
       if (!insideTrigger && !insideMenu) {
         setOpen(false)
+        setActiveIndex(-1)
       }
     }
 
-    function handleEscape(event: KeyboardEvent) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setOpen(false)
+        setActiveIndex(-1)
+        buttonRef.current?.focus()
       }
     }
 
     function handleReposition() {
-      updateMenuPosition()
+      const button = buttonRef.current
+      if (!button) return
+
+      const rect = button.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const margin = 8
+      const gap = 8
+      const minWidth = Math.max(rect.width, 288)
+      const maxWidth = viewportWidth - margin * 2
+      const width = Math.min(minWidth, maxWidth)
+
+      const desiredLeft =
+        align === 'right' ? rect.right - width : rect.left
+
+      const left = clamp(desiredLeft, margin, viewportWidth - width - margin)
+      const right =
+        align === 'right'
+          ? clamp(viewportWidth - rect.right, margin, viewportWidth - margin)
+          : 'auto'
+
+      setMenuPosition({
+        top: rect.bottom + gap,
+        left,
+        right,
+        width,
+      })
     }
 
     window.addEventListener('pointerdown', handlePointerDown)
-    window.addEventListener('keydown', handleEscape)
+    window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('resize', handleReposition)
     window.addEventListener('scroll', handleReposition, true)
 
     return () => {
       window.removeEventListener('pointerdown', handlePointerDown)
-      window.removeEventListener('keydown', handleEscape)
+      window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('resize', handleReposition)
       window.removeEventListener('scroll', handleReposition, true)
     }
   }, [open, align])
-
-  function handleSelect(nextValue: T) {
-    onChange(nextValue)
-    setOpen(false)
-  }
 
   const menu = open && menuPosition ? (
     <div
@@ -138,19 +179,33 @@ function DropdownMenu<T extends string>({
         width: `${menuPosition.width}px`,
         maxWidth: 'calc(100vw - 16px)',
       }}
+      onKeyDown={(event) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+          event.preventDefault()
+          navigateItem(activeIndex < items.length - 1 ? activeIndex + 1 : 0)
+        } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+          event.preventDefault()
+          navigateItem(activeIndex > 0 ? activeIndex - 1 : items.length - 1)
+        }
+      }}
     >
-      {items.map((item) => {
+      {items.map((item, index) => {
         const active = item.value === value
+        const highlighted = index === activeIndex
 
         return (
           <button
             key={item.value}
+            ref={(el) => { itemRefs.current[index] = el }}
             type='button'
             onClick={() => handleSelect(item.value)}
+            onFocus={() => setActiveIndex(index)}
             className={`flex min-h-12 w-full items-center justify-between gap-4 rounded-xl px-3 py-3 text-left transition-all duration-200 ${
               active
                 ? 'bg-violet-500/10 text-violet-100'
-                : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'
+                : highlighted
+                  ? 'bg-white/[0.06] text-white'
+                  : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'
             }`}
             role='menuitemradio'
             aria-checked={active}
@@ -184,7 +239,7 @@ function DropdownMenu<T extends string>({
       <button
         ref={buttonRef}
         type='button'
-        onClick={() => setOpen((current) => !current)}
+        onClick={handleOpenToggle}
         aria-haspopup='menu'
         aria-expanded={open}
         className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-white shadow-sm transition-all duration-200 ${

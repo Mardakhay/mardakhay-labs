@@ -40,13 +40,13 @@ export function usePromptMutations() {
         createdPrompt,
         ...(current ?? []),
       ])
-      invalidatePrompts()
       addActivity('Created prompt', createdPrompt.title)
       showNotification('Prompt added successfully!', 'success')
     },
     onError: (mutationError: Error) => {
       showNotification(mutationError.message || 'Failed to create prompt.', 'error')
     },
+    onSettled: invalidatePrompts,
   })
 
   const updatePromptMutation = useMutation<

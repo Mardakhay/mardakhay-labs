@@ -260,12 +260,12 @@ function PromptCard({
           </button>
         </div>
 
-        <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-4'>
-          <div className='grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:items-center'>
+        <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-3 sm:pt-4'>
+          <div className='flex w-full flex-wrap items-center gap-2'>
             <button
               type='button'
               onClick={() => void handleCopy()}
-              className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
+              className='inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 sm:min-h-11 sm:gap-2'
               aria-label='Copy prompt content'
               title='Copy prompt content'
             >
@@ -281,7 +281,7 @@ function PromptCard({
               <button
                 type='button'
                 onClick={openDetail}
-                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
+                className='inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 sm:min-h-11 sm:gap-2'
                 title='Open prompt detail'
               >
                 <Maximize2 className='h-4 w-4' />
@@ -293,7 +293,7 @@ function PromptCard({
               <button
                 type='button'
                 onClick={openEditor}
-                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
+                className='inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 sm:min-h-11 sm:gap-2'
                 title='Edit prompt'
               >
                 Edit
@@ -304,7 +304,7 @@ function PromptCard({
               <button
                 type='button'
                 onClick={() => setShowDeleteConfirm(true)}
-                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60'
+                className='ml-auto inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:gap-2'
                 title='Delete prompt'
                 disabled={isDeleting}
               >

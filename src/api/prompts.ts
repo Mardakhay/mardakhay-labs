@@ -11,6 +11,7 @@ export type Prompt = {
   title: string
   content: string
   created_at: string
+  updated_at: string
   user_id: string
   is_favorite: boolean
   ai_target?: PromptMetadata['aiTarget']
@@ -44,7 +45,7 @@ async function getCurrentUser() {
 }
 
 function selectPromptColumns() {
-  return 'id, title, content, created_at, user_id, is_favorite, ai_target, category, hashtags'
+  return 'id, title, content, created_at, updated_at, user_id, is_favorite, ai_target, category, hashtags'
 }
 
 function normalizePromptInput(input: PromptInput) {
