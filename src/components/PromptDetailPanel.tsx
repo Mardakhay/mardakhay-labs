@@ -101,7 +101,7 @@ function PromptDetailPanel({
 
   return (
     <div
-      className='app-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:grid sm:place-items-center sm:px-4 sm:py-4'
+      className='app-modal-backdrop fixed inset-0 z-[100] grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose()
@@ -113,8 +113,7 @@ function PromptDetailPanel({
         role='dialog'
         aria-modal='true'
         aria-labelledby='prompt-detail-title'
-        className='app-modal-panel flex h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 sm:h-auto sm:max-h-[min(92dvh,44rem)] sm:rounded-3xl'
-      >
+        className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[92vh]'      >
         <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
           <div className='min-w-0'>
             <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>

@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { RefObject } from 'react'
 import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
@@ -132,7 +133,14 @@ function PromptEditorModal({
     try {
       const rawDraft = window.localStorage.getItem(draftKey)
       if (!rawDraft) return
-      const draft = JSON.parse(rawDraft) as Partial<PromptFormValues & { aiTarget: AiTarget | 'none'; category: PromptCategory | 'none' }>
+      const draft = JSON.parse(
+        rawDraft
+      ) as Partial<
+        PromptFormValues & {
+          aiTarget: AiTarget | 'none'
+          category: PromptCategory | 'none'
+        }
+      >
       setPromptTitle(draft.title ?? '')
       setPromptContent(draft.content ?? '')
       setAiTarget(draft.aiTarget ?? 'none')
@@ -179,17 +187,23 @@ function PromptEditorModal({
       aria-modal='true'
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[min(92dvh,44rem)]'
+      className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-black/60 max-h-[92vh]'
     >
       <div className='flex shrink-0 items-start justify-between gap-4 border-b border-white/5 px-4 py-4 sm:px-6 sm:py-5'>
         <div className='min-w-0'>
           <p className='text-xs uppercase tracking-[0.24em] text-zinc-500 sm:tracking-[0.3em]'>
             Prompt editor
           </p>
-          <h2 id={titleId} className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>
+          <h2
+            id={titleId}
+            className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'
+          >
             {title}
           </h2>
-          <p id={descriptionId} className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
+          <p
+            id={descriptionId}
+            className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'
+          >
             {description}
           </p>
         </div>
@@ -229,8 +243,12 @@ function PromptEditorModal({
                     onClick={() => applyTemplate(template.id)}
                     className='rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-left transition-colors hover:bg-white/[0.06]'
                   >
-                    <span className='block text-sm font-medium text-white'>{template.label}</span>
-                    <span className='mt-1 block text-xs leading-5 text-zinc-500'>{template.description}</span>
+                    <span className='block text-sm font-medium text-white'>
+                      {template.label}
+                    </span>
+                    <span className='mt-1 block text-xs leading-5 text-zinc-500'>
+                      {template.description}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -419,6 +437,9 @@ function CreatePromptModal({
     }
   }, [modalOpen, setModalOpen])
 
+  const portalTarget = typeof document !== 'undefined' ? document.body : null
+  if (!portalTarget) return null
+
   return (
     <>
       {!hideTrigger ? (
@@ -436,33 +457,36 @@ function CreatePromptModal({
         </button>
       ) : null}
 
-      {modalOpen ? (
-        <div
-          className='app-modal-backdrop fixed inset-0 z-50 grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
-          onPointerDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setModalOpen(false)
-            }
-          }}
-        >
-          <PromptEditorModal
-            key={`${initialTitle}::${initialPrompt}`}
-            initialPrompt={initialPrompt}
-            initialTitle={initialTitle}
-            initialAiTarget={initialAiTarget}
-            initialCategory={initialCategory}
-            title={title}
-            description={description}
-            submitLabel={submitLabel}
-            titleId={titleId}
-            descriptionId={descriptionId}
-            modalRef={modalRef}
-            draftKey={resolvedDraftKey}
-            onClose={() => setModalOpen(false)}
-            onSave={onSave}
-          />
-        </div>
-      ) : null}
+      {modalOpen
+        ? createPortal(
+            <div
+              className='app-modal-backdrop fixed inset-0 z-[110] grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
+              onPointerDown={(event) => {
+                if (event.target === event.currentTarget) {
+                  setModalOpen(false)
+                }
+              }}
+            >
+              <PromptEditorModal
+                key={`${initialTitle}::${initialPrompt}`}
+                initialPrompt={initialPrompt}
+                initialTitle={initialTitle}
+                initialAiTarget={initialAiTarget}
+                initialCategory={initialCategory}
+                title={title}
+                description={description}
+                submitLabel={submitLabel}
+                titleId={titleId}
+                descriptionId={descriptionId}
+                modalRef={modalRef}
+                draftKey={resolvedDraftKey}
+                onClose={() => setModalOpen(false)}
+                onSave={onSave}
+              />
+            </div>,
+            portalTarget
+          )
+        : null}
     </>
   )
 }
