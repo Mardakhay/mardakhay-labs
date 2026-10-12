@@ -88,7 +88,7 @@ function PromptCard({
   return (
     <>
       <article
-        className={`group rounded-2xl border border-zinc-800/80 bg-zinc-900/85 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-lg ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
+        className={`app-surface group rounded-2xl border border-zinc-800/80 text-white transition-all duration-200 hover:-translate-y-0.5 ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
       >
         <div className='flex items-start justify-between gap-3 sm:gap-4'>
           <div className='min-w-0 flex-1'>
@@ -125,7 +125,7 @@ function PromptCard({
               ) : null}
             </div>
 
-            <h3 className={`font-semibold tracking-tight ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
+            <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
               {promptTitle}
             </h3>
 
@@ -151,9 +151,9 @@ function PromptCard({
           <button
             type='button'
             onClick={() => onToggleFavorite?.(prompt.id, prompt.is_favorite)}
-            className={`shrink-0 self-start inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-150 ${
+            className={`shrink-0 self-start inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 ${
               prompt.is_favorite
-                ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
+                ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 shadow-[0_0_28px_rgba(139,92,246,0.16)] hover:bg-violet-500/20'
                 : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 hover:text-white'
             }`}
             aria-label={prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -172,7 +172,7 @@ function PromptCard({
             <button
               type='button'
               onClick={() => void handleCopy()}
-              className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+              className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
               aria-label='Copy prompt content'
               title='Copy prompt content'
             >
@@ -188,7 +188,7 @@ function PromptCard({
               <button
                 type='button'
                 onClick={openEditor}
-                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800'
+                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
                 title='Edit prompt'
               >
                 Edit
@@ -199,7 +199,7 @@ function PromptCard({
               <button
                 type='button'
                 onClick={() => setShowDeleteConfirm(true)}
-                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60'
+                className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60'
                 title='Delete prompt'
                 disabled={isDeleting}
               >

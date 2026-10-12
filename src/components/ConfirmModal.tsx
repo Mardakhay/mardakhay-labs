@@ -81,17 +81,17 @@ function ConfirmModal({
   if (!open) return null
 
   return (
-    <div className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:items-center sm:px-4'>
+    <div className='app-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-2 pt-4 backdrop-blur-sm sm:items-center sm:px-4'>
       <div
         ref={modalRef}
         role='dialog'
         aria-modal='true'
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className='w-full max-w-md rounded-t-3xl border border-white/10 bg-zinc-950 p-5 shadow-2xl sm:rounded-3xl sm:p-6'
+        className='app-modal-panel w-full max-w-md rounded-t-3xl border border-white/10 bg-zinc-950 p-5 shadow-2xl shadow-black/50 sm:rounded-3xl sm:p-6'
       >
         <div className='flex items-start gap-4'>
-          <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-200'>
+          <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-200 shadow-[0_0_32px_rgba(239,68,68,0.12)]'>
             <AlertTriangle className='h-5 w-5' />
           </div>
 
@@ -106,7 +106,7 @@ function ConfirmModal({
             ref={cancelButtonRef}
             onClick={onCancel}
             disabled={isLoading}
-            className='min-h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50'
+            className='min-h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50'
           >
             {cancelLabel}
           </button>
@@ -114,7 +114,7 @@ function ConfirmModal({
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className='min-h-12 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50'
+            className='min-h-12 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-200 transition-all duration-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50'
           >
             {isLoading ? 'Deleting...' : confirmLabel}
           </button>
