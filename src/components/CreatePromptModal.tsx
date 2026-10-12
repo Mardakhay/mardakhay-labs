@@ -172,7 +172,13 @@ function PromptEditorModal({
         aiTarget: aiTarget === 'none' ? undefined : aiTarget,
         category: category === 'none' ? undefined : category,
       })
-      window.localStorage.removeItem(draftKey)
+      // Draft cleanup is best effort; saving the prompt must still close the editor
+      // when browser storage is unavailable or quota/security rules reject access.
+      try {
+        window.localStorage.removeItem(draftKey)
+      } catch {
+        // Leave the draft untouched rather than turning a successful save into an error.
+      }
       onClose()
     } finally {
       setIsSubmitting(false)
