@@ -6,6 +6,7 @@ import {
   Check,
   Clipboard,
   Hash,
+  Maximize2,
   Star,
   StarOff,
   Tag,
@@ -14,14 +15,21 @@ import {
 
 import type { Prompt, PromptInput } from '../api/prompts'
 import { countPromptWords, derivePromptTitle, formatPromptPreview } from '../lib/promptFormatting'
+import { copyText } from '../lib/promptExport'
 import ConfirmModal from './ConfirmModal'
 import CreatePromptModal from './CreatePromptModal'
+import HighlightedText from './HighlightedText'
 
 type PromptCardProps = {
   prompt: Prompt
   onDelete?: (promptId: number) => void
   onToggleFavorite?: (promptId: number, isFavorite: boolean) => void
   onEdit?: (promptId: number, input: PromptInput) => void | Promise<void>
+  onOpenDetail?: (prompt: Prompt) => void
+  selectable?: boolean
+  selected?: boolean
+  onSelectChange?: (promptId: number, selected: boolean) => void
+  searchQuery?: string
   isDeleting?: boolean
   compact?: boolean
 }
@@ -31,6 +39,11 @@ function PromptCard({
   onDelete,
   onToggleFavorite,
   onEdit,
+  onOpenDetail,
+  selectable = false,
+  selected = false,
+  onSelectChange,
+  searchQuery = '',
   isDeleting = false,
   compact = false,
 }: PromptCardProps) {
@@ -61,19 +74,7 @@ function PromptCard({
   }
 
   async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(prompt.content)
-    } catch {
-      const textarea = document.createElement('textarea')
-      textarea.value = prompt.content
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-    }
-
+    await copyText(prompt.content)
     setCopied(true)
 
     if (copyTimeoutRef.current !== null) {
@@ -88,9 +89,21 @@ function PromptCard({
   return (
     <>
       <article
-        className={`app-surface group rounded-2xl border border-zinc-800/80 text-white transition-all duration-200 hover:-translate-y-0.5 ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''}`}
+        className={`app-surface group rounded-2xl border border-zinc-800/80 text-white transition-all duration-200 hover:-translate-y-0.5 ${compact ? 'p-4' : 'p-4 sm:p-5'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
       >
         <div className='flex items-start justify-between gap-3 sm:gap-4'>
+          {selectable ? (
+            <label className='mt-1 flex h-5 w-5 shrink-0 items-center justify-center'>
+              <input
+                type='checkbox'
+                checked={selected}
+                onChange={(event) => onSelectChange?.(prompt.id, event.target.checked)}
+                className='h-4 w-4 accent-violet-500'
+                aria-label={`Select ${promptTitle}`}
+              />
+            </label>
+          ) : null}
+
           <div className='min-w-0 flex-1'>
             <div className='mb-3 flex flex-wrap items-center gap-2'>
               <span className='inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-zinc-300'>
@@ -125,12 +138,18 @@ function PromptCard({
               ) : null}
             </div>
 
-            <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
-              {promptTitle}
-            </h3>
+            <button
+              type='button'
+              onClick={() => onOpenDetail?.(prompt)}
+              className='block max-w-full text-left'
+            >
+              <h3 className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-sm' : 'text-base sm:text-lg'}`}>
+                <HighlightedText text={promptTitle} query={searchQuery} />
+              </h3>
+            </button>
 
             <p className={`mt-3 whitespace-pre-wrap text-sm ${compact ? 'leading-5 text-zinc-300/90' : 'leading-6 text-zinc-300'}`}>
-              {promptPreview}
+              <HighlightedText text={promptPreview} query={searchQuery} />
             </p>
 
             <div className='mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500'>
@@ -142,7 +161,7 @@ function PromptCard({
               {prompt.hashtags.slice(0, compact ? 2 : 4).map((tag) => (
                 <span key={tag} className='inline-flex items-center gap-1.5'>
                   <Tag className='h-3.5 w-3.5' />
-                  #{tag}
+                  <HighlightedText text={`#${tag}`} query={searchQuery} />
                 </span>
               ))}
             </div>
@@ -168,7 +187,7 @@ function PromptCard({
         </div>
 
         <div className='mt-4 flex items-center justify-end gap-2 border-t border-white/5 pt-4'>
-          <div className='grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:items-center'>
+          <div className='grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto sm:items-center'>
             <button
               type='button'
               onClick={() => void handleCopy()}
@@ -181,7 +200,17 @@ function PromptCard({
               ) : (
                 <Clipboard className='h-4 w-4' />
               )}
-              {copied ? 'Copied' : 'Copy'}
+              <span className='hidden sm:inline'>{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+
+            <button
+              type='button'
+              onClick={() => onOpenDetail?.(prompt)}
+              className='inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800'
+              title='Open prompt detail'
+            >
+              <Maximize2 className='h-4 w-4' />
+              <span className='hidden sm:inline'>Open</span>
             </button>
 
             {onEdit ? (
@@ -204,7 +233,7 @@ function PromptCard({
                 disabled={isDeleting}
               >
                 <Trash2 className='h-4 w-4' />
-                Delete
+                <span className='hidden sm:inline'>Delete</span>
               </button>
             ) : null}
           </div>
