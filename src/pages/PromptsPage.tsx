@@ -60,7 +60,7 @@ function PromptsPage() {
     await createPromptMutation.mutateAsync(prompt)
   }
 
-  function handleDeletePrompt(promptId: string) {
+  function handleDeletePrompt(promptId: number) {
     deletePromptMutation.mutate(promptId)
   }
 
