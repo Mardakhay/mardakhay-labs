@@ -54,7 +54,7 @@ function LoginPage() {
 
       if (isSignup && !authResult.session) {
         showNotification(
-          'Check your email to confirm your account before logging in.',
+          'If email confirmation is enabled, check your inbox before signing in.',
           'info'
         )
         setIsSignup(false)

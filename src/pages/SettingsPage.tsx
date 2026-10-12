@@ -1,17 +1,109 @@
-import { useState } from 'react'
-import { Bell, ShieldCheck, UserRound } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { CalendarDays, Clipboard, Hash, ShieldCheck, UserRound } from 'lucide-react'
 
+import { getPrompts, type Prompt } from '../api/prompts'
 import DashboardCard from '../components/DashboardCard'
 import { useAuthStore } from '../stores/authStore'
 
+function formatDate(dateValue?: string) {
+  if (!dateValue) return 'No prompts yet'
+
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(dateValue))
+}
+
 function SettingsPage() {
   const { user } = useAuthStore()
+  const [copiedEmail, setCopiedEmail] = useState(false)
+  const copyTimeoutRef = useRef<number | null>(null)
 
-  const [emailAlerts, setEmailAlerts] = useState(true)
-  const [inAppAlerts, setInAppAlerts] = useState(true)
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current !== null) {
+        window.clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
-  const toggleButtonClass =
-    'rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-white transition-colors hover:bg-zinc-800'
+  const {
+    data: prompts = [],
+    isLoading,
+  } = useQuery<Prompt[], Error>({
+    queryKey: ['prompts'],
+    queryFn: getPrompts,
+  })
+
+  const workspaceStats = useMemo(() => {
+    const favoriteCount = prompts.filter((prompt) => prompt.is_favorite).length
+    const aiTargetCount = prompts.filter((prompt) => prompt.ai_target).length
+    const categoryCount = prompts.filter((prompt) => prompt.category).length
+    const tagCount = new Set(prompts.flatMap((prompt) => prompt.hashtags)).size
+    const latestPromptDate = prompts[0]?.created_at
+
+    return [
+      {
+        label: 'Total prompts',
+        value: prompts.length,
+        note: 'Synced from Supabase',
+      },
+      {
+        label: 'Favorites',
+        value: favoriteCount,
+        note: 'Starred prompt assets',
+      },
+      {
+        label: 'AI targets',
+        value: aiTargetCount,
+        note: 'Model-specific prompts',
+      },
+      {
+        label: 'Categories',
+        value: categoryCount,
+        note: 'Organized prompt types',
+      },
+      {
+        label: 'Hashtags',
+        value: tagCount,
+        note: 'Lightweight organization',
+      },
+      {
+        label: 'Latest save',
+        value: formatDate(latestPromptDate),
+        note: latestPromptDate ? 'Most recent prompt activity' : 'Nothing saved yet',
+      },
+    ] as const
+  }, [prompts])
+
+  async function handleCopyEmail() {
+    if (!user?.email) return
+
+    try {
+      await navigator.clipboard.writeText(user.email)
+    } catch {
+      const textarea = document.createElement('textarea')
+      textarea.value = user.email
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+
+    setCopiedEmail(true)
+
+    if (copyTimeoutRef.current !== null) {
+      window.clearTimeout(copyTimeoutRef.current)
+    }
+
+    copyTimeoutRef.current = window.setTimeout(() => {
+      setCopiedEmail(false)
+    }, 1600)
+  }
 
   return (
     <div className='space-y-6'>
@@ -29,50 +121,54 @@ function SettingsPage() {
               {user?.email ?? 'Workspace user'}
             </h2>
             <p className='mt-2 max-w-2xl text-sm leading-6 text-zinc-400'>
-              Your session is protected by Supabase Auth and routed through the
-              authenticated workspace shell.
+              Review your account status and workspace usage from one calm control
+              center.
             </p>
+
+            <div className='mt-4 flex flex-wrap items-center gap-3'>
+              <button
+                type='button'
+                onClick={() => void handleCopyEmail()}
+                disabled={!user?.email}
+                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50'
+              >
+                {copiedEmail ? (
+                  <Clipboard className='h-4 w-4 text-emerald-300' />
+                ) : (
+                  <Clipboard className='h-4 w-4' />
+                )}
+                {copiedEmail ? 'Copied email' : 'Copy email'}
+              </button>
+
+              <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300'>
+                <ShieldCheck className='h-3.5 w-3.5 text-violet-200' />
+                Session restored on refresh
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
+      <DashboardCard title='Workspace snapshot'>
+        <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
+          {workspaceStats.map((stat) => (
+            <div
+              key={stat.label}
+              className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'
+            >
+              <p className='text-xs uppercase tracking-[0.24em] text-zinc-500'>
+                {stat.label}
+              </p>
+              <p className='mt-3 text-xl font-semibold tracking-tight text-white'>
+                {isLoading ? '…' : stat.value}
+              </p>
+              <p className='mt-2 text-sm leading-6 text-zinc-500'>{stat.note}</p>
+            </div>
+          ))}
+        </div>
+      </DashboardCard>
+
       <div className='grid gap-6 lg:grid-cols-2'>
-        <DashboardCard title='Notifications'>
-          <div className='space-y-4'>
-            <div className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='min-w-0'>
-                <p className='font-medium'>Email alerts</p>
-                <p className='text-sm text-zinc-500'>
-                  Receive product updates and account activity summaries.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setEmailAlerts((current) => !current)}
-                className={`${toggleButtonClass} min-h-11 w-full sm:w-auto sm:min-w-[92px]`}
-              >
-                {emailAlerts ? 'Enabled' : 'Disabled'}
-              </button>
-            </div>
-
-            <div className='flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='min-w-0'>
-                <p className='font-medium'>In-app alerts</p>
-                <p className='text-sm text-zinc-500'>
-                  Show real-time prompt creation and sync notifications.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setInAppAlerts((current) => !current)}
-                className={`${toggleButtonClass} min-h-11 w-full sm:w-auto sm:min-w-[92px]`}
-              >
-                {inAppAlerts ? 'Enabled' : 'Disabled'}
-              </button>
-            </div>
-          </div>
-        </DashboardCard>
-
         <DashboardCard title='Security'>
           <div className='space-y-4'>
             <div className='flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
@@ -82,46 +178,56 @@ function SettingsPage() {
               <div>
                 <p className='font-medium'>Authentication status</p>
                 <p className='text-sm text-zinc-500'>
-                  Session-based access is active and protected.
+                  Supabase Auth keeps this workspace session isolated and synced.
                 </p>
               </div>
             </div>
 
-            <div className='rounded-2xl border border-dashed border-zinc-700 px-4 py-4 text-sm leading-6 text-zinc-400'>
-              Sign out is available in the sidebar so the security panel stays focused
-              on account status instead of duplicating actions.
+            <div className='flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
+              <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+                <CalendarDays className='h-5 w-5' />
+              </div>
+              <div>
+                <p className='font-medium'>Recent activity</p>
+                <p className='text-sm text-zinc-500'>
+                  Latest prompt saves and metadata updates appear in the workspace
+                  views, keeping Settings focused on account state.
+                </p>
+              </div>
+            </div>
+          </div>
+        </DashboardCard>
+
+        <DashboardCard title='Organization layer'>
+          <div className='space-y-4'>
+            <div className='flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
+              <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+                <Hash className='h-5 w-5' />
+              </div>
+              <div>
+                <p className='font-medium'>Hashtags</p>
+                <p className='text-sm text-zinc-500'>
+                  Tags are extracted dynamically from prompt content without extra
+                  schema complexity.
+                </p>
+              </div>
+            </div>
+
+            <div className='flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-4'>
+              <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-200'>
+                <Clipboard className='h-5 w-5' />
+              </div>
+              <div>
+                <p className='font-medium'>Copy workflow</p>
+                <p className='text-sm text-zinc-500'>
+                  Prompt copy stays fast and clean, with metadata hidden from the
+                  copied output.
+                </p>
+              </div>
             </div>
           </div>
         </DashboardCard>
       </div>
-
-      <DashboardCard title='Workspace preferences'>
-        <div className='grid gap-4 lg:grid-cols-2'>
-          <div className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'>
-            <div className='flex items-center gap-3'>
-              <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
-                <Bell className='h-4 w-4' />
-              </div>
-              <div>
-                <p className='font-medium'>Notification tone</p>
-                <p className='text-sm text-zinc-500'>Quiet, useful, and non-intrusive.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className='rounded-2xl border border-white/5 bg-white/[0.03] p-4'>
-            <div className='flex items-center gap-3'>
-              <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200'>
-                <ShieldCheck className='h-4 w-4' />
-              </div>
-              <div>
-                <p className='font-medium'>Workspace mode</p>
-                <p className='text-sm text-zinc-500'>Focused and calm by design.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </DashboardCard>
     </div>
   )
 }

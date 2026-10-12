@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Filter, Plus, Search, ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, Bot, Boxes, Filter, Plus, Search, Tag } from 'lucide-react'
 
 import {
   createPrompt,
@@ -15,10 +15,18 @@ import CreatePromptModal from '../components/CreatePromptModal'
 import DashboardCard from '../components/DashboardCard'
 import DropdownMenu from '../components/DropdownMenu'
 import PromptCard from '../components/PromptCard'
+import {
+  aiTargetOptions,
+  promptCategoryOptions,
+  type AiTarget,
+  type PromptCategory,
+} from '../lib/promptMetadata'
 import { useNotificationStore } from '../stores/notificationStore'
 
 type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
+type AiTargetFilter = 'all' | AiTarget
+type CategoryFilter = 'all' | PromptCategory
 
 function PromptsPage() {
   const { showNotification } = useNotificationStore()
@@ -27,6 +35,9 @@ function PromptsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent')
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all')
+  const [aiTargetFilter, setAiTargetFilter] = useState<AiTargetFilter>('all')
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
+  const [hashtagFilter, setHashtagFilter] = useState('all')
 
   const {
     data: prompts = [],
@@ -108,12 +119,33 @@ function PromptsPage() {
     const normalizedQuery = searchQuery.trim().toLowerCase()
 
     const filtered = prompts.filter((prompt) => {
-      const combinedText = `${prompt.title}\n${prompt.content}`.toLowerCase()
+      const combinedText = [
+        prompt.title,
+        prompt.content,
+        prompt.ai_target,
+        prompt.category,
+        ...prompt.hashtags.map((tag) => `#${tag}`),
+      ]
+        .filter(Boolean)
+        .join('\n')
+        .toLowerCase()
       const matchesSearch = !normalizedQuery || combinedText.includes(normalizedQuery)
       const matchesView =
         viewFilter === 'all' || (viewFilter === 'favorites' && prompt.is_favorite)
+      const matchesAiTarget =
+        aiTargetFilter === 'all' || prompt.ai_target === aiTargetFilter
+      const matchesCategory =
+        categoryFilter === 'all' || prompt.category === categoryFilter
+      const matchesHashtag =
+        hashtagFilter === 'all' || prompt.hashtags.includes(hashtagFilter)
 
-      return matchesSearch && matchesView
+      return (
+        matchesSearch &&
+        matchesView &&
+        matchesAiTarget &&
+        matchesCategory &&
+        matchesHashtag
+      )
     })
 
     return [...filtered].sort((a, b) => {
@@ -122,7 +154,21 @@ function PromptsPage() {
 
       return sortOrder === 'recent' ? bDate - aDate : aDate - bDate
     })
-  }, [prompts, searchQuery, sortOrder, viewFilter])
+  }, [
+    aiTargetFilter,
+    categoryFilter,
+    hashtagFilter,
+    prompts,
+    searchQuery,
+    sortOrder,
+    viewFilter,
+  ])
+
+  const availableHashtags = useMemo(() => {
+    return Array.from(
+      new Set(prompts.flatMap((prompt) => prompt.hashtags))
+    ).sort((a, b) => a.localeCompare(b))
+  }, [prompts])
 
   if (isLoading) {
     return (
@@ -164,7 +210,7 @@ function PromptsPage() {
         <CreatePromptModal triggerLabel='New prompt' onSave={handleAddPrompt} />
       </section>
 
-      <div className='grid gap-4 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.85fr)_minmax(0,0.85fr)]'>
+      <div className='grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_repeat(4,minmax(0,0.85fr))]'>
         <label className='flex min-h-12 items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-white'>
           <Search className='h-4 w-4 shrink-0 text-zinc-500' />
           <input
@@ -195,6 +241,44 @@ function PromptsPage() {
         />
 
         <DropdownMenu
+          icon={Bot}
+          label='AI target'
+          value={aiTargetFilter}
+          onChange={setAiTargetFilter}
+          items={[
+            {
+              value: 'all',
+              label: 'All targets',
+              description: 'Show prompts for every AI target.',
+            },
+            ...aiTargetOptions.map((option) => ({
+              value: option,
+              label: option,
+              description: `Prompts intended for ${option}.`,
+            })),
+          ]}
+        />
+
+        <DropdownMenu
+          icon={Boxes}
+          label='Category'
+          value={categoryFilter}
+          onChange={setCategoryFilter}
+          items={[
+            {
+              value: 'all',
+              label: 'All categories',
+              description: 'Show prompts from every category.',
+            },
+            ...promptCategoryOptions.map((option) => ({
+              value: option,
+              label: option,
+              description: `${option} prompts.`,
+            })),
+          ]}
+        />
+
+        <DropdownMenu
           icon={ArrowUpDown}
           label='Sort prompts'
           value={sortOrder}
@@ -213,6 +297,38 @@ function PromptsPage() {
           ]}
         />
       </div>
+
+      {availableHashtags.length > 0 ? (
+        <div className='flex gap-2 overflow-x-auto pb-1'>
+          <button
+            type='button'
+            onClick={() => setHashtagFilter('all')}
+            className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium transition-colors ${
+              hashtagFilter === 'all'
+                ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
+                : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Tag className='h-3.5 w-3.5' />
+            All tags
+          </button>
+
+          {availableHashtags.map((tag) => (
+            <button
+              key={tag}
+              type='button'
+              onClick={() => setHashtagFilter(tag)}
+              className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium transition-colors ${
+                hashtagFilter === tag
+                  ? 'border-violet-500/30 bg-violet-500/10 text-violet-100'
+                  : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white'
+              }`}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <DashboardCard title={`Prompts (${filteredPrompts.length})`}>
         {filteredPrompts.length === 0 ? (

@@ -1,5 +1,11 @@
 import { supabase } from '../lib/supabase'
 import { derivePromptTitle } from '../lib/promptFormatting'
+import {
+  extractHashtags,
+  parsePromptContent,
+  serializePromptContent,
+  type PromptMetadata,
+} from '../lib/promptMetadata'
 
 export type Prompt = {
   id: number
@@ -8,9 +14,12 @@ export type Prompt = {
   created_at: string
   user_id: string
   is_favorite: boolean
+  ai_target?: PromptMetadata['aiTarget']
+  category?: PromptMetadata['category']
+  hashtags: string[]
 }
 
-export type PromptInput = {
+export type PromptInput = PromptMetadata & {
   title: string
   content: string
 }
@@ -37,7 +46,25 @@ function normalizePromptInput(input: PromptInput) {
   const content = input.content.trim()
   const title = input.title.trim() || derivePromptTitle(content)
 
-  return { title, content }
+  return {
+    title,
+    content: serializePromptContent(content, {
+      aiTarget: input.aiTarget,
+      category: input.category,
+    }),
+  }
+}
+
+function mapPromptRow(row: Prompt) {
+  const parsed = parsePromptContent(row.content)
+
+  return {
+    ...row,
+    content: parsed.content,
+    ai_target: parsed.metadata.aiTarget,
+    category: parsed.metadata.category,
+    hashtags: extractHashtags(parsed.content),
+  }
 }
 
 export async function getPrompts() {
@@ -55,7 +82,7 @@ export async function getPrompts() {
     throw error
   }
 
-  return (data ?? []) as unknown as Prompt[]
+  return ((data ?? []) as unknown as Prompt[]).map(mapPromptRow)
 }
 
 export async function createPrompt(input: PromptInput) {
@@ -80,7 +107,7 @@ export async function createPrompt(input: PromptInput) {
     throw new Error('Failed to create prompt.')
   }
 
-  return data as unknown as Prompt
+  return mapPromptRow(data as unknown as Prompt)
 }
 
 export async function updatePrompt(promptId: number, input: PromptInput) {
@@ -103,7 +130,7 @@ export async function updatePrompt(promptId: number, input: PromptInput) {
     throw new Error('Failed to update prompt.')
   }
 
-  return data as unknown as Prompt
+  return mapPromptRow(data as unknown as Prompt)
 }
 
 export async function deletePrompt(promptId: number) {
@@ -144,5 +171,5 @@ export async function togglePromptFavorite(
     throw new Error('Failed to update prompt favorite.')
   }
 
-  return data as unknown as Prompt
+  return mapPromptRow(data as unknown as Prompt)
 }
