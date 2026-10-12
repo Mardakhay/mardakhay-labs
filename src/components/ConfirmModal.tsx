@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { AlertTriangle } from 'lucide-react'
 
 type ConfirmModalProps = {
@@ -80,7 +81,10 @@ function ConfirmModal({
 
   if (!open) return null
 
-  return (
+  const portalTarget = typeof document !== 'undefined' ? document.body : null
+  if (!portalTarget) return null
+
+  return createPortal(
     <div
       className='app-modal-backdrop fixed inset-0 z-50 grid place-items-center bg-black/70 px-4 py-4 backdrop-blur-sm'
       onPointerDown={(event) => {
@@ -127,7 +131,8 @@ function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    portalTarget
   )
 }
 
