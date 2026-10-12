@@ -8,7 +8,6 @@ import {
   Hash,
   Maximize2,
   Star,
-  StarOff,
   Tag,
   Trash2,
 } from 'lucide-react'
@@ -184,11 +183,7 @@ function PromptCard({
             aria-label={prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
             aria-pressed={prompt.is_favorite}
           >
-            {prompt.is_favorite ? (
-              <Star className='h-4 w-4 fill-current' />
-            ) : (
-              <StarOff className='h-4 w-4' />
-            )}
+            <Star className={`h-4 w-4 ${prompt.is_favorite ? 'fill-current' : ''}`} />
           </button>
         </div>
 
