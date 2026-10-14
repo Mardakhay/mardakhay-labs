@@ -4,6 +4,7 @@ import type { RefObject } from 'react'
 import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
 import { derivePromptTitle } from '../lib/promptFormatting'
+import { getPromptContentValidationError } from '../lib/promptValidation'
 import { FOCUSABLE_ELEMENTS_SELECTOR, getFocusTrapTargetIndex } from '../lib/focusTrap'
 import { buildUserScopedStorageKey } from '../lib/storageKeys'
 import { useAuthStore } from '../stores/authStore'
@@ -82,6 +83,13 @@ function PromptEditorModal({
     initialCategory ?? 'none'
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [contentError, setContentError] = useState<string | null>(null)
+  const promptTitleId = `${titleId}-prompt-title`
+  const promptTitleHelpId = `${titleId}-prompt-title-help`
+  const promptContentId = `${titleId}-prompt-content`
+  const promptContentHelpId = `${titleId}-prompt-content-help`
+  const promptContentErrorId = `${titleId}-prompt-content-error`
+  const promptContentRef = useRef<HTMLTextAreaElement | null>(null)
   const [hasRestorableDraft, setHasRestorableDraft] = useState(() => {
     try {
       return Boolean(window.localStorage.getItem(draftKey))
@@ -162,8 +170,16 @@ function PromptEditorModal({
   }
 
   async function handleSubmit() {
-    if (!promptContent.trim() || isSubmitting) return
+    if (isSubmitting) return
 
+    const validationError = getPromptContentValidationError(promptContent)
+    if (validationError) {
+      setContentError(validationError)
+      promptContentRef.current?.focus()
+      return
+    }
+
+    setContentError(null)
     setIsSubmitting(true)
 
     try {
@@ -193,6 +209,7 @@ function PromptEditorModal({
       aria-modal='true'
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
+      aria-busy={isSubmitting}
       className='app-modal-panel flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0a0c] text-white shadow-2xl shadow-black/60 max-h-[min(92vh,680px)] sm:max-h-[92vh]'
     >
       <div className='flex shrink-0 items-start justify-between gap-3 border-b border-white/[0.04] px-4 py-3 sm:gap-4 sm:px-6 sm:py-5'>
@@ -262,17 +279,19 @@ function PromptEditorModal({
           ) : null}
 
           <div>
-            <label className='block text-sm font-medium text-zinc-200'>
+            <label htmlFor={promptTitleId} className='block text-sm font-medium text-zinc-200'>
               Prompt title
             </label>
             <input
+              id={promptTitleId}
+              aria-describedby={promptTitleHelpId}
               autoFocus
               value={promptTitle}
               onChange={(event) => setPromptTitle(event.target.value)}
               placeholder='Summarize the prompt in a short title'
               className='mt-2 min-h-12 w-full rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-violet-500/40'
             />
-            <p className='mt-2 text-xs leading-5 text-zinc-500'>
+            <p id={promptTitleHelpId} className='mt-2 text-xs leading-5 text-zinc-500'>
               Leave it blank to auto-generate the title from the first line.
             </p>
           </div>
@@ -318,16 +337,40 @@ function PromptEditorModal({
           </div>
 
           <div>
-            <label className='block text-sm font-medium text-zinc-200'>
+            <label htmlFor={promptContentId} className='block text-sm font-medium text-zinc-200'>
               Prompt content
             </label>
             <textarea
+              ref={promptContentRef}
+              id={promptContentId}
+              required
+              aria-invalid={contentError !== null}
+              aria-describedby={contentError
+                ? `${promptContentHelpId} ${promptContentErrorId}`
+                : promptContentHelpId}
               placeholder='Describe the prompt, task, instruction, or workflow...'
               value={promptContent}
-              onChange={(event) => setPromptContent(event.target.value)}
+              onChange={(event) => {
+                const nextContent = event.target.value
+                setPromptContent(nextContent)
+                if (nextContent.trim()) setContentError(null)
+              }}
               rows={10}
               className='mt-2 min-h-40 w-full resize-none rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[13px] leading-6 text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-violet-500/40 sm:min-h-52 sm:h-64'
             />
+            <p id={promptContentHelpId} className='mt-2 text-xs leading-5 text-zinc-500'>
+              The prompt content is required.
+            </p>
+            {contentError ? (
+              <p
+                id={promptContentErrorId}
+                role='alert'
+                aria-atomic='true'
+                className='mt-2 text-xs font-medium leading-5 text-red-300'
+              >
+                {contentError}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>

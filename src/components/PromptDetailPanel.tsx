@@ -245,6 +245,8 @@ function PromptDetailPanel({
             <button
               type='button'
               onClick={() => onToggleFavorite(prompt.id, prompt.is_favorite)}
+              aria-pressed={prompt.is_favorite}
+              aria-label={prompt.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
               className='inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-violet-500/15 bg-violet-500/[0.06] px-2 text-[11px] font-medium text-violet-300 transition-colors hover:bg-violet-500/15 sm:min-h-10 sm:gap-2 sm:px-3 sm:text-[13px]'
             >
               <Star

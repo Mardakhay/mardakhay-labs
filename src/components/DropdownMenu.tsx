@@ -60,12 +60,18 @@ function DropdownMenu<T extends string>({
   function handleOpenToggle() {
     setOpen((current) => {
       if (!current) {
-        setActiveIndex(-1)
+        const selectedIndex = items.findIndex((item) => item.value === value)
+        setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0)
         itemRefs.current = []
       }
       return !current
     })
   }
+
+  useEffect(() => {
+    if (!open || activeIndex < 0) return
+    itemRefs.current[activeIndex]?.focus()
+  }, [open, activeIndex])
 
   function navigateItem(index: number) {
     setActiveIndex(index)
@@ -180,7 +186,13 @@ function DropdownMenu<T extends string>({
         maxWidth: 'calc(100vw - 16px)',
       }}
       onKeyDown={(event) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+          setOpen(false)
+          setActiveIndex(-1)
+          buttonRef.current?.focus()
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
           event.preventDefault()
           navigateItem(activeIndex < items.length - 1 ? activeIndex + 1 : 0)
         } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
@@ -242,6 +254,7 @@ function DropdownMenu<T extends string>({
         onClick={handleOpenToggle}
         aria-haspopup='menu'
         aria-expanded={open}
+        aria-label={`${label}: ${selectedLabel}`}
         className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-white shadow-sm transition-all duration-200 ${
           open
             ? 'border-violet-500/30 bg-violet-500/10 shadow-violet-950/20'
