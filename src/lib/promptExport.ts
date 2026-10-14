@@ -1,4 +1,11 @@
-import type { Prompt, PromptInput } from '../api/prompts'
+import type { Prompt, PromptImportInput } from '../api/prompts'
+import { MAX_PROMPT_IMPORT_COUNT } from './promptImportLimits'
+import {
+  aiTargetOptions,
+  promptCategoryOptions,
+  type AiTarget,
+  type PromptCategory,
+} from './promptMetadata'
 
 export function promptToMarkdown(prompt: Prompt) {
   const metadata = [
@@ -65,16 +72,57 @@ export async function copyText(value: string) {
   }
 }
 
-export function parsePromptImport(raw: string): PromptInput[] {
-  const parsed = JSON.parse(raw) as unknown
+function parseOptionalEnum<Value extends string>(
+  value: unknown,
+  options: readonly Value[],
+  fieldName: string,
+  promptNumber: number
+): Value | undefined {
+  if (value === undefined || value === null) {
+    return undefined
+  }
+
+  if (typeof value !== 'string' || !options.includes(value as Value)) {
+    throw new Error(`Prompt ${promptNumber} has an invalid ${fieldName}.`)
+  }
+
+  return value as Value
+}
+
+export function parsePromptImport(raw: string): PromptImportInput[] {
+  let parsed: unknown
+
+  try {
+    parsed = JSON.parse(raw) as unknown
+  } catch {
+    throw new Error('Import file is not valid JSON.')
+  }
+
   const items = Array.isArray(parsed) ? parsed : [parsed]
 
-  return items.map((item) => {
-    if (!item || typeof item !== 'object') {
+  if (items.length === 0) {
+    throw new Error('Import file must contain at least one prompt.')
+  }
+
+  if (items.length > MAX_PROMPT_IMPORT_COUNT) {
+    throw new Error(`You can import up to ${MAX_PROMPT_IMPORT_COUNT} prompts at a time.`)
+  }
+
+  return items.map((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
       throw new Error('Import file contains an invalid prompt item.')
     }
 
     const record = item as Record<string, unknown>
+
+    if (
+      record.title !== undefined &&
+      record.title !== null &&
+      typeof record.title !== 'string'
+    ) {
+      throw new Error(`Prompt ${index + 1} has an invalid title.`)
+    }
+
     const title = typeof record.title === 'string' ? record.title : ''
     const content = typeof record.content === 'string' ? record.content : ''
 
@@ -82,11 +130,33 @@ export function parsePromptImport(raw: string): PromptInput[] {
       throw new Error('Every imported prompt needs content.')
     }
 
+    const aiTarget = parseOptionalEnum<AiTarget>(
+      record.aiTarget,
+      aiTargetOptions,
+      'AI target',
+      index + 1
+    )
+    const category = parseOptionalEnum<PromptCategory>(
+      record.category,
+      promptCategoryOptions,
+      'category',
+      index + 1
+    )
+
+    if (
+      record.isFavorite !== undefined &&
+      record.isFavorite !== null &&
+      typeof record.isFavorite !== 'boolean'
+    ) {
+      throw new Error(`Prompt ${index + 1} has an invalid favorite value.`)
+    }
+
     return {
       title,
       content,
-      aiTarget: typeof record.aiTarget === 'string' ? record.aiTarget as PromptInput['aiTarget'] : undefined,
-      category: typeof record.category === 'string' ? record.category as PromptInput['category'] : undefined,
+      aiTarget,
+      category,
+      isFavorite: record.isFavorite === true,
     }
   })
 }

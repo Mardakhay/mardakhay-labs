@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import type { Prompt } from '../../api/prompts'
+import { MAX_IMPORT_FILE_SIZE_BYTES, validatePromptImportFileSize } from '../promptImportLimits'
+import { extractHashtags } from '../promptMetadata'
 import {
   parsePromptImport,
   promptToJson,
@@ -13,7 +15,7 @@ describe('promptExport', () => {
   const prompt: Prompt = {
     id: 1,
     title: 'Write a launch email',
-    content: 'Draft a launch email for a product update.',
+    content: 'Draft a launch email for a product update. #launch #email',
     created_at: '2026-06-04T08:00:00.000Z',
     updated_at: '2026-06-04T09:00:00.000Z',
     user_id: 'user-123',
@@ -65,6 +67,7 @@ describe('promptExport', () => {
         content: 'Use this prompt for testing.',
         aiTarget: 'Claude',
         category: 'Coding',
+        isFavorite: true,
       })
     )
 
@@ -74,6 +77,7 @@ describe('promptExport', () => {
         content: 'Use this prompt for testing.',
         aiTarget: 'Claude',
         category: 'Coding',
+        isFavorite: true,
       },
     ])
   })
@@ -92,6 +96,7 @@ describe('promptExport', () => {
       content: 'Second',
       aiTarget: 'Gemini',
       category: undefined,
+      isFavorite: false,
     })
   })
 
@@ -105,5 +110,65 @@ describe('promptExport', () => {
     expect(() =>
       parsePromptImport(JSON.stringify([{ title: 'Missing content', content: '   ' }]))
     ).toThrow('Every imported prompt needs content.')
+  })
+
+  it('preserves supported metadata from a JSON export during import', () => {
+    const imported = parsePromptImport(promptToJson(prompt))
+
+    expect(imported).toHaveLength(1)
+    expect(imported[0]).toMatchObject({
+      title: prompt.title,
+      content: prompt.content,
+      aiTarget: prompt.ai_target,
+      category: prompt.category,
+      isFavorite: prompt.is_favorite,
+    })
+    expect(extractHashtags(imported[0]!.content)).toEqual(
+      prompt.hashtags.slice().sort((a, b) => a.localeCompare(b))
+    )
+    expect(imported[0]).not.toHaveProperty('createdAt')
+  })
+
+  it('rejects malformed JSON with a helpful error', () => {
+    expect(() => parsePromptImport('{not-json')).toThrow('Import file is not valid JSON.')
+  })
+
+  it('rejects unsupported AI targets and categories at runtime', () => {
+    expect(() =>
+      parsePromptImport(JSON.stringify({ content: 'Prompt', aiTarget: 'Unknown AI' }))
+    ).toThrow('Prompt 1 has an invalid AI target.')
+
+    expect(() =>
+      parsePromptImport(JSON.stringify({ content: 'Prompt', category: 'Unknown category' }))
+    ).toThrow('Prompt 1 has an invalid category.')
+  })
+
+  it('rejects incorrectly typed import metadata', () => {
+    expect(() =>
+      parsePromptImport(JSON.stringify({ content: 'Prompt', title: 123 }))
+    ).toThrow('Prompt 1 has an invalid title.')
+
+    expect(() =>
+      parsePromptImport(JSON.stringify({ content: 'Prompt', isFavorite: 'yes' }))
+    ).toThrow('Prompt 1 has an invalid favorite value.')
+  })
+
+  it('rejects empty imports and imports over the supported prompt count', () => {
+    expect(() => parsePromptImport('[]')).toThrow('Import file must contain at least one prompt.')
+    const tooManyPrompts = Array.from({ length: 501 }, (_, index) => ({
+      title: `Prompt ${index + 1}`,
+      content: 'Prompt content',
+    }))
+
+    expect(() => parsePromptImport(JSON.stringify(tooManyPrompts))).toThrow(
+      'You can import up to 500 prompts at a time.'
+    )
+  })
+
+  it('accepts import files up to the size limit and rejects larger files', () => {
+    expect(() => validatePromptImportFileSize(MAX_IMPORT_FILE_SIZE_BYTES)).not.toThrow()
+    expect(() => validatePromptImportFileSize(MAX_IMPORT_FILE_SIZE_BYTES + 1)).toThrow(
+      'Import file is too large. Choose a JSON file no larger than 5 MiB.'
+    )
   })
 })

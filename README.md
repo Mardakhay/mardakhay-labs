@@ -137,6 +137,10 @@ npm test
 npm run build
 ```
 
+## Project Status and Audit Roadmap
+
+For the current architecture map, audit findings, risks to verify, prioritized remediation roadmap, and handoff context for future development sessions, see [Project Status](docs/PROJECT_STATUS.md).
+
 ## Backup and Recovery
 
 For a low-cost manual backup routine, prompt JSON export instructions, and optional Supabase CLI schema/data dumps, see [Backup and Restore](docs/BACKUP_AND_RESTORE.md). Backups may contain private prompt content and should be stored outside Git.

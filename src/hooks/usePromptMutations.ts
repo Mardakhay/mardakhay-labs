@@ -16,6 +16,8 @@ import { addActivity } from '../lib/activityLog'
 import {
   applyPromptInputToPrompt,
   removePromptFromList,
+  rollbackPromptInList,
+  rollbackPromptListSnapshotIfUnchanged,
   replacePromptInList,
   sortPromptsByUpdatedAtDesc,
   togglePromptFavoriteInList,
@@ -25,10 +27,14 @@ import { useNotificationStore } from '../stores/notificationStore'
 import { getPromptsQueryKey, promptsQueryBaseKey } from './usePromptsQuery'
 
 type PromptCacheContext = {
-  previousPrompts?: Prompt[]
+  promptId: number
+  previousPrompt?: Prompt
+  optimisticPrompt?: Prompt
 }
 
-type DeletePromptCacheContext = PromptCacheContext & {
+type DeletePromptCacheContext = {
+  previousPrompts?: Prompt[]
+  optimisticPrompts?: Prompt[]
   deletedPrompt?: Prompt
 }
 
@@ -89,20 +95,33 @@ export function usePromptMutations() {
     onMutate: async ({ promptId, input }) => {
       await queryClient.cancelQueries({ queryKey: promptsQueryKey })
       const previousPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
+      const previousPrompt = previousPrompts?.find((prompt) => prompt.id === promptId)
+      let optimisticPrompt: Prompt | undefined
 
       queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
         sortPromptsByUpdatedAtDesc(
-          (current ?? []).map((prompt) =>
-            prompt.id === promptId ? applyPromptInputToPrompt(prompt, input) : prompt
-          )
+          (current ?? []).map((prompt) => {
+            if (prompt.id !== promptId) return prompt
+
+            optimisticPrompt = applyPromptInputToPrompt(prompt, input)
+            return optimisticPrompt
+          })
         )
       )
 
-      return { previousPrompts }
+      return { promptId, previousPrompt, optimisticPrompt }
     },
     onError: (mutationError: Error, _variables, context) => {
-      if (context?.previousPrompts) {
-        queryClient.setQueryData(promptsQueryKey, context.previousPrompts)
+      if (context?.previousPrompt && context.optimisticPrompt) {
+        const { promptId: rollbackPromptId, previousPrompt, optimisticPrompt } = context
+        queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+          rollbackPromptInList(
+            current,
+            rollbackPromptId,
+            previousPrompt,
+            optimisticPrompt
+          )
+        )
       }
 
       showNotification(mutationError.message || 'Failed to update prompt.', 'error')
@@ -123,16 +142,22 @@ export function usePromptMutations() {
       await queryClient.cancelQueries({ queryKey: promptsQueryKey })
       const previousPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
       const deletedPrompt = previousPrompts?.find((prompt) => prompt.id === promptId)
-
-      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+      const optimisticPrompts = queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
         removePromptFromList(current, promptId)
       )
 
-      return { previousPrompts, deletedPrompt }
+      return { previousPrompts, optimisticPrompts, deletedPrompt }
     },
     onError: (mutationError: Error, _promptId, context) => {
-      if (context?.previousPrompts) {
-        queryClient.setQueryData(promptsQueryKey, context.previousPrompts)
+      const currentPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
+      const rollbackPrompts = rollbackPromptListSnapshotIfUnchanged(
+        currentPrompts,
+        context?.previousPrompts,
+        context?.optimisticPrompts
+      )
+
+      if (rollbackPrompts !== currentPrompts) {
+        queryClient.setQueryData(promptsQueryKey, rollbackPrompts)
       }
 
       showNotification(mutationError.message || 'Failed to delete prompt.', 'error')
@@ -156,16 +181,28 @@ export function usePromptMutations() {
     onMutate: async ({ promptId }) => {
       await queryClient.cancelQueries({ queryKey: promptsQueryKey })
       const previousPrompts = queryClient.getQueryData<Prompt[]>(promptsQueryKey)
+      const previousPrompt = previousPrompts?.find((prompt) => prompt.id === promptId)
+      let optimisticPrompt: Prompt | undefined
 
-      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
-        togglePromptFavoriteInList(current, promptId)
-      )
+      queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) => {
+        const nextPrompts = togglePromptFavoriteInList(current, promptId)
+        optimisticPrompt = nextPrompts.find((prompt) => prompt.id === promptId)
+        return nextPrompts
+      })
 
-      return { previousPrompts }
+      return { promptId, previousPrompt, optimisticPrompt }
     },
     onError: (mutationError: Error, _variables, context) => {
-      if (context?.previousPrompts) {
-        queryClient.setQueryData(promptsQueryKey, context.previousPrompts)
+      if (context?.previousPrompt && context.optimisticPrompt) {
+        const { promptId: rollbackPromptId, previousPrompt, optimisticPrompt } = context
+        queryClient.setQueryData<Prompt[]>(promptsQueryKey, (current) =>
+          rollbackPromptInList(
+            current,
+            rollbackPromptId,
+            previousPrompt,
+            optimisticPrompt
+          )
+        )
       }
 
       showNotification(mutationError.message || 'Failed to update prompt.', 'error')
