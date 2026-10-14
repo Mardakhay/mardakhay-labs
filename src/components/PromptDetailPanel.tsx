@@ -9,6 +9,7 @@ import {
   promptToJson,
   promptToMarkdown,
 } from '../lib/promptExport'
+import { FOCUSABLE_ELEMENTS_SELECTOR, getFocusTrapTargetIndex } from '../lib/focusTrap'
 import { buildPromptDraftStorageKey } from '../lib/storageKeys'
 import CreatePromptModal from './CreatePromptModal'
 import HighlightedText from './HighlightedText'
@@ -33,6 +34,17 @@ function PromptDetailPanel({
   const modalRef = useRef<HTMLDivElement | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
   const copyTimeoutRef = useRef<number | null>(null)
+  const showEditorRef = useRef(false)
+  const onCloseRef = useRef(onClose)
+  const promptId = prompt?.id
+
+  useEffect(() => {
+    showEditorRef.current = showEditor
+  }, [showEditor])
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     return () => {
@@ -43,15 +55,41 @@ function PromptDetailPanel({
   }, [])
 
   useEffect(() => {
-    if (!prompt) return
+    if (promptId === undefined) return
 
+    const previousActiveElement =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     function handleKeyDown(event: KeyboardEvent) {
+      // The nested editor owns focus and Escape while it is open.
+      if (showEditorRef.current) return
+
       if (event.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
+        return
       }
+
+      if (event.key !== 'Tab') return
+
+      const focusableElements =
+        modalRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_ELEMENTS_SELECTOR)
+      if (!focusableElements?.length) return
+
+      const activeIndex = Array.from(focusableElements).indexOf(
+        document.activeElement as HTMLElement
+      )
+      const targetIndex = getFocusTrapTargetIndex(
+        activeIndex,
+        focusableElements.length,
+        event.shiftKey
+      )
+
+      if (targetIndex === null) return
+
+      event.preventDefault()
+      focusableElements[targetIndex]?.focus()
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -60,8 +98,12 @@ function PromptDetailPanel({
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', handleKeyDown)
+
+      if (previousActiveElement?.isConnected) {
+        previousActiveElement.focus()
+      }
     }
-  }, [onClose, prompt])
+  }, [promptId])
 
   if (!prompt) return null
   const portalTarget =

@@ -4,6 +4,7 @@ import type { RefObject } from 'react'
 import { Boxes, Bot, LoaderCircle, Plus, X } from 'lucide-react'
 
 import { derivePromptTitle } from '../lib/promptFormatting'
+import { FOCUSABLE_ELEMENTS_SELECTOR, getFocusTrapTargetIndex } from '../lib/focusTrap'
 import { buildUserScopedStorageKey } from '../lib/storageKeys'
 import { useAuthStore } from '../stores/authStore'
 import {
@@ -409,23 +410,24 @@ function CreatePromptModal({
       if (event.key !== 'Tab') return
 
       const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        FOCUSABLE_ELEMENTS_SELECTOR
       )
 
       if (!focusableElements?.length) return
 
-      const firstElement = focusableElements[0]
-      const lastElement = focusableElements[focusableElements.length - 1]
+      const activeIndex = Array.from(focusableElements).indexOf(
+        document.activeElement as HTMLElement
+      )
+      const targetIndex = getFocusTrapTargetIndex(
+        activeIndex,
+        focusableElements.length,
+        event.shiftKey
+      )
 
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault()
-        lastElement.focus()
-      }
+      if (targetIndex === null) return
 
-      if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault()
-        firstElement.focus()
-      }
+      event.preventDefault()
+      focusableElements[targetIndex]?.focus()
     }
 
     window.addEventListener('keydown', handleKeyDown)
