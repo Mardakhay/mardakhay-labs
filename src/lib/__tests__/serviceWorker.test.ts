@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm'
 import { describe, expect, it, vi } from 'vitest'
 
 const ORIGIN = 'https://mardakhay.test'
-const CACHE_NAME = 'mardakhay-labs-v3'
+const CACHE_NAME = 'mardakhay-labs-v6'
 const WORKER_SOURCE = readFileSync(
   new URL('../../../public/sw.js', import.meta.url),
   'utf8',
@@ -35,8 +35,27 @@ function cacheKey(request: CacheRequest) {
 function createServiceWorkerHarness() {
   const handlers = new Map<string, WorkerEventHandler>()
   const stores = new Map<string, Map<string, Response>>()
-  let networkFetch: (request: RequestStub) => Promise<Response> = async () =>
-    new Response('network response', { status: 200 })
+  let networkFetch: (request: RequestStub) => Promise<Response> = async (request) => {
+    if (new URL(request.url).pathname === '/asset-manifest.json') {
+      return new Response(JSON.stringify({
+        'src/main.tsx': {
+          file: 'assets/index-main.js',
+          css: ['assets/index-main.css'],
+          assets: ['assets/logo.svg'],
+        },
+        'src/pages/PromptsPage.tsx': {
+          file: 'assets/PromptsPage-chunk.js',
+          css: ['assets/PromptsPage.css'],
+          isDynamicEntry: true,
+        },
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
+
+    return new Response('network response', { status: 200 })
+  }
 
   const fetchMock = vi.fn((request: RequestStub) => networkFetch(request))
 
@@ -165,13 +184,19 @@ function createServiceWorkerHarness() {
 }
 
 describe('public/sw.js cache strategy', () => {
-  it('precaches the app shell without forcibly activating over open pages', async () => {
+  it('precaches every compiled bundle before allowing the worker to activate', async () => {
     const worker = createServiceWorkerHarness()
 
     await worker.dispatchLifecycle('install')
 
     expect(await worker.cacheNames()).toContain(CACHE_NAME)
-    expect(worker.skipWaiting).not.toHaveBeenCalled()
+    expect(await worker.cachedResponse(CACHE_NAME, '/asset-manifest.json')).toBeDefined()
+    expect(await worker.cachedResponse(CACHE_NAME, '/assets/index-main.js')).toBeDefined()
+    expect(await worker.cachedResponse(CACHE_NAME, '/assets/index-main.css')).toBeDefined()
+    expect(await worker.cachedResponse(CACHE_NAME, '/assets/PromptsPage-chunk.js')).toBeDefined()
+    expect(await worker.cachedResponse(CACHE_NAME, '/assets/PromptsPage.css')).toBeDefined()
+    expect(await worker.cachedResponse(CACHE_NAME, '/assets/logo.svg')).toBeDefined()
+    expect(worker.skipWaiting).toHaveBeenCalledOnce()
   })
 
   it('uses network-first navigation and caches only successful HTML responses', async () => {
@@ -291,6 +316,6 @@ describe('public/sw.js cache strategy', () => {
     expect(cacheNames).toContain(CACHE_NAME)
     expect(cacheNames).toContain('another-app-cache')
     expect(cacheNames).not.toContain('mardakhay-labs-v2')
-    expect(worker.claim).not.toHaveBeenCalled()
+    expect(worker.claim).toHaveBeenCalledOnce()
   })
 })

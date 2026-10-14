@@ -154,9 +154,9 @@ function PromptCard({
               }
             : undefined
         }
-        className={`app-surface group rounded-xl border border-white/[0.04] text-white transition-all duration-200 hover:-translate-y-px ${onOpenDetail ? 'cursor-pointer' : ''} ${compact ? 'p-3.5' : 'p-3.5 sm:p-4'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
+        className={`app-surface group w-full min-w-0 max-w-full rounded-xl border border-white/[0.04] text-white transition-all duration-200 hover:-translate-y-px ${onOpenDetail ? 'cursor-pointer' : ''} ${compact ? 'p-3.5' : 'p-3.5 sm:p-4'} ${prompt.is_favorite ? 'ring-1 ring-violet-500/20' : ''} ${selected ? 'border-violet-500/40 ring-1 ring-violet-500/30' : ''}`}
       >
-        <div className='flex items-start justify-between gap-3 sm:gap-4'>
+        <div className='flex min-w-0 items-start justify-between gap-3 sm:gap-4'>
           {selectable ? (
             <label className='mt-1 flex h-5 w-5 shrink-0 items-center justify-center'>
               <input
@@ -212,21 +212,21 @@ function PromptCard({
                 className='block max-w-full text-left'
               >
                 <h3
-                  className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-[13px]' : 'text-[15px] sm:text-base'}`}
+                  className={`min-w-0 break-words font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-[13px]' : 'text-[15px] sm:text-base'}`}
                 >
                   <HighlightedText text={promptTitle} query={searchQuery} />
                 </h3>
               </button>
             ) : (
               <h3
-                className={`font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-[13px]' : 'text-[15px] sm:text-base'}`}
+                className={`min-w-0 break-words font-semibold tracking-tight transition-colors group-hover:text-violet-50 ${compact ? 'text-[13px]' : 'text-[15px] sm:text-base'}`}
               >
                 <HighlightedText text={promptTitle} query={searchQuery} />
               </h3>
             )}
 
             <p
-              className={`mt-2 whitespace-pre-wrap text-[13px] ${compact ? 'leading-5 text-zinc-400' : 'leading-6 text-zinc-400'}`}
+              className={`mt-2 whitespace-pre-wrap break-words text-[13px] ${compact ? 'leading-5 text-zinc-400' : 'leading-6 text-zinc-400'}`}
             >
               <HighlightedText text={promptPreview} query={searchQuery} />
             </p>

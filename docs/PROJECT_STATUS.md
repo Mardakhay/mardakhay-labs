@@ -4,7 +4,7 @@
 >
 > **Язык:** русский.  
 > **Последний обзор исходников:** 14 октября 2026.  
-> **Последняя проверенная версия исходников:** ветка `main`, commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` (14 октября 2026; CI для этой ревизии прошёл успешно).  
+> **Последняя проверенная версия приложения:** production deploy с полным precache и автоактивацией Service Worker v5 на source commit `f23e3d87bd5081ae9abbd212951e7bf217811e75` (14 октября 2026; Vercel READY; root HTML и manifest используют согласованные актуальные asset hashes; реальные offline reload остаётся проверить).  
 > **Статус:** базовый статический аудит выполнен; предложенный roadmap ещё не означает, что исправления сделаны.
 
 ## 1. Краткий контекст
@@ -14,12 +14,11 @@ Mardakhay Labs — SPA/PWA для хранения, организации и п
 - Репозиторий: https://github.com/Mardakhay/mardakhay-labs
 - Production/demo URL из метаданных репозитория: https://mardakhay-labs.xyz
 - Основная документация: README.md и docs/BACKUP_AND_RESTORE.md
-- Последний просмотренный source commit: 60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358.
-- Последний проверенный CI для изменённых исходников: https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349 — 10 test files, 67 tests, lint и production build прошли 14 октября 2026.
+- Последний проверенный source commit приложения: `f23e3d87bd5081ae9abbd212951e7bf217811e75` (`test(pwa): verify worker activates after precache`). Vercel production deploy READY: https://vercel.com/mardakhay/mardakhay-labs/AdTL8SAmryeVJyQKg3yzsvNyVoWv. Исправлен SPA fallback, прямые запросы `/prompts`, `/favorites`, `/settings` и `/login` отвечают HTTP 200. Service Worker v5 precache всех bundle assets и auto-activates после успешной загрузки ресурсов; в live production `/` ссылается на `/assets/index-D_8ttvBx.js` и `/assets/index-C56v1fy9.css`, `/sw.js` указывает `mardakhay-labs-v5`, а `/asset-manifest.json` содержит 19 assets (18 JS и 1 CSS), все файлы проверены с HTTP 200. Визуальная проверка настоящего offline reload всё ещё открыта.
 
 ### Текущая общая оценка
 
-Это содержательный solo-проект для портфолио: кроме UI, в нём есть аутентификация, PostgreSQL/Supabase, RLS, кеширование серверного состояния, optimistic updates, миграции, тесты и CI. Архитектура разумна для текущего масштаба, но наиболее важные следующие шаги — валидация импортируемых данных, надёжность асинхронных изменений, тесты интеграционных сценариев и проверка поведения PWA при обновлениях.
+Это содержательный solo-проект для портфолио: кроме UI, в нём есть аутентификация, PostgreSQL/Supabase, RLS, кеширование серверного состояния, optimistic updates, миграции, тесты и CI. Основные найденные риски P0/P1 закрыты; следующие приоритеты — реальный PWA offline/update QA в одном origin, ручная проверка мобильного layout Prompts и безопасное решение оставшегося schema drift по `created_at`.
 
 Оценки из первого обзора были экспертными, а не метриками автоматического аудита. В частности, performance, Lighthouse, bundle size, браузерный QA и состояние production-настроек Supabase не измерялись напрямую.
 
@@ -147,14 +146,22 @@ Auth listener теперь подключается до восстановле�
 
 GitHub Actions CI passed на implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00`: test, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073. Последующее amend-обновление касается только этого документа; auth-код и тесты не изменены.
 
-#### P1-3. PWA cache / update strategy — IMPLEMENTED (unit tests passed; browser QA pending)
+#### P1-3. PWA cache / update strategy — IMPLEMENTED (v5 bundle precache + activation deployed; browser QA pending)
 Файлы: public/sw.js, src/lib/__tests__/serviceWorker.test.ts.
 
 Service worker использует network-first для навигации и кеширует /index.html только при успешном ответе. При офлайне навигация получает сохранённую app shell. Runtime-кеш ограничен app shell, статическими публичными ресурсами и Vite /assets/ hashed assets; произвольные same-origin GET/API и cross-origin запросы не перехватываются. Кеширующие записи выполняются в event.waitUntil, поэтому worker дожидается сохранения ответа. Ответы 4xx/5xx не подменяют хорошие кешированные данные.
 
-При активации удаляются только устаревшие кеши с собственным префиксом mardakhay-labs-, а не все кеши на origin. Версия кеша поднята до v3. Убраны немедленные skipWaiting()/clients.claim(): новая версия не перехватывает работающие вкладки с кодом предыдущей версии, а ждёт завершения старых clients.
+При активации удаляются только устаревшие кеши с собственным префиксом `mardakhay-labs-`, а не все кеши на origin. Ранний worker не форсировал `skipWaiting()`/`clients.claim()`, чтобы не перехватывать вкладки со старым кодом. После подтверждённого белого экрана при Offline лог показал запросы к старым bundle hashes `index-CZ_t4BuF.js` и `index-gZ6DVxhW.css`, отсутствующим в актуальном build manifest: зарегистрированный новый кеш сам по себе не гарантировал, что навигацией уже управляет новый worker и актуальный app shell.
 
-Vitest проверяет network-first/offline fallback, отказ от кеширования серверных ошибок, static asset fallback, обход dynamic/API и cross-origin запросов, POST и безопасное удаление старых кешей. GitHub Actions CI passed: 8 test files, 59 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884. Реальная проверка двух production deploys/браузерного offline ещё не выполнялась; это остаётся отдельным QA-пунктом.
+Service Worker поднят до `mardakhay-labs-v5`: install сначала успешно precache-ит app shell, manifest и все собранные JS/CSS/assets, включая lazy chunks; только после этого вызывает `skipWaiting()`. Activate удаляет принадлежащие приложению старые кеши, затем вызывает `clients.claim()`, выравнивая worker и кеш после обновления. Это убирает зависимость от закрытия всех вкладок для принятия новой версии; оставшийся риск — уже запущенная старая страница может требовать reload, поэтому production offline reload нужно проверить вручную.
+
+Vitest проверяет network-first/offline fallback, отказ от кеширования серверных ошибок, static asset fallback, обход dynamic/API и cross-origin запросов, POST и безопасное удаление старых кешей. GitHub Actions CI passed: 8 test files, 59 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
+
+Сверены доступные production build artifacts через Vercel: deploy на commit `02fadb757fbcba29af704ab89b6285f2b00a9b00` отдаёт Service Worker `mardakhay-labs-v2` и JS/CSS `index-DUJJj--l.js` / `index-DIdzy30v.css`; deploy на `586dc5b20bfd0565ab88419451e3e173a55d5ea3` отдаёт `mardakhay-labs-v3` и `index-DAH9byiE.js` / `index-gZ6DVxhW.css`; deploy на `829d8d846fb2f7b4d92a8dfc55054de039fb1dcd` отдавал `v3` и `index-BGEm4IeJ.js` / `index-BtE6VKe8.css`. Эти deploy-specific URLs имеют разные origins и сами по себе не доказывают update/offline flow в одном браузере.
+
+После пользовательского воспроизведения белого экрана в Chrome Offline повторный разбор `public/sw.js` выявил слабое место: install precache содержал HTML, manifest PWA и иконки, но не compiled JS/CSS; runtime cache заполнялся только после запросов, управляемых SW. При fallback HTML без закешированного entry bundle либо lazy route chunk приложение может остаться пустым.
+
+Первое исправление отправлено в `main`: Vite генерирует корневой `asset-manifest.json`; SW v4 читает manifest и precache-ит все `file`, `css` и `assets`, включая lazy-loaded chunks. Затем пользователь прислал Console ошибки с запросами старого набора hashes (`index-CZ_t4BuF.js` и `index-gZ6DVxhW.css`), показывающие рассинхронизацию app shell и активного worker. Следующее исправление перевело cache в `mardakhay-labs-v5` и добавило вызов `skipWaiting()` только после успешного precache, а `clients.claim()` — после безопасной очистки старых app-owned cache. Тест `src/lib/__tests__/serviceWorker.test.ts` обновлён: проверяет precache entry JS/CSS/static assets/dynamic page chunk перед активацией, а также вызовы skipWaiting/claim. Production deploy для source commit `f23e3d87bd5081ae9abbd212951e7bf217811e75` READY; live root ссылается на актуальные JS/CSS hashes, manifest содержит 19 assets (18 JS, 1 CSS), все 19 URL отвечают HTTP 200, `/sw.js` отдаёт v5. Реальный Offline + Reload после установки v5 пока не подтверждён.
 
 #### P1-4. RLS, привилегии и server-side metadata — FIXED (live checks passed; two follow-ups remain)
 Файлы: supabase/schema.sql, migrations 20260927185548_harden_prompts_rls.sql, 20261014074235_harden_prompts_grants_and_owner_integrity.sql, 20261014074431_enforce_prompt_metadata_values.sql, supabase/tests/prompts_security.test.sql.
@@ -217,6 +224,16 @@ URL.revokeObjectURL(url) вызывается сразу после link.click()
 
 #### P2-6. README / портфолио — IMPROVEMENT
 Добавить screenshots, короткую демонстрацию workflow, архитектурные решения и ограничения. Объяснить, почему TanStack Query используется для серверных данных, Zustand — для auth/notifications, а localStorage — только для локальных не критичных данных.
+
+#### P2-7. Mobile UI: карточки Prompts не помещаются в viewport — MITIGATION IMPLEMENTED / DEVICE QA PENDING
+Пользователь сообщил о проблеме на мобильном экране, ориентир — iPhone 17 Pro Max: карточки на Dashboard выглядят нормально, но в разделе Prompts визуально выглядят некорректно и не помещаются в ширину экрана. Точная причина пока не воспроизведена на устройстве.
+
+Source-level safeguards добавлены: grid карточек теперь явно использует одну колонку с `min-w-0` на узких экранах, `PromptCard` ограничен `w-full min-w-0 max-w-full`, а заголовок и preview могут переносить длинные неразрывные слова. Это устраняет распространённую причину intrinsic-width overflow, но статус не считается окончательно FIXED до проверки narrow viewport и Safari на реальном iPhone. Проверить также фильтры, теги, toolbar и action buttons, сравнив Dashboard и Prompts при одинаковой ширине viewport.
+
+#### P2-8. Прямые запросы SPA-маршрутов на Vercel — FIXED (production smoke test passed)
+До исправления главная страница (`/`) возвращала HTTP 200, но прямые GET-запросы к `/prompts`, `/favorites`, `/settings` и `/login` возвращали Vercel `404 NOT_FOUND`. Причина — отсутствие SPA rewrite: при открытии маршрута или обновлении вкладки запрос сначала обрабатывает сервер Vercel, до того как сработает React Router.
+
+Добавлен корневой `vercel.json` с rewrite `/(.*)` → `/index.html`. Production deploy на commit `f019569071ac05c3858feb73bd7a76ffd4fb7d84` имеет статус READY. После деплоя прямые запросы к `/prompts`, `/favorites`, `/settings` и `/login` проверены повторно: все возвращают HTTP 200 и app shell `index.html`. Это проверка HTTP rewrite; переход на фактическую страницу и состояние auth проверяются уже в браузере. Изменение устраняет 404 при прямом открытии/обновлении известных SPA-маршрутов.
 
 ## 6. Тесты и CI: текущее состояние
 
@@ -281,7 +298,13 @@ CI из .github/workflows/ci.yml запускает:
 ### Milestone 4 — PWA and UI quality (P1/P2)
 - [x] Добавлены unit-тесты network-first/offline fallback, runtime asset cache, API bypass и безопасной очистки кешей.
 - [x] GitHub Actions CI passed: 8 test files, 59 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
-- [ ] Проверить в реальном браузере update/offline между двумя production deploys с разными asset hashes.
+- [x] Сверены production artifacts старого deploy (`v2`, старые JS/CSS hashes), PWA update deploy (`v3`, другие hashes) и текущего `main` (`v3`, новые hashes); `/` и `/sw.js` ответили HTTP 200. Это ещё не заменяет браузерную проверку на одном origin.
+- [x] Добавлен Vite `asset-manifest.json` и precache всех собранных JS/CSS/static assets и lazy chunks в SW cache v4; live manifest и worker отвечают HTTP 200.
+- [x] На основании Console ошибок со старыми asset hashes SW повышен до v5: после успешного precache автоматически активируется (`skipWaiting`) и берёт клиентов под контроль (`clients.claim`); production deploy READY, все 19 manifest asset URLs проверены с HTTP 200. Ручной Offline + Reload после установки v5 ещё не подтверждён.
+- [x] Добавлен Vercel SPA rewrite `/(.*)` → `/index.html`; production smoke-test подтвердил HTTP 200 для прямых запросов `/prompts`, `/favorites`, `/settings` и `/login` после того, как до исправления они отвечали 404 (commit `f019569071ac05c3858feb73bd7a76ffd4fb7d84`).
+- [ ] Проверить в реальном браузере update/offline в одном origin между двумя production deploys.
+- [x] Добавлены responsive safeguards для Prompts card grid и переноса длинного текста (`grid-cols-1 min-w-0`, card width constraints, `break-words`).
+- [ ] Проверить mobile layout в Safari на iPhone 17 Pro Max: сравнить с Dashboard и проверить horizontal overflow, grid, ширину текста, теги и фильтры.
 - [x] Добавлен общий focus-trap helper для detail/editor modal; ручная проверка Tab/Shift+Tab подтвердила корректное поведение.
 - [x] Связаны подписи editor fields, добавлены announceable validation errors, status для copy email, aria-pressed favorite, доступное имя/начальный фокус dropdown; добавлены validation tests. CI passed: 11 test files, 70 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38534253393.
 - [ ] Выполнить ручную проверку screen reader: названия диалогов/полей, ошибка пустого prompt, уведомления и подтверждение копирования.
@@ -326,13 +349,17 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — пользователь вручную подтвердил, что клавиатурная навигация Tab/Shift+Tab в модальном окне работает ожидаемо.
 - 2026-10-14 — исправлены связи label/input редактора, пустой prompt content выдаёт доступную ошибку и переводит фокус к textarea, добавлен live status для копирования email, состояние избранного озвучивается через aria-pressed; dropdown получил более понятное имя и управляемый начальный фокус/Escape. Добавлены три unit-теста в promptValidation.test.ts. CI passed для source commit `31639b2ce7b629f947455a6a490a2d409b894a6c`: 11 test files, 70 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38534253393. Ручная проверка screen reader остаётся открытой.
 - 2026-10-14 — npm audit triage и совместимые non-major lockfile updates: React Router 7.18.4, Vite 8.3.4, Vitest 4.1.11 и уязвимые transitive deps. package.json не изменён; post-fix npm audit показал 0 уязвимостей. test/lint/build прошли в https://github.com/Mardakhay/mardakhay-labs/actions/runs/38536000606. Добавлен weekly/manual dependency audit workflow с отчётом-артефактом.
+- 2026-10-14 — PWA production artifact check: подтверждены HTTP 200 для `/` и `/sw.js`; найден переход `mardakhay-labs-v2` → `v3` и изменение asset hashes на разных production deployments. Офлайн/update flow в одном origin не проверен, поэтому browser QA остаётся открытым.
+- 2026-10-14 — для P2-7 добавлены responsive safeguards в Prompts grid и `PromptCard`: явная single-column grid на mobile, intrinsic width constraints и перенос длинных заголовков/preview. Source commit `09a2ab71343b2f035821f181ce114f625f69d5df`; CI test/lint/build passed — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38538817802. Vercel production deploy READY и отдаёт обновлённый bundle, compiled CSS содержит нужные responsive utilities. Реальное воспроизведение и Safari QA на iPhone 17 Pro Max всё ещё нужны.
+- 2026-10-14 — подтверждена причина случайных 404 на прямых SPA-маршрутах: до фикса Vercel отдавал 404 для `/prompts`, `/favorites`, `/settings` и `/login`, при том что `/` отвечал 200. Добавлен `vercel.json` с rewrite на `/index.html` (source commit `f019569071ac05c3858feb73bd7a76ffd4fb7d84`); production deploy READY и повторный smoke-test всех четырёх маршрутов вернул HTTP 200. Проверка offline/update в браузере на одном origin всё ещё открыта.
+- 2026-10-14 — после воспроизведения белого экрана в Chrome Offline добавлен Vite `asset-manifest.json` и SW v4 precache для всех JS/CSS/assets/lazy chunks. Console пользователя позже показала, что навигация всё ещё запрашивала старые hashes `index-CZ_t4BuF.js` и `index-gZ6DVxhW.css`, что указывает на несогласованную версию app shell/worker. SW cache bumped to v5; `skipWaiting()` вызывается только после precache, `clients.claim()` — после активации и cleanup. Регрессионные assertions обновлены. Source commit `f23e3d87bd5081ae9abbd212951e7bf217811e75`; Vercel deploy READY, live root and SW now use current asset set; manifest enumerates 19 assets, all 19 return HTTP 200. Actual browser Offline + Reload is still pending.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: screen-reader проверку временно отложить по решению пользователя. Ближайшие пункты: проверить PWA offline/update на двух production deploys; исследовать безопасный способ согласовать timezone для `created_at` (не менять тип до подтверждения исторического часового пояса); в Supabase Dashboard при случае проверить настройки minimum password length/password strength. Leaked Password Protection остаётся ограниченной тарифом Pro+.
+Следующая задача: screen-reader проверку временно отложить по решению пользователя. Ближайшие пункты: завершить PWA offline/update browser QA в одном origin; проверить responsive fix для карточек Prompts на узком viewport и реальном iPhone; затем исследовать безопасный способ согласовать timezone для `created_at` (не менять тип до подтверждения исторического часового пояса). В Supabase Dashboard при случае проверить minimum password length/password strength. Leaked Password Protection остаётся ограниченной тарифом Pro+.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
