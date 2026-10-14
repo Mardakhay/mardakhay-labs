@@ -171,15 +171,12 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Оставшийся schema drift: created_at в production имеет тип timestamp without time zone, тогда как schema.sql задаёт timestamptz. Тип не менялся автоматически, так как это может переинтерпретировать исторические timestamps без подтверждённой исходной timezone. Supabase Security Advisor также сообщает Leaked Password Protection Disabled; эту Auth-настройку необходимо включить в Dashboard отдельно.
 
-#### P1-5. Переиспользуемый draft key в PromptDetailPanel — VERIFY / вероятный дефект
-Файл: src/components/PromptDetailPanel.tsx.
+#### P1-5. Переиспользуемый draft key в PromptDetailPanel — FIXED (CI passed)
+Файлы: src/components/PromptDetailPanel.tsx, src/components/CreatePromptModal.tsx, src/lib/storageKeys.ts, src/lib/__tests__/storageKeys.test.ts.
 
-Редактор из PromptDetailPanel открывается без явного draftKey, поэтому используется резервный ключ CreatePromptModal, формируемый по initialTitle. Две записи с одинаковым исходным заголовком могут разделить ключ черновика, потенциально приводя к восстановлению черновика не той записи.
+Редактор режима edit теперь использует ключ `draft:edit:promptId:userId`, основанный на ID записи и user_id владельца. Это устраняет коллизии промптов с одинаковым заголовком и разделяет данные между пользователями. Ключ черновика включён в React key компонента PromptEditorModal, поэтому при смене записи или draft key редактор перемонтируется и не переносит старое состояние на другую запись.
 
-Предлагаемое исправление:
-- Передавать draftKey, основанный на ID промпта, например draft:edit-<promptId>.
-- Добавить тест/ручной сценарий с двумя промптами с одинаковым заголовком.
-- Проверить, что черновики новых и редактируемых записей изолированы между собой и пользователями.
+Добавлены три unit-теста: ключ включает ID записи/владельца, разные prompt IDs не совпадают, один prompt ID у разных пользователей даёт разные ключи. GitHub Actions CI passed: 9 test files, 62 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 
 #### P1-6. Проверка уязвимостей зависимостей — TODO (CI warning)
 
@@ -265,6 +262,7 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Тесты восстановления сессии, logout, быстрого login и переключения аккаунта.
 - [x] Кеш промптов очищается при logout/смене user id; query keys включают user id.
 - [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
+- [x] Edit draft key изолирован по prompt ID и user ID; редактор перемонтируется при смене ключа.
 
 ### Milestone 3 — Backend security verification (P1)
 - [x] Проверить фактические production RLS policies и роли; убрать лишние anon grants и сузить права authenticated до CRUD.
@@ -314,13 +312,14 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — инициализация auth переведена на version-guard для защиты от устаревшего getSession(), кеш промптов очищается при смене пользователя; добавлены 9 регрессионных тестов. CI passed для implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00` (test/lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
 - 2026-10-14 — обновлена cache/update policy Service Worker: runtime cache только для shell/assets, обработка cache writes через waitUntil, cleanup scoped по cache prefix, обновления не перехватывают вкладки принудительно; добавлены regression tests. CI passed для implementation revision `770cb35088c9625436f618995e8d9dbe4a31ad14` (8 test files, 59 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884. Реальный браузерный QA остаётся открытым.
 - 2026-10-14 — проверен live Supabase backend: RLS owner/A-vs-B read isolation подтверждена; отозваны лишние grants anon/authenticated, добавлены owner NOT NULL/FK/cascade, GENERATED ALWAYS и metadata CHECK constraints. Добавлен SQL catalog security test, migration filenames выровнены по production versions. Supabase advisor: leaked-password protection отключена; created_at timezone/type drift оставлен для отдельного решения.
+- 2026-10-14 — edit draft key изолирован по prompt ID и owner user ID; добавлены три storage key unit-теста. GitHub Actions CI passed (9 test files, 62 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: P1-5 — исправить и проверить draft key в PromptDetailPanel. Ручные Auth/schema follow-ups из Milestone 3 нужно сохранить в контексте.
+Следующая задача: закрыть оставшиеся ручные follow-ups Milestone 3: включить Leaked Password Protection в Supabase Auth Dashboard и согласовать timezone created_at; затем продолжить P2-2 — проверку доступности модальных окон.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
