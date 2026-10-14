@@ -1,0 +1,77 @@
+name: Dependency audit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dependency-audit.yml'
+  schedule:
+    - cron: '17 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run npm audit
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit-report.json
+          audit_status=$?
+          set -e
+          echo "npm audit exit code: ${audit_status}"
+          node <<'NODE'
+          const fs = require('node:fs')
+          const report = JSON.parse(fs.readFileSync('npm-audit-report.json', 'utf8'))
+          const vulnerabilities = Object.entries(report.vulnerabilities ?? {}).map(
+            ([name, vulnerability]) => ({
+              package: name,
+              severity: vulnerability.severity,
+              direct: vulnerability.isDirect,
+              range: vulnerability.range,
+              fixAvailable: vulnerability.fixAvailable,
+              effects: vulnerability.effects,
+              via: (vulnerability.via ?? []).map((item) =>
+                typeof item === 'string'
+                  ? item
+                  : {
+                      title: item.title,
+                      url: item.url,
+                      range: item.range,
+                      severity: item.severity,
+                      cwe: item.cwe,
+                      cvss: item.cvss?.score,
+                      dependency: item.name,
+                    },
+              ),
+            }),
+          )
+          console.log(JSON.stringify({
+            metadata: report.metadata?.vulnerabilities,
+            packages: vulnerabilities,
+          }, null, 2))
+          NODE
+
+      - name: Upload full audit report
+        if: always() && hashFiles('npm-audit-report.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          if-no-files-found: ignore
+          retention-days: 14
