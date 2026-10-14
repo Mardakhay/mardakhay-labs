@@ -474,7 +474,7 @@ function CreatePromptModal({
               }}
             >
               <PromptEditorModal
-                key={`${initialTitle}::${initialPrompt}`}
+                key={`${resolvedDraftKey}::${initialTitle}::${initialPrompt}`}
                 initialPrompt={initialPrompt}
                 initialTitle={initialTitle}
                 initialAiTarget={initialAiTarget}
