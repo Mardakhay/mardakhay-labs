@@ -198,12 +198,12 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Возможные части: usePromptFilters, usePromptSelection, import/export handlers, bulk actions, URL-driven prompt detail state.
 
-#### P2-2. Доступность модальных окон — IN PROGRESS (unit tests + CI passed)
-PromptDetailPanel теперь ограничивает Tab/Shift+Tab внутри detail-диалога, ставит начальный фокус на кнопку закрытия и возвращает фокус инициатору после закрытия. Для вложенного edit-диалога внешний обработчик не перехватывает фокус и Escape; редактор продолжает владеть собственным focus trap. Логика границ фокуса общая для двух модалок и покрыта пятью unit-тестами.
+#### P2-2. Доступность модальных окон — IN PROGRESS (code fixes + CI passed)
+PromptDetailPanel удерживает Tab/Shift+Tab внутри detail-диалога и возвращает фокус инициатору после закрытия; вложенный editor сохраняет собственный focus trap и обработку Escape. В CreatePromptModal исправлены связи label/input для заголовка и содержимого. Пустой/пробельный prompt content теперь даёт объявляемую ошибку, textarea получает `aria-invalid` и `aria-describedby`, а фокус перемещается к полю с ошибкой. Уведомления стали atomic, копирование email объявляет статус, favorite control сообщает `aria-pressed`, dropdown trigger имеет контекстное доступное имя и при открытии фокусирует выбранный пункт. Escape в dropdown закрывает сначала меню, не весь родительский диалог. ID у ConfirmModal теперь уникальны между экземплярами.
 
-CI для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` прошёл: 10 test files, 67 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
+Добавлены 3 unit-теста в `src/lib/__tests__/promptValidation.test.ts`. CI для source commit `31639b2ce7b629f947455a6a490a2d409b894a6c` прошёл: 11 test files, 70 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38534253393.
 
-Ручная проверка пользователя подтвердила корректную работу Tab/Shift+Tab: фокус остаётся внутри модального окна, переходы работают ожидаемо. Остаётся проверить screen reader/live announcements и связи label/error для полей формы; эти сценарии отдельно не подтверждены.
+Ручная проверка пользователя подтвердила корректную работу Tab/Shift+Tab. Реальная проверка screen reader ещё открыта: необходимо проверить озвучивание имени диалога/полей, ошибку при пустом содержимом, успех копирования email и сообщения об операциях. Автоматический CI и code review не заменяют эту проверку.
 
 #### P2-3. Немедленный revokeObjectURL — IMPROVEMENT / VERIFY
 Файл: src/lib/promptExport.ts, downloadTextFile.
@@ -226,6 +226,7 @@ URL.revokeObjectURL(url) вызывается сразу после link.click()
 - src/lib/__tests__/authSession.test.ts
 - src/lib/__tests__/authUtils.test.ts
 - src/lib/__tests__/focusTrap.test.ts
+- src/lib/__tests__/promptValidation.test.ts
 - src/lib/__tests__/promptCache.test.ts
 - src/lib/__tests__/promptExport.test.ts
 - src/lib/__tests__/promptFormatting.test.ts
@@ -282,9 +283,9 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Добавлены unit-тесты network-first/offline fallback, runtime asset cache, API bypass и безопасной очистки кешей.
 - [x] GitHub Actions CI passed: 8 test files, 59 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
 - [ ] Проверить в реальном браузере update/offline между двумя production deploys с разными asset hashes.
-- [x] Добавлен общий focus-trap helper для detail/editor modal: Tab/Shift+Tab boundary handling и 5 unit-тестов; CI passed (10 test files, 67 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
-- [x] Ручная keyboard-only проверка Tab/Shift+Tab в модальном окне подтверждена пользователем: фокус работает ожидаемо.
-- [ ] Проверить screen reader/live announcements и связи label/error для полей.
+- [x] Добавлен общий focus-trap helper для detail/editor modal; ручная проверка Tab/Shift+Tab подтвердила корректное поведение.
+- [x] Связаны подписи editor fields, добавлены announceable validation errors, status для copy email, aria-pressed favorite, доступное имя/начальный фокус dropdown; добавлены validation tests. CI passed: 11 test files, 70 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38534253393.
+- [ ] Выполнить ручную проверку screen reader: названия диалогов/полей, ошибка пустого prompt, уведомления и подтверждение копирования.
 - [ ] Подтвердить, нужен ли рефакторинг крупных компонентов.
 
 ### Milestone 5 — Portfolio polish (P2)
@@ -322,14 +323,15 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — edit draft key изолирован по prompt ID и owner user ID; добавлены три storage key unit-теста. GitHub Actions CI passed (9 test files, 62 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 - 2026-10-14 — в PromptDetailPanel добавлен focus trap для Tab/Shift+Tab, возврат фокуса на инициатор и защита вложенного edit-диалога от внешнего Escape handler; общий helper покрыт пятью unit-тестами. CI passed для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358`: 10 test files, 67 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349. Ручная keyboard-only и screen-reader проверка остаётся открытой.
 - 2026-10-14 — попытка включить Leaked Password Protection в Supabase Auth вернула сообщение о необходимости Pro plan или выше. Документация roadmap обновлена: это ограничение тарифа; апгрейд не требуется для продолжения аудита, проверить доступные парольные требования на текущем плане.
-- 2026-10-14 — пользователь вручную подтвердил, что клавиатурная навигация Tab/Shift+Tab в модальном окне работает ожидаемо. В Milestone 4 закрыт этот ручной QA-пункт; screen reader/live announcements и label/error associations остаются непроверенными.
+- 2026-10-14 — пользователь вручную подтвердил, что клавиатурная навигация Tab/Shift+Tab в модальном окне работает ожидаемо.
+- 2026-10-14 — исправлены связи label/input редактора, пустой prompt content выдаёт доступную ошибку и переводит фокус к textarea, добавлен live status для копирования email, состояние избранного озвучивается через aria-pressed; dropdown получил более понятное имя и управляемый начальный фокус/Escape. Добавлены три unit-теста в promptValidation.test.ts. CI passed для source commit `31639b2ce7b629f947455a6a490a2d409b894a6c`: 11 test files, 70 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38534253393. Ручная проверка screen reader остаётся открытой.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: проверить screen reader/live announcements и связи label/error для полей формы; затем проверить доступные настройки минимальной длины и сложности пароля на текущем Supabase плане. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
+Следующая задача: вручную проверить с screen reader объявление названия detail/editor/confirm dialog, подписей Prompt title/Prompt content, ошибку при пустом Prompt content, подтверждение копирования email и стандартные toast-уведомления. Затем в Supabase Dashboard проверить доступные параметры minimum password length/password strength на текущем тарифе. Подключённый Supabase-инструмент даёт project/advisor информацию, но не предоставляет интерфейс чтения/изменения Auth password settings. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
