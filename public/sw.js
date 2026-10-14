@@ -1,6 +1,6 @@
-const CACHE_NAME = "mardakhay-labs-v2";
+const CACHE_PREFIX = "mardakhay-labs-";
+const CACHE_NAME = "mardakhay-labs-v3";
 const APP_SHELL = [
-  "/",
   "/index.html",
   "/manifest.webmanifest",
   "/favicon.svg",
@@ -8,27 +8,26 @@ const APP_SHELL = [
   "/icon-512.png"
 ];
 
+function isCacheableAsset(url) {
+  return APP_SHELL.includes(url.pathname) || url.pathname.startsWith("/assets/");
+}
+
 self.addEventListener("install", (event) => {
+  // Let the new worker wait until existing pages release the old worker.
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
-        )
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
       )
-      .then(() => self.clients.claim())
+    )
   );
 });
 
@@ -39,37 +38,57 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Only handle this app's own assets. Supabase/API requests stay untouched.
+  // Never intercept third-party requests (including Supabase).
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
+    const networkResponse = fetch(request);
+
     event.respondWith(
-      fetch(request)
+      networkResponse.catch(() =>
+        caches.open(CACHE_NAME).then((cache) =>
+          cache.match("/index.html").then((cached) => cached || Response.error())
+        )
+      )
+    );
+
+    event.waitUntil(
+      networkResponse
         .then((response) => {
-          const copy = response.clone();
-          void caches.open(CACHE_NAME).then((cache) => cache.put("/index.html", copy));
-          return response;
+          if (!response.ok) return;
+
+          return caches.open(CACHE_NAME).then((cache) =>
+            cache.put("/index.html", response.clone())
+          );
         })
-        .catch(() => caches.match("/index.html"))
+        .catch(() => undefined)
     );
     return;
   }
 
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      })
-      .catch(() => caches.match(request))
-  );
-});
+  // Runtime-cache only the app shell and Vite's fingerprinted build assets.
+  // Dynamic same-origin endpoints must not be cached by this worker.
+  if (!isCacheableAsset(url)) return;
 
-self.addEventListener("message", (event) => {
-  if (event.data === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
+  const networkResponse = fetch(request);
+
+  event.respondWith(
+    networkResponse.catch(() =>
+      caches.open(CACHE_NAME).then((cache) =>
+        cache.match(request).then((cached) => cached || Response.error())
+      )
+    )
+  );
+
+  event.waitUntil(
+    networkResponse
+      .then((response) => {
+        if (!response.ok) return;
+
+        return caches.open(CACHE_NAME).then((cache) =>
+          cache.put(request, response.clone())
+        );
+      })
+      .catch(() => undefined)
+  );
 });

@@ -136,26 +136,25 @@ Delete откатывает весь snapshot только если кеш не 
 
 GitHub Actions CI passed: test, lint and build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
 
-#### P1-2. Инициализация сессии и auth state listener — VERIFY
-Файл: src/App.tsx.
+#### P1-2. Инициализация сессии и auth state listener — FIXED (CI passed)
+Файлы: src/App.tsx, src/lib/authSession.ts, src/lib/__tests__/authSession.test.ts.
 
-getSession() и onAuthStateChange() запускаются при инициализации. Оба обновляют auth store. Нужно проверить порядок результатов при входе/выходе в момент восстановления сессии и убедиться, что устаревший результат не перезаписывает актуальный.
+Auth listener теперь подключается до восстановления сессии. Результат getSession применяется только если с момента начала восстановления не пришло более новое auth-событие; поздний результат или ошибка не могут перезаписать logout, быстрый login или переключение аккаунта. Событие auth state снимает loading сразу, а cleanup эффекта блокирует обновления после unsubscribe.
 
-План проверки:
-- Тесты холодного запуска, существующей сессии, logout, быстрого повторного login и OAuth callback.
-- Проверить отсутствие кратковременного показа приватных данных другого пользователя.
-- Сохранять очистку кеша при смене/утрате пользователя.
+При logout и смене user id удаляется кеш промптов. Повторные события того же пользователя не очищают его кеш, а ключи запросов промптов по-прежнему включают user id.
 
-#### P1-3. PWA cache / update strategy — VERIFY
-Файл: public/sw.js.
+Добавлены unit-тесты восстановления сессии, logout, быстрого login, смены аккаунта, подавления устаревшей ошибки, cleanup и правил очистки кеша.
 
-Service worker делает network-first для навигации, сохраняет страницу как /index.html, кэширует успешные same-origin GET responses и при активации удаляет старые cache entries. Это требует проверки сценариев смены версии, отсутствия сети и несоответствия HTML с hashed assets. Статический просмотр не доказывает, что проблема воспроизводится.
+GitHub Actions CI passed на implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00`: test, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073. Последующее amend-обновление касается только этого документа; auth-код и тесты не изменены.
 
-План проверки:
-- Развернуть две версии приложения с разными asset hashes.
-- Проверить обновление открытой вкладки и offline после обновления.
-- Проверить, что запросы к Supabase/API не перехватываются service worker.
-- Обеспечить понятную политику обновления и очистки кеша.
+#### P1-3. PWA cache / update strategy — IMPLEMENTED (unit tests passed; browser QA pending)
+Файлы: public/sw.js, src/lib/__tests__/serviceWorker.test.ts.
+
+Service worker использует network-first для навигации и кеширует /index.html только при успешном ответе. При офлайне навигация получает сохранённую app shell. Runtime-кеш ограничен app shell, статическими публичными ресурсами и Vite /assets/ hashed assets; произвольные same-origin GET/API и cross-origin запросы не перехватываются. Кеширующие записи выполняются в event.waitUntil, поэтому worker дожидается сохранения ответа. Ответы 4xx/5xx не подменяют хорошие кешированные данные.
+
+При активации удаляются только устаревшие кеши с собственным префиксом mardakhay-labs-, а не все кеши на origin. Версия кеша поднята до v3. Убраны немедленные skipWaiting()/clients.claim(): новая версия не перехватывает работающие вкладки с кодом предыдущей версии, а ждёт завершения старых clients.
+
+Vitest проверяет network-first/offline fallback, отказ от кеширования серверных ошибок, static asset fallback, обход dynamic/API и cross-origin запросов, POST и безопасное удаление старых кешей. GitHub Actions CI passed: 8 test files, 59 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884. Реальная проверка двух production deploys/браузерного offline ещё не выполнялась; это остаётся отдельным QA-пунктом.
 
 #### P1-4. Проверка RLS в реальной базе — VERIFY
 Файлы: supabase/schema.sql, supabase/migrations/20260927190000_harden_prompts_rls.sql.
@@ -242,7 +241,7 @@ CI из .github/workflows/ci.yml запускает:
 - auth initialization, logout и смена аккаунта;
 - RLS изоляция двух тестовых пользователей;
 - E2E workflow create → search → edit → favorite → delete;
-- обновление service worker/offline;
+- проверка update service worker/offline в реальном браузере между deploys;
 - keyboard navigation и доступность.
 
 ## 7. Roadmap
@@ -258,8 +257,9 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Добавлены регрессионные тесты optimistic rollback при конкурирующих мутациях.
 - [x] Исправлен конфликт rollback для update/favorite/delete.
 - [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
-- [ ] Тесты восстановления сессии, logout и смены пользователя.
-- [ ] Убедиться, что query cache не раскрывает данные между аккаунтами.
+- [x] Тесты восстановления сессии, logout, быстрого login и переключения аккаунта.
+- [x] Кеш промптов очищается при logout/смене user id; query keys включают user id.
+- [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
 
 ### Milestone 3 — Backend security verification (P1)
 - [ ] Проверить фактические production RLS policies и роли.
@@ -268,7 +268,9 @@ CI из .github/workflows/ci.yml запускает:
 - [ ] Проверить валидацию metadata на сервере.
 
 ### Milestone 4 — PWA and UI quality (P1/P2)
-- [ ] Проверить update/offline поведение Service Worker.
+- [x] Добавлены unit-тесты network-first/offline fallback, runtime asset cache, API bypass и безопасной очистки кешей.
+- [x] GitHub Actions CI passed: 8 test files, 59 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
+- [ ] Проверить в реальном браузере update/offline между двумя production deploys с разными asset hashes.
 - [ ] Пройти пользовательские сценарии клавиатурой.
 - [ ] Проверить модальные окна, focus return, live announcements.
 - [ ] Подтвердить, нужен ли рефакторинг крупных компонентов.
@@ -302,13 +304,15 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — реализованы runtime-валидация JSON import, восстановление favorite state, limits (500 prompts / 5 MiB), unit-тесты и обновлена backup-документация. CI: success для проверенной revision 8e77d0d8c683da5b52573efa443d6904a84396f8 — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38526090535.
 - 2026-10-14 — последний CI успешно прошёл тесты, lint и build; npm ci сообщил о 12 уязвимостях зависимостей (1 low, 4 moderate, 7 high). Подробный triage добавлен в P1-6 / Milestone 6.
 - 2026-10-14 — реализован точечный rollback для optimistic update/favorite и безопасный snapshot rollback для delete; добавлены регрессионные тесты. CI passed для implementation commit 38a6b72990f80f1f26a8471ace49cda80875149d: 6 test files passed, lint passed, production build passed — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
+- 2026-10-14 — инициализация auth переведена на version-guard для защиты от устаревшего getSession(), кеш промптов очищается при смене пользователя; добавлены 9 регрессионных тестов. CI passed для implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00` (test/lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
+- 2026-10-14 — обновлена cache/update policy Service Worker: runtime cache только для shell/assets, обработка cache writes через waitUntil, cleanup scoped по cache prefix, обновления не перехватывают вкладки принудительно; добавлены regression tests. CI passed для implementation revision `770cb35088c9625436f618995e8d9dbe4a31ad14` (8 test files, 59 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884. Реальный браузерный QA остаётся открытым.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: P1-2 — покрыть тестами восстановление Supabase-сессии, logout, быстрый повторный login и переключение аккаунта.
+Следующая задача: P1-4 — проверить RLS policies, роли и изоляцию данных между двумя пользователями; отделять проверку миграций в репозитории от подтверждения production.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
