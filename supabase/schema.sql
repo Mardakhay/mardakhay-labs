@@ -6,8 +6,8 @@ create table if not exists public.prompts (
   content text not null,
   user_id uuid not null references auth.users(id) on delete cascade,
   is_favorite boolean not null default false,
-  ai_target text,
-  category text,
+  ai_target text check (ai_target is null or ai_target in ('ChatGPT', 'Claude', 'Gemini', 'Grok')),
+  category text check (category is null or category in ('Writing', 'Coding', 'Research', 'Image', 'Video', 'Marketing', 'Automation')),
   hashtags text[] not null default '{}'
 );
 
@@ -40,6 +40,40 @@ set hashtags = coalesce(
   '{}'
 )
 where hashtags = '{}';
+
+-- Align existing tables with the constraints declared by the baseline schema.
+alter table public.prompts
+  alter column id set generated always,
+  alter column title set not null,
+  alter column content set not null,
+  alter column user_id set not null,
+  alter column is_favorite set not null;
+
+do $
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.prompts'::regclass and conname = 'prompts_user_id_fkey'
+  ) then
+    alter table public.prompts add constraint prompts_user_id_fkey
+      foreign key (user_id) references auth.users(id) on delete cascade;
+  end if;
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.prompts'::regclass and conname = 'prompts_ai_target_check'
+  ) then
+    alter table public.prompts add constraint prompts_ai_target_check
+      check (ai_target is null or ai_target in ('ChatGPT', 'Claude', 'Gemini', 'Grok'));
+  end if;
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.prompts'::regclass and conname = 'prompts_category_check'
+  ) then
+    alter table public.prompts add constraint prompts_category_check
+      check (category is null or category in ('Writing', 'Coding', 'Research', 'Image', 'Video', 'Marketing', 'Automation'));
+  end if;
+end;
+$;
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -103,3 +137,9 @@ on public.prompts
 for delete
 to authenticated
 using ((select auth.uid()) = user_id);
+
+-- RLS policies filter rows; grants independently enforce least privilege.
+revoke all privileges on table public.prompts from anon, authenticated;
+grant select, insert, update, delete on table public.prompts to authenticated;
+revoke all privileges on sequence public.prompts_id_seq from anon, authenticated;
+grant usage on sequence public.prompts_id_seq to authenticated;
