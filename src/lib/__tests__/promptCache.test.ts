@@ -4,6 +4,8 @@ import type { Prompt, PromptInput } from '../../api/prompts'
 import {
   applyPromptInputToPrompt,
   removePromptFromList,
+  rollbackPromptInList,
+  rollbackPromptListSnapshotIfUnchanged,
   replacePromptInList,
   sortPromptsByUpdatedAtDesc,
   togglePromptFavoriteInList,
@@ -88,5 +90,81 @@ describe('promptCache', () => {
     const replaced = replacePromptInList([prompt], nextPrompt)
 
     expect(replaced).toEqual([nextPrompt])
+  })
+
+  it('rolls back a failed update without losing a successful update to another prompt', () => {
+    const secondPrompt = { ...prompt, id: 2, title: 'Second prompt' }
+    const failedOptimisticPrompt = applyPromptInputToPrompt(prompt, {
+      title: 'Temporary title',
+      content: 'Temporary content',
+    })
+    const successfulPrompt = {
+      ...secondPrompt,
+      title: 'Saved second title',
+      content: 'Saved second content',
+      updated_at: '2026-06-04T11:00:00.000Z',
+    }
+    const currentPrompts = [failedOptimisticPrompt, successfulPrompt]
+
+    const rolledBack = rollbackPromptInList(currentPrompts, prompt.id, prompt, failedOptimisticPrompt)
+
+    expect(rolledBack.find((item) => item.id === prompt.id)).toEqual(prompt)
+    expect(rolledBack.find((item) => item.id === secondPrompt.id)).toEqual(successfulPrompt)
+  })
+
+  it('does not roll back a newer change to the same prompt', () => {
+    const firstOptimisticPrompt = applyPromptInputToPrompt(prompt, {
+      title: 'First optimistic title',
+      content: 'First optimistic content',
+    })
+    const newerPrompt = {
+      ...firstOptimisticPrompt,
+      title: 'Newer saved title',
+      content: 'Newer saved content',
+      updated_at: '2026-06-04T11:00:00.000Z',
+    }
+
+    const result = rollbackPromptInList([newerPrompt], prompt.id, prompt, firstOptimisticPrompt)
+
+    expect(result[0]).toBe(newerPrompt)
+  })
+
+  it('allows nested failed optimistic updates to unwind in order', () => {
+    const firstOptimisticPrompt = applyPromptInputToPrompt(prompt, {
+      title: 'First optimistic title',
+      content: 'First optimistic content',
+    })
+    const secondOptimisticPrompt = applyPromptInputToPrompt(firstOptimisticPrompt, {
+      title: 'Second optimistic title',
+      content: 'Second optimistic content',
+    })
+
+    const afterSecondRollback = rollbackPromptInList(
+      [secondOptimisticPrompt],
+      prompt.id,
+      firstOptimisticPrompt,
+      secondOptimisticPrompt
+    )
+    const afterFirstRollback = rollbackPromptInList(
+      afterSecondRollback,
+      prompt.id,
+      prompt,
+      firstOptimisticPrompt
+    )
+
+    expect(afterSecondRollback[0]).toBe(firstOptimisticPrompt)
+    expect(afterFirstRollback[0]).toEqual(prompt)
+  })
+
+  it('restores a deleted-list snapshot only when no later cache write replaced it', () => {
+    const previousPrompts = [prompt, { ...prompt, id: 2, title: 'Second prompt' }]
+    const optimisticPrompts = removePromptFromList(previousPrompts, prompt.id)
+    const latestPrompt = { ...previousPrompts[1]!, title: 'Saved while delete pending' }
+    const currentPrompts = replacePromptInList(optimisticPrompts, latestPrompt)
+
+    expect(rollbackPromptListSnapshotIfUnchanged(currentPrompts, previousPrompts, optimisticPrompts))
+      .toBe(currentPrompts)
+    expect(rollbackPromptListSnapshotIfUnchanged(optimisticPrompts, previousPrompts, optimisticPrompts))
+      .toBe(previousPrompts)
   })
 })

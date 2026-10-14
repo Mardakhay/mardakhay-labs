@@ -42,6 +42,34 @@ export function togglePromptFavoriteInList(
   )
 }
 
+export function rollbackPromptInList(
+  prompts: Prompt[] | undefined,
+  promptId: number,
+  previousPrompt: Prompt,
+  optimisticPrompt: Prompt
+) {
+  const currentPrompts = prompts ?? []
+  const currentPrompt = currentPrompts.find((prompt) => prompt.id === promptId)
+
+  if (currentPrompt !== optimisticPrompt) {
+    return currentPrompts
+  }
+
+  return sortPromptsByUpdatedAtDesc(
+    currentPrompts.map((prompt) =>
+      prompt.id === promptId ? previousPrompt : prompt
+    )
+  )
+}
+
+export function rollbackPromptListSnapshotIfUnchanged(
+  currentPrompts: Prompt[] | undefined,
+  previousPrompts: Prompt[] | undefined,
+  optimisticPrompts: Prompt[] | undefined
+) {
+  return currentPrompts === optimisticPrompts ? previousPrompts : currentPrompts
+}
+
 export function removePromptFromList(
   prompts: Prompt[] | undefined,
   promptId: number

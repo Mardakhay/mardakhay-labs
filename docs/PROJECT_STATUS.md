@@ -121,18 +121,20 @@ React page → custom hook → TanStack Query → API-функция → Supabas
 
 ### P1 — надёжность и защита
 
-#### P1-1. Возможный конфликт optimistic rollback — VERIFY
-Файл: src/hooks/usePromptMutations.ts.
+#### P1-1. Конкурирующий optimistic rollback — FIXED (CI passed)
+Файлы: src/hooks/usePromptMutations.ts, src/lib/promptCache.ts, src/lib/__tests__/promptCache.test.ts.
 
-Несколько мутаций сохраняют целиком предыдущий список промптов и восстанавливают его при ошибке. При конкурирующих мутациях rollback одной операции потенциально может затереть результат другой операции, если они обновляют один и тот же кеш.
+Update/favorite теперь откатывают только конкретную запись и только если текущая запись всё ещё совпадает по ссылке с оптимистичной версией этой мутации. Позднее завершившееся изменение той же записи не будет перезаписано rollback старой мутации, а изменения других промптов сохраняются.
 
-План проверки:
-- Написать тест на две почти одновременные мутации над разными или одной записью.
-- Смоделировать success одной операции и error второй.
-- Убедиться, что успешное изменение не потерялось.
-- Если проблема воспроизводится, применять более точечный rollback, учитывать порядок операций или сериализовать конфликтующие изменения.
+Delete откатывает весь snapshot только если кеш не был изменён после операции удаления. При более поздней записи snapshot пропускается, а серверное состояние должно быть сверено существующей invalidation в onSettled.
 
-Не объявлять это воспроизводимым багом, пока тест не подтвердит сценарий.
+Добавлены регрессионные unit-тесты:
+- rollback одной записи сохраняет успешное изменение другой;
+- rollback не затирает более новую версию той же записи;
+- вложенные неуспешные optimistic updates могут откатываться в обратном порядке;
+- snapshot удаления восстанавливается только если в кеш не записали более новое состояние.
+
+GitHub Actions CI passed: test, lint and build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
 
 #### P1-2. Инициализация сессии и auth state listener — VERIFY
 Файл: src/App.tsx.
@@ -253,9 +255,10 @@ CI из .github/workflows/ci.yml запускает:
 - [x] GitHub Actions CI прошёл: npm test, npm run lint, npm run build (проверенная revision 8e77d0d8c683da5b52573efa443d6904a84396f8).
 
 ### Milestone 2 — State and auth reliability (P1)
-- [ ] Тесты optimistic rollback при конкурирующих мутациях.
+- [x] Добавлены регрессионные тесты optimistic rollback при конкурирующих мутациях.
+- [x] Исправлен конфликт rollback для update/favorite/delete.
+- [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
 - [ ] Тесты восстановления сессии, logout и смены пользователя.
-- [ ] Исправить обнаруженные проблемы, если тесты воспроизводят их.
 - [ ] Убедиться, что query cache не раскрывает данные между аккаунтами.
 
 ### Milestone 3 — Backend security verification (P1)
@@ -298,13 +301,14 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — добавлен первичный handoff-контекст на основании статического обзора репозитория на commit 23da25415481c51dd7b0c5491f4266b504b54076.
 - 2026-10-14 — реализованы runtime-валидация JSON import, восстановление favorite state, limits (500 prompts / 5 MiB), unit-тесты и обновлена backup-документация. CI: success для проверенной revision 8e77d0d8c683da5b52573efa443d6904a84396f8 — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38526090535.
 - 2026-10-14 — последний CI успешно прошёл тесты, lint и build; npm ci сообщил о 12 уязвимостях зависимостей (1 low, 4 moderate, 7 high). Подробный triage добавлен в P1-6 / Milestone 6.
+- 2026-10-14 — реализован точечный rollback для optimistic update/favorite и безопасный snapshot rollback для delete; добавлены регрессионные тесты. CI passed для implementation commit 38a6b72990f80f1f26a8471ace49cda80875149d: 6 test files passed, lint passed, production build passed — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Рекомендуемый следующий конкретный шаг после подтверждения Milestone 1: перейти к P1-1 — написать тест на конкурирующие optimistic mutations, проверить rollback и исправить только если сценарий воспроизводится.
+Следующая задача: P1-2 — покрыть тестами восстановление Supabase-сессии, logout, быстрый повторный login и переключение аккаунта.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
