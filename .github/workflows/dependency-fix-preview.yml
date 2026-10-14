@@ -27,6 +27,11 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Upgrade npm to fixed peer-resolver release
+        run: |
+          npm install --global npm@11.19.1
+          npm --version
+
       - name: Install locked dependencies
         run: npm ci
 
