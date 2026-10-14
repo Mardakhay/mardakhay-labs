@@ -9,6 +9,7 @@ import {
   promptToJson,
   promptToMarkdown,
 } from '../lib/promptExport'
+import { buildPromptDraftStorageKey } from '../lib/storageKeys'
 import CreatePromptModal from './CreatePromptModal'
 import HighlightedText from './HighlightedText'
 
@@ -251,6 +252,7 @@ function PromptDetailPanel({
         initialPrompt={prompt.content}
         initialAiTarget={prompt.ai_target}
         initialCategory={prompt.category}
+        draftKey={buildPromptDraftStorageKey(prompt.id, prompt.user_id)}
         title='Edit prompt'
         description='Refine the title and content, then save the updated version back to your workspace.'
         submitLabel='Save changes'
