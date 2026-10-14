@@ -178,16 +178,15 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Добавлены три unit-теста: ключ включает ID записи/владельца, разные prompt IDs не совпадают, один prompt ID у разных пользователей даёт разные ключи. GitHub Actions CI passed: 9 test files, 62 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 
-#### P1-6. Проверка уязвимостей зависимостей — TODO (CI warning)
+#### P1-6. Проверка уязвимостей зависимостей — FIXED (npm audit = 0; CI validation passed)
 
-Источник: npm ci в GitHub Actions run https://github.com/Mardakhay/mardakhay-labs/actions/runs/38526201734 от 14 октября 2026.
+Первичный npm audit нашёл 12 уязвимых package groups: 1 low, 4 moderate, 7 high, 0 critical. Из direct production dependencies были затронуты `react-router` / `react-router-dom`; прочие затронутые пакеты были dev/tooling или транзитивными: Babel, Vitest/@vitest/mocker, Vite, PostCSS, brace-expansion, Browserslist, nanoid, source-map-js и browser mapping metadata.
 
-Установка зависимостей сообщила о 12 уязвимостях по результатам аудита 213 пакетов: 1 low, 4 moderate, 7 high. Пока проверена только сводка из лога; конкретные advisories, затронутые пакеты и применимость к production отдельно не исследовались. Не запускать npm audit fix вслепую.
+Исправление выполнено через `npm audit fix` без `--force`, без изменения `package.json` и без перехода на major-версии. Обновлён только `package-lock.json` (71 package entry изменён/добавлен/удалён). Основные версии: react-router/react-router-dom 7.15.1 → 7.18.4, Vite 8.0.13 → 8.3.4, Vitest 4.1.8 → 4.1.11; также обновлены уязвимые транзитивные зависимости.
 
-План:
-- Получить подробности через npm audit и определить затронутые прямые/транзитивные зависимости.
-- Разделить production и dev dependency impact, изучить доступные безопасные версии.
-- Вносить только понятные обновления и повторно запустить test/lint/build.
+После обновления `npm audit` вернул 0 low/moderate/high/critical vulnerabilities. На обновлённом lockfile прошли test, lint и production build в GitHub Actions run https://github.com/Mardakhay/mardakhay-labs/actions/runs/38536000606. Отдельный PR CI на основной конфигурации репозитория должен подтвердить установку lockfile и build.
+
+Добавлен постоянный workflow `.github/workflows/dependency-audit.yml`: он выполняет npm audit при изменениях manifest/lockfile, раз в неделю и по ручному запуску; полный JSON отчёт прикладывается artifact на 14 дней.
 
 ### P2 — зрелость кода, UX, производительность
 
@@ -296,9 +295,10 @@ CI из .github/workflows/ci.yml запускает:
 - [ ] Удалить пустые артефакты git/npm, если они не нужны.
 
 ### Milestone 6 — Dependency hygiene (P1)
-- [ ] Изучить детали 12 предупреждений npm audit (1 low, 4 moderate, 7 high).
-- [ ] Определить безопасные обновления без blind npm audit fix.
-- [ ] Повторно пройти test/lint/build после выбранных обновлений.
+- [x] Изучить все 12 affected package groups, выявить advisory summaries и отделить production dependencies от dev/tooling.
+- [x] Применить совместимые non-major обновления через npm audit fix без --force; package.json ranges не менялись.
+- [x] Повторный npm audit: 0 vulnerabilities; test/lint/build прошли на обновлённом lockfile — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38536000606.
+- [x] Добавлен scheduled/manual dependency audit workflow с JSON report artifact.
 
 ## 8. Definition of Done для исправлений
 
@@ -325,13 +325,14 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — попытка включить Leaked Password Protection в Supabase Auth вернула сообщение о необходимости Pro plan или выше. Документация roadmap обновлена: это ограничение тарифа; апгрейд не требуется для продолжения аудита, проверить доступные парольные требования на текущем плане.
 - 2026-10-14 — пользователь вручную подтвердил, что клавиатурная навигация Tab/Shift+Tab в модальном окне работает ожидаемо.
 - 2026-10-14 — исправлены связи label/input редактора, пустой prompt content выдаёт доступную ошибку и переводит фокус к textarea, добавлен live status для копирования email, состояние избранного озвучивается через aria-pressed; dropdown получил более понятное имя и управляемый начальный фокус/Escape. Добавлены три unit-теста в promptValidation.test.ts. CI passed для source commit `31639b2ce7b629f947455a6a490a2d409b894a6c`: 11 test files, 70 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38534253393. Ручная проверка screen reader остаётся открытой.
+- 2026-10-14 — npm audit triage и совместимые non-major lockfile updates: React Router 7.18.4, Vite 8.3.4, Vitest 4.1.11 и уязвимые transitive deps. package.json не изменён; post-fix npm audit показал 0 уязвимостей. test/lint/build прошли в https://github.com/Mardakhay/mardakhay-labs/actions/runs/38536000606. Добавлен weekly/manual dependency audit workflow с отчётом-артефактом.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: вручную проверить с screen reader объявление названия detail/editor/confirm dialog, подписей Prompt title/Prompt content, ошибку при пустом Prompt content, подтверждение копирования email и стандартные toast-уведомления. Затем в Supabase Dashboard проверить доступные параметры minimum password length/password strength на текущем тарифе. Подключённый Supabase-инструмент даёт project/advisor информацию, но не предоставляет интерфейс чтения/изменения Auth password settings. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
+Следующая задача: screen-reader проверку временно отложить по решению пользователя. Ближайшие пункты: проверить PWA offline/update на двух production deploys; исследовать безопасный способ согласовать timezone для `created_at` (не менять тип до подтверждения исторического часового пояса); в Supabase Dashboard при случае проверить настройки minimum password length/password strength. Leaked Password Protection остаётся ограниченной тарифом Pro+.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
