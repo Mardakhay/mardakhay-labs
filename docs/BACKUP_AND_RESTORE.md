@@ -11,7 +11,7 @@ Before a bigger change, and whenever you have added valuable prompts:
 3. Click **Export filtered** and save `mardakhay-prompts.json`.
 4. Save a second copy somewhere separate (for example, an encrypted cloud drive or external disk). Do not commit private prompt content to Git.
 
-The app's JSON export is a convenient content-level backup. Importing it restores prompt content and supported metadata, but it is **not** a full database backup: it does not preserve record IDs or timestamps, and the current importer does not restore favorite state.
+The app's JSON export is a convenient content-level backup. Importing it restores prompt content, supported AI-target/category metadata, and favorite state. Hashtags are derived again from the prompt content rather than trusted as independent imported data. The importer accepts up to 500 prompts per file and rejects JSON files larger than 5 MiB. This is **not** a full database backup: record IDs and timestamps are not preserved, and new creation/update timestamps are assigned on import.
 
 ## 2. Database schema and data backup (optional, stronger recovery)
 

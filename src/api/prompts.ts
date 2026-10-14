@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { MAX_PROMPT_IMPORT_COUNT } from '../lib/promptImportLimits'
 import { derivePromptTitle } from '../lib/promptFormatting'
 import {
   extractHashtags,
@@ -22,6 +23,10 @@ export type Prompt = {
 export type PromptInput = PromptMetadata & {
   title: string
   content: string
+}
+
+export type PromptImportInput = PromptInput & {
+  isFavorite?: boolean
 }
 
 type PromptRow = Omit<Prompt, 'ai_target' | 'category' | 'hashtags'> & {
@@ -119,20 +124,20 @@ export async function createPrompt(input: PromptInput) {
   return mapPromptRow(data as unknown as PromptRow)
 }
 
-export async function createPrompts(inputs: PromptInput[]) {
+export async function createPrompts(inputs: PromptImportInput[]) {
   if (inputs.length === 0) {
     return []
   }
 
-  if (inputs.length > 500) {
-    throw new Error('You can import up to 500 prompts at a time.')
+  if (inputs.length > MAX_PROMPT_IMPORT_COUNT) {
+    throw new Error(`You can import up to ${MAX_PROMPT_IMPORT_COUNT} prompts at a time.`)
   }
 
   const user = await getCurrentUser()
   const rows = inputs.map((input) => ({
     ...normalizePromptInput(input),
     user_id: user.id,
-    is_favorite: false,
+    is_favorite: input.isFavorite ?? false,
   }))
 
   const { data, error } = await supabase

@@ -27,6 +27,7 @@ import {
   type PromptCategory,
 } from '../lib/promptMetadata'
 import { useNotificationStore } from '../stores/notificationStore'
+import { validatePromptImportFileSize } from '../lib/promptImportLimits'
 
 type SortOrder = 'recent' | 'oldest'
 type ViewFilter = 'all' | 'favorites'
@@ -195,6 +196,7 @@ function PromptsPage() {
   }
 
   async function importPrompts(file: File) {
+    validatePromptImportFileSize(file.size)
     const raw = await file.text()
     const promptInputs = parsePromptImport(raw)
 
