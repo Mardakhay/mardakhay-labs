@@ -169,7 +169,7 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Сверена история миграций: два локальных filename не совпадали с version IDs в production history. Файлы выровнены по remote versions; новые migrations 20261014074235 и 20261014074431 совпадают с версиями, уже зарегистрированными в live БД.
 
-Оставшийся schema drift: created_at в production имеет тип timestamp without time zone, тогда как schema.sql задаёт timestamptz. Тип не менялся автоматически, так как это может переинтерпретировать исторические timestamps без подтверждённой исходной timezone. Supabase Security Advisor также сообщает Leaked Password Protection Disabled; эту Auth-настройку необходимо включить в Dashboard отдельно.
+Оставшийся schema drift: created_at в production имеет тип timestamp without time zone, тогда как schema.sql задаёт timestamptz. Тип не менялся автоматически, так как это может переинтерпретировать исторические timestamps без подтверждённой исходной timezone. Supabase Auth сообщил, что Leaked Password Protection через HaveIBeenPwned.org доступна только на Pro и выше; попытка включить настройку на текущем плане завершилась отказом. Это plan limitation, а не ошибка конфигурации. Если не планируем апгрейд, оставить пункт как optional hardening и проверить доступные настройки минимальной длины и сложности пароля.
 
 #### P1-5. Переиспользуемый draft key в PromptDetailPanel — FIXED (CI passed)
 Файлы: src/components/PromptDetailPanel.tsx, src/components/CreatePromptModal.tsx, src/lib/storageKeys.ts, src/lib/__tests__/storageKeys.test.ts.
@@ -275,7 +275,7 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Проверить A/B read isolation: владелец видит свои строки, произвольный другой UUID — 0 строк.
 - [x] Сверить production schema и migrations, выровнять file versions с remote migration history; добавить FK и NOT NULL.
 - [x] Включить серверную проверку metadata через DB CHECK constraints.
-- [ ] Включить Leaked Password Protection в Supabase Auth Dashboard (Security Advisor warning).
+- [~] Leaked Password Protection заблокирована текущим планом: Supabase требует Pro или выше. Не апгрейдить только ради этого пункта; пересмотреть при смене плана. При текущем плане проверить доступные minimum length/password complexity settings.
 - [ ] Согласовать timezone created_at и безопасно мигрировать тип к timestamptz.
 
 ### Milestone 4 — PWA and UI quality (P1/P2)
@@ -321,13 +321,14 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — проверен live Supabase backend: RLS owner/A-vs-B read isolation подтверждена; отозваны лишние grants anon/authenticated, добавлены owner NOT NULL/FK/cascade, GENERATED ALWAYS и metadata CHECK constraints. Добавлен SQL catalog security test, migration filenames выровнены по production versions. Supabase advisor: leaked-password protection отключена; created_at timezone/type drift оставлен для отдельного решения.
 - 2026-10-14 — edit draft key изолирован по prompt ID и owner user ID; добавлены три storage key unit-теста. GitHub Actions CI passed (9 test files, 62 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 - 2026-10-14 — в PromptDetailPanel добавлен focus trap для Tab/Shift+Tab, возврат фокуса на инициатор и защита вложенного edit-диалога от внешнего Escape handler; общий helper покрыт пятью unit-тестами. CI passed для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358`: 10 test files, 67 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349. Ручная keyboard-only и screen-reader проверка остаётся открытой.
+- 2026-10-14 — попытка включить Leaked Password Protection в Supabase Auth вернула сообщение о необходимости Pro plan или выше. Документация roadmap обновлена: это ограничение тарифа; апгрейд не требуется для продолжения аудита, проверить доступные парольные требования на текущем плане.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: пройти ручной keyboard-only QA и проверить screen reader/live announcements для модальных окон. Параллельно не забыть ручные Supabase follow-ups Milestone 3: включить Leaked Password Protection в Auth Dashboard и согласовать исходную timezone для created_at; тип не менять без этого решения.
+Следующая задача: пройти ручной keyboard-only QA и проверить screen reader/live announcements для модальных окон; затем проверить минимальную длину и сложность пароля на текущем Supabase плане. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
