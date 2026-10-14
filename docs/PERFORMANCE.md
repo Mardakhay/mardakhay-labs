@@ -2,29 +2,29 @@
 
 ## Scope and date
 
-This is a production-build asset baseline captured from the Vercel build log for the deployment sourced from commit 600628b89e313e97a3e90b796646610e47af40f8 on 14 October 2026. Vite reported its own gzip estimates. The measurements describe build assets, not a Lighthouse run or real-user Core Web Vitals.
+This baseline combines the successful GitHub Actions Vite build for squashed main commit `df8249c6a0bb588c32c4eb1b25666435be0d6e1c` (14 October 2026) with a direct fetch of the live production JS/CSS assets from Vercel. Raw sizes for the live entry assets are based on fetched response-body lengths. Gzip figures are Vite's estimates from CI, not measured transfer sizes; the live JS filename/hash differs between the CI build and Vercel output. These measurements are not a Lighthouse run or real-user Core Web Vitals.
 
 ## Entry assets
 
 | Asset | Raw size | Vite-reported gzip |
 | --- | ---: | ---: |
 | dist/index.html | 1.40 kB | 0.64 kB |
-| dist/assets/index-BILgLIBf.js (entry JS) | 473.10 kB | 137.87 kB |
-| dist/assets/index-DTqAct-q.css (main CSS) | 56.38 kB | 10.01 kB |
+| dist/assets/index-D-_qDQMD.js (live production JS; CI hash differs) | 473.10 kB | ~137.80 kB |
+| dist/assets/index-CW4x3m8v.css (main CSS) | 56.91 kB | 10.06 kB |
 | dist/asset-manifest.json | 4.51 kB | 0.77 kB |
 
-Entry JS + CSS total approximately **529.48 kB raw / 147.88 kB gzip** according to Vite's per-file estimates. Vite's build transformed 1,874 modules. Asset output comes from the build log; it is not a packet capture and does not represent an exact runtime transfer for every browser/cache/protocol.
+Live production entry JS + CSS total approximately **530.01 kB raw**. The **~147.86 kB gzip estimate** comes from the CI build output, not a measurement of the live response encoding (Vercel serves Brotli in the inspected response). The CI build transformed 1,874 modules. This is an asset-size baseline, not a packet capture or exact runtime transfer measurement for every browser/cache/protocol.
 
 ## Lazy-loaded route chunks
 
 | Chunk | Raw size | Vite-reported gzip |
 | --- | ---: | ---: |
-| AppLayout | 14.38 kB | 4.41 kB |
+| AppLayout | 14.38 kB | 4.42 kB |
 | DashboardPage | 7.56 kB | 2.46 kB |
 | FavoritesPage | 2.64 kB | 1.10 kB |
 | LoginPage | 11.14 kB | 3.56 kB |
 | PromptsPage | 13.82 kB | 4.23 kB |
-| SettingsPage | 6.88 kB | 2.16 kB |
+| SettingsPage | 6.88 kB | 2.17 kB |
 | CreatePromptModal | 24.72 kB | 8.21 kB |
 | PromptDetailPanel | 23.67 kB | 6.35 kB |
 
