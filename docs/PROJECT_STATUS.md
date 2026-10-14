@@ -203,7 +203,7 @@ PromptDetailPanel теперь ограничивает Tab/Shift+Tab внутр
 
 CI для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` прошёл: 10 test files, 67 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
 
-Остаётся ручной keyboard-only QA в браузере, проверка screen reader/live announcements и проверка связей label/error для полей формы. Эти сценарии не считаются закрытыми только по результатам unit-тестов.
+Ручная проверка пользователя подтвердила корректную работу Tab/Shift+Tab: фокус остаётся внутри модального окна, переходы работают ожидаемо. Остаётся проверить screen reader/live announcements и связи label/error для полей формы; эти сценарии отдельно не подтверждены.
 
 #### P2-3. Немедленный revokeObjectURL — IMPROVEMENT / VERIFY
 Файл: src/lib/promptExport.ts, downloadTextFile.
@@ -283,7 +283,7 @@ CI из .github/workflows/ci.yml запускает:
 - [x] GitHub Actions CI passed: 8 test files, 59 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
 - [ ] Проверить в реальном браузере update/offline между двумя production deploys с разными asset hashes.
 - [x] Добавлен общий focus-trap helper для detail/editor modal: Tab/Shift+Tab boundary handling и 5 unit-тестов; CI passed (10 test files, 67 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
-- [ ] Ручной keyboard-only QA пользовательских сценариев в реальном браузере.
+- [x] Ручная keyboard-only проверка Tab/Shift+Tab в модальном окне подтверждена пользователем: фокус работает ожидаемо.
 - [ ] Проверить screen reader/live announcements и связи label/error для полей.
 - [ ] Подтвердить, нужен ли рефакторинг крупных компонентов.
 
@@ -322,13 +322,14 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — edit draft key изолирован по prompt ID и owner user ID; добавлены три storage key unit-теста. GitHub Actions CI passed (9 test files, 62 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 - 2026-10-14 — в PromptDetailPanel добавлен focus trap для Tab/Shift+Tab, возврат фокуса на инициатор и защита вложенного edit-диалога от внешнего Escape handler; общий helper покрыт пятью unit-тестами. CI passed для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358`: 10 test files, 67 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349. Ручная keyboard-only и screen-reader проверка остаётся открытой.
 - 2026-10-14 — попытка включить Leaked Password Protection в Supabase Auth вернула сообщение о необходимости Pro plan или выше. Документация roadmap обновлена: это ограничение тарифа; апгрейд не требуется для продолжения аудита, проверить доступные парольные требования на текущем плане.
+- 2026-10-14 — пользователь вручную подтвердил, что клавиатурная навигация Tab/Shift+Tab в модальном окне работает ожидаемо. В Milestone 4 закрыт этот ручной QA-пункт; screen reader/live announcements и label/error associations остаются непроверенными.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: пройти ручной keyboard-only QA и проверить screen reader/live announcements для модальных окон; затем проверить минимальную длину и сложность пароля на текущем Supabase плане. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
+Следующая задача: проверить screen reader/live announcements и связи label/error для полей формы; затем проверить доступные настройки минимальной длины и сложности пароля на текущем Supabase плане. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
