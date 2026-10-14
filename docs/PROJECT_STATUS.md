@@ -136,15 +136,16 @@ Delete откатывает весь snapshot только если кеш не 
 
 GitHub Actions CI passed: test, lint and build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
 
-#### P1-2. Инициализация сессии и auth state listener — VERIFY
-Файл: src/App.tsx.
+#### P1-2. Инициализация сессии и auth state listener — FIXED (CI passed)
+Файлы: src/App.tsx, src/lib/authSession.ts, src/lib/__tests__/authSession.test.ts.
 
-getSession() и onAuthStateChange() запускаются при инициализации. Оба обновляют auth store. Нужно проверить порядок результатов при входе/выходе в момент восстановления сессии и убедиться, что устаревший результат не перезаписывает актуальный.
+Auth listener теперь подключается до восстановления сессии. Результат getSession применяется только если с момента начала восстановления не пришло более новое auth-событие; поздний результат или ошибка не могут перезаписать logout, быстрый login или переключение аккаунта. Событие auth state снимает loading сразу, а cleanup эффекта блокирует обновления после unsubscribe.
 
-План проверки:
-- Тесты холодного запуска, существующей сессии, logout, быстрого повторного login и OAuth callback.
-- Проверить отсутствие кратковременного показа приватных данных другого пользователя.
-- Сохранять очистку кеша при смене/утрате пользователя.
+При logout и смене user id удаляется кеш промптов. Повторные события того же пользователя не очищают его кеш, а ключи запросов промптов по-прежнему включают user id.
+
+Добавлены unit-тесты восстановления сессии, logout, быстрого login, смены аккаунта, подавления устаревшей ошибки, cleanup и правил очистки кеша.
+
+GitHub Actions CI passed на implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00`: test, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073. Последующее amend-обновление касается только этого документа; auth-код и тесты не изменены.
 
 #### P1-3. PWA cache / update strategy — VERIFY
 Файл: public/sw.js.
@@ -258,8 +259,9 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Добавлены регрессионные тесты optimistic rollback при конкурирующих мутациях.
 - [x] Исправлен конфликт rollback для update/favorite/delete.
 - [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
-- [ ] Тесты восстановления сессии, logout и смены пользователя.
-- [ ] Убедиться, что query cache не раскрывает данные между аккаунтами.
+- [x] Тесты восстановления сессии, logout, быстрого login и переключения аккаунта.
+- [x] Кеш промптов очищается при logout/смене user id; query keys включают user id.
+- [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
 
 ### Milestone 3 — Backend security verification (P1)
 - [ ] Проверить фактические production RLS policies и роли.
@@ -302,6 +304,7 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — реализованы runtime-валидация JSON import, восстановление favorite state, limits (500 prompts / 5 MiB), unit-тесты и обновлена backup-документация. CI: success для проверенной revision 8e77d0d8c683da5b52573efa443d6904a84396f8 — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38526090535.
 - 2026-10-14 — последний CI успешно прошёл тесты, lint и build; npm ci сообщил о 12 уязвимостях зависимостей (1 low, 4 moderate, 7 high). Подробный triage добавлен в P1-6 / Milestone 6.
 - 2026-10-14 — реализован точечный rollback для optimistic update/favorite и безопасный snapshot rollback для delete; добавлены регрессионные тесты. CI passed для implementation commit 38a6b72990f80f1f26a8471ace49cda80875149d: 6 test files passed, lint passed, production build passed — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38527372012.
+- 2026-10-14 — инициализация auth переведена на version-guard для защиты от устаревшего getSession(), кеш промптов очищается при смене пользователя; добавлены 9 регрессионных тестов. CI passed для implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00` (test/lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата

@@ -8,6 +8,10 @@ import Notification from './components/Notification'
 import { promptsQueryBaseKey } from './hooks/usePromptsQuery'
 import { useNotificationStore } from './stores/notificationStore'
 import { supabase } from './lib/supabase'
+import {
+  shouldClearPromptCache,
+  startAuthSessionLifecycle,
+} from './lib/authSession'
 import { useAuthStore } from './stores/authStore'
 
 const AppLayout = lazy(() => import('./components/AppLayout'))
@@ -24,42 +28,47 @@ function App() {
   const { showNotification } = useNotificationStore()
 
   useEffect(() => {
-    async function loadSession() {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+    let currentUserId = useAuthStore.getState().user?.id ?? null
 
-        setUser(session?.user ?? null)
+    function applyUser(nextUser: typeof user) {
+      const nextUserId = nextUser?.id ?? null
 
-        if (!session?.user) {
-          queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
+      if (shouldClearPromptCache(currentUserId, nextUserId)) {
+        queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
+      }
+
+      currentUserId = nextUserId
+      setUser(nextUser)
+    }
+
+    return startAuthSessionLifecycle({
+      getSession: async () => {
+        const { data, error } = await supabase.auth.getSession()
+
+        if (error) {
+          throw error
         }
-      } catch (error) {
+
+        return data.session?.user ?? null
+      },
+      subscribe: (onUserChange) => {
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+          onUserChange(session?.user ?? null)
+        })
+
+        return () => {
+          subscription.unsubscribe()
+        }
+      },
+      onUserChange: applyUser,
+      onLoadingChange: setIsLoading,
+      onRestoreError: (error) => {
         console.error('Failed to load Supabase session', error)
-        queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
-        setUser(null)
         showNotification('Failed to restore your session. Please sign in again.', 'error')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadSession()
-
-    const {
-      data: listener,
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-
-      if (!session?.user) {
-        queryClient.removeQueries({ queryKey: promptsQueryBaseKey })
-      }
+      },
     })
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
   }, [queryClient, setUser, setIsLoading, showNotification])
 
   if (isLoading) {
