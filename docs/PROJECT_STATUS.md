@@ -4,7 +4,7 @@
 >
 > **Язык:** русский.  
 > **Последний обзор исходников:** 14 октября 2026.  
-> **Последняя проверенная версия исходников:** ветка `main`, commit `079c8d480ef9ddf297917d9ba290d0a95421575a` (14 октября 2026; последующие изменения этой записи — только handoff-документация).  
+> **Последняя проверенная версия исходников:** ветка `main`, commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` (14 октября 2026; CI для этой ревизии прошёл успешно).  
 > **Статус:** базовый статический аудит выполнен; предложенный roadmap ещё не означает, что исправления сделаны.
 
 ## 1. Краткий контекст
@@ -14,8 +14,8 @@ Mardakhay Labs — SPA/PWA для хранения, организации и п
 - Репозиторий: https://github.com/Mardakhay/mardakhay-labs
 - Production/demo URL из метаданных репозитория: https://mardakhay-labs.xyz
 - Основная документация: README.md и docs/BACKUP_AND_RESTORE.md
-- Последний просмотренный source commit: 079c8d480ef9ddf297917d9ba290d0a95421575a.
-- Последний проверенный CI для изменённых исходников: https://github.com/Mardakhay/mardakhay-labs/actions/runs/38530663519 — test/lint/build успешно завершились 14 октября 2026.
+- Последний просмотренный source commit: 60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358.
+- Последний проверенный CI для изменённых исходников: https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349 — 10 test files, 67 tests, lint и production build прошли 14 октября 2026.
 
 ### Текущая общая оценка
 
@@ -198,10 +198,12 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Возможные части: usePromptFilters, usePromptSelection, import/export handlers, bulk actions, URL-driven prompt detail state.
 
-#### P2-2. Доступность модальных окон — VERIFY
-CreatePromptModal имеет focus trap и возврат фокуса; PromptDetailPanel ставит фокус на кнопку закрытия, но не имеет эквивалентной полноценной обработки Tab/Shift+Tab в просмотренном коде.
+#### P2-2. Доступность модальных окон — IN PROGRESS (unit tests + CI passed)
+PromptDetailPanel теперь ограничивает Tab/Shift+Tab внутри detail-диалога, ставит начальный фокус на кнопку закрытия и возвращает фокус инициатору после закрытия. Для вложенного edit-диалога внешний обработчик не перехватывает фокус и Escape; редактор продолжает владеть собственным focus trap. Логика границ фокуса общая для двух модалок и покрыта пятью unit-тестами.
 
-Проверить keyboard-only сценарии, поведение screen reader, aria-live для статусов операций и связь ошибок формы с полями.
+CI для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` прошёл: 10 test files, 67 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
+
+Остаётся ручной keyboard-only QA в браузере, проверка screen reader/live announcements и проверка связей label/error для полей формы. Эти сценарии не считаются закрытыми только по результатам unit-тестов.
 
 #### P2-3. Немедленный revokeObjectURL — IMPROVEMENT / VERIFY
 Файл: src/lib/promptExport.ts, downloadTextFile.
@@ -221,11 +223,15 @@ URL.revokeObjectURL(url) вызывается сразу после link.click()
 
 Подтверждённые unit-test файлы:
 - src/lib/__tests__/activityLog.test.ts
+- src/lib/__tests__/authSession.test.ts
 - src/lib/__tests__/authUtils.test.ts
+- src/lib/__tests__/focusTrap.test.ts
 - src/lib/__tests__/promptCache.test.ts
 - src/lib/__tests__/promptExport.test.ts
 - src/lib/__tests__/promptFormatting.test.ts
 - src/lib/__tests__/promptMetadata.test.ts
+- src/lib/__tests__/serviceWorker.test.ts
+- src/lib/__tests__/storageKeys.test.ts
 - supabase/tests/prompts_security.test.sql (read-only catalog/security assertions; separate from npm test)
 
 CI из .github/workflows/ci.yml запускает:
@@ -276,8 +282,9 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Добавлены unit-тесты network-first/offline fallback, runtime asset cache, API bypass и безопасной очистки кешей.
 - [x] GitHub Actions CI passed: 8 test files, 59 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
 - [ ] Проверить в реальном браузере update/offline между двумя production deploys с разными asset hashes.
-- [ ] Пройти пользовательские сценарии клавиатурой.
-- [ ] Проверить модальные окна, focus return, live announcements.
+- [x] Добавлен общий focus-trap helper для detail/editor modal: Tab/Shift+Tab boundary handling и 5 unit-тестов; CI passed (10 test files, 67 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
+- [ ] Ручной keyboard-only QA пользовательских сценариев в реальном браузере.
+- [ ] Проверить screen reader/live announcements и связи label/error для полей.
 - [ ] Подтвердить, нужен ли рефакторинг крупных компонентов.
 
 ### Milestone 5 — Portfolio polish (P2)
@@ -313,13 +320,14 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — обновлена cache/update policy Service Worker: runtime cache только для shell/assets, обработка cache writes через waitUntil, cleanup scoped по cache prefix, обновления не перехватывают вкладки принудительно; добавлены regression tests. CI passed для implementation revision `770cb35088c9625436f618995e8d9dbe4a31ad14` (8 test files, 59 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884. Реальный браузерный QA остаётся открытым.
 - 2026-10-14 — проверен live Supabase backend: RLS owner/A-vs-B read isolation подтверждена; отозваны лишние grants anon/authenticated, добавлены owner NOT NULL/FK/cascade, GENERATED ALWAYS и metadata CHECK constraints. Добавлен SQL catalog security test, migration filenames выровнены по production versions. Supabase advisor: leaked-password protection отключена; created_at timezone/type drift оставлен для отдельного решения.
 - 2026-10-14 — edit draft key изолирован по prompt ID и owner user ID; добавлены три storage key unit-теста. GitHub Actions CI passed (9 test files, 62 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
+- 2026-10-14 — в PromptDetailPanel добавлен focus trap для Tab/Shift+Tab, возврат фокуса на инициатор и защита вложенного edit-диалога от внешнего Escape handler; общий helper покрыт пятью unit-тестами. CI passed для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358`: 10 test files, 67 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349. Ручная keyboard-only и screen-reader проверка остаётся открытой.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: закрыть оставшиеся ручные follow-ups Milestone 3: включить Leaked Password Protection в Supabase Auth Dashboard и согласовать timezone created_at; затем продолжить P2-2 — проверку доступности модальных окон.
+Следующая задача: пройти ручной keyboard-only QA и проверить screen reader/live announcements для модальных окон. Параллельно не забыть ручные Supabase follow-ups Milestone 3: включить Leaked Password Protection в Auth Dashboard и согласовать исходную timezone для created_at; тип не менять без этого решения.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.
