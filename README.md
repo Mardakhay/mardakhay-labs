@@ -1,177 +1,119 @@
 # Mardakhay Labs
 
-Mardakhay Labs is a modern AI prompt management platform built with React, TypeScript, and Supabase.
+**A calm, personal workspace for creating, organizing, and reusing AI prompts.**
 
-It provides a secure, user-scoped workspace for creating, organizing, searching, favoriting, importing, and exporting prompts while keeping data isolated through Supabase Authentication and PostgreSQL Row Level Security (RLS).
+Production: [www.mardakhay-labs.xyz](https://www.mardakhay-labs.xyz/) · Source: [GitHub](https://github.com/Mardakhay/mardakhay-labs)
 
-## Features
+Mardakhay Labs is a responsive, installable single-page application for maintaining a user-owned prompt library. It combines prompt editing and discovery workflows with Supabase authentication, PostgreSQL row-level security, optimistic UI updates, import/export, and offline app-shell support.
 
-### Prompt Management
-- Create, edit, and delete prompts
-- Automatic title generation
-- Favorite important prompts
-- Rich prompt content support
-- Prompt metadata support
+## What it does
 
-### Organization & Discovery
-- Instant search
-- Filter by AI target
-- Filter by category
-- Filter by favorites
-- Hashtag-based organization
-- Bulk selection and actions
+- **Create and edit prompts:** derive a title when needed, preserve prompt text, and attach supported AI-target/category metadata and hashtags.
+- **Find and organize:** search the library, filter by target/category/favorites, and navigate Dashboard, Prompts, Favorites, and Settings.
+- **Work in batches:** select prompts and apply supported bulk actions, including favorites, deletion, and category updates.
+- **Move data in and out:** import/export JSON and export prompt content as Markdown. JSON import is limited to 500 prompts and 5 MiB per file.
+- **Recover drafts:** preserve editing drafts without mixing drafts between prompts or users.
+- **Stay responsive:** layouts are checked on desktop and on a real iPhone 17 Pro Max in Safari.
+- **Install as a PWA:** the service worker precaches the app shell and all compiled route chunks. After a successful install/update, the interface can load after an offline reload; remote APIs and external fonts still require connectivity.
 
-### Import & Export
-- JSON export
-- Markdown export
-- JSON import
-- Metadata preservation during import/export
+## Technology
 
-### Workspace Experience
-- Dashboard overview
-- Activity tracking
-- Keyboard shortcuts
-- Optimistic UI updates
-- Persistent draft support
-- Responsive interface
+| Area | Tools |
+| --- | --- |
+| UI | React 19, TypeScript 6, Tailwind CSS 4 |
+| Build | Vite 8 |
+| Routing | React Router 7 |
+| Server state | TanStack Query 5 |
+| Small client state | Zustand 5 |
+| Backend | Supabase Auth, PostgreSQL, Row Level Security |
+| Verification | Vitest, ESLint, TypeScript build, GitHub Actions |
+| Hosting | Vercel |
 
-### Security
-- Supabase Authentication
-- User-scoped data access
-- PostgreSQL Row Level Security (RLS)
-- User-scoped activity history
-- User-scoped local persistence
+## Run locally
 
-### Authentication provider configuration
+### Requirements
 
-Email/password and Google are separate Supabase Auth providers. Keep the Email provider enabled when configuring Google; adding OAuth does not require replacing password sign-in.
+- Node.js 24.x (CI and the production hosting environment use Node 24)
+- npm
+- A Supabase project with the application schema and Auth providers configured
 
-For a production deployment, verify the following in the Supabase Dashboard:
+Install and start the app:
 
-- **Authentication → Sign In / Providers:** Email/password is enabled and Google is configured with valid provider credentials.
-- **Authentication → URL Configuration:** the production HTTPS origin is the Site URL, and the exact app origin(s) used by sign-in and email confirmation are allow-listed Redirect URLs.
-- **Legacy email accounts:** users whose accounts require email confirmation must confirm that address before password sign-in can succeed.
-- **Identity linking:** Supabase can automatically link OAuth identities when the provider supplies the same verified email as an existing account. Do not merge users based only on an unverified email, write directly to `auth.users`, or create a second application-level identity table.
+    git clone https://github.com/Mardakhay/mardakhay-labs.git
+    cd mardakhay-labs
+    npm ci
+    npm run dev
 
-The client uses `signInWithPassword()` for the email/password flow and Supabase-managed OAuth/session handling for Google. If password sign-in fails despite valid credentials, check provider settings and the Auth user's confirmation/identity state before changing application data.
+Create a local **.env** file in the repository root:
 
-## Tech Stack
+    VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+    VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 
-### Frontend
-- React 19
-- TypeScript 6
-- Vite 8
-- Tailwind CSS 4
-- TanStack Query 5
-- Zustand 5
-- React Router 7
+The application also accepts the legacy `VITE_SUPABASE_ANON_KEY` variable as a fallback. Prefer the publishable key for new configuration. These browser-side values are not database secrets; never put a service-role key or database password in a Vite environment variable.
 
-### Backend
-- Supabase
-- PostgreSQL
-- Supabase Auth
+Vite prints the local address, normally http://localhost:5173.
 
-### Tooling
-- ESLint
-- Vitest
-- GitHub Actions
+## Supabase setup
 
-## Quality Assurance
+1. Create a Supabase project and configure Authentication → Sign In / Providers.
+2. Enable the Email provider. Configure Google OAuth separately if that sign-in option should be available.
+3. Set the production Site URL and allow-list the exact local/production redirect URLs under Authentication → URL Configuration.
+4. Set the two public environment variables above in the local environment and in the hosting project's environment configuration.
+5. For a fresh database, use **supabase/schema.sql** as the current baseline and reconcile the migration history before using the migration workflow. For an existing database, preserve its migration history and apply only migrations that are not yet recorded as applied. Do not blindly execute the historical migration files over the current baseline; several historical migrations intentionally transition older schemas and are not a second initialization script.
+6. Confirm sign-up/email confirmation, password sign-in, sign-out, and Google OAuth (if enabled) in a non-production account before changing provider settings in production.
 
-The project includes:
+The schema and database lifecycle are described in [Architecture](docs/ARCHITECTURE.md), [Security](docs/SECURITY.md), and [Deployment](docs/DEPLOYMENT.md).
 
-- TypeScript type checking
-- ESLint linting
-- Vitest unit tests
-- GitHub Actions CI
+## Quality checks
 
-Current test coverage focuses on:
+Run all checks before merging or deploying:
 
-- Prompt formatting
-- Prompt metadata
-- Import/export utilities
-- Prompt cache and optimistic update helpers
+    npm ci
+    npm test
+    npm run lint
+    npm run build
 
-## Getting Started
+Useful scripts:
 
-### Installation
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local Vite development server |
+| `npm test` | Run the Vitest suite once |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run lint` | Run ESLint |
+| `npm run build` | Type-check and create the production build |
+| `npm run preview` | Serve the production build locally |
+| `npm run check` | Run the build and lint checks |
 
-```bash
-git clone https://github.com/Mardakhay/mardakhay-labs.git
-cd mardakhay-labs
-npm install
-```
+GitHub Actions runs tests, lint, and production build on pushes to main and pull requests. A separate scheduled workflow reports dependency audit findings.
 
-### Environment Variables
+## Architecture at a glance
 
-Create a `.env` file:
+- Pages and components render the workspace and interaction flows.
+- TanStack Query owns remote prompt data and its cache; query keys include the authenticated user ID.
+- Zustand stores only lightweight cross-page client state (current auth user/loading state and notifications).
+- API modules call Supabase and also scope mutations to the current user; PostgreSQL RLS and table grants remain the real authorization boundary.
+- SQL schema, migrations, and catalog assertions live under **supabase/**.
+- Vite emits an asset manifest that the service worker uses to precache all built JavaScript/CSS, including lazy route chunks.
+- Vercel rewrites SPA route requests to the app entry point so a direct open/reload of a client route does not return a platform 404.
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-```
+See [Architecture](docs/ARCHITECTURE.md) for runtime/data flows and source map.
 
-### Database Setup
+## Documentation
 
-Apply the SQL schema located in:
+- [Architecture](docs/ARCHITECTURE.md) — modules, routing, auth/session lifecycle, query/cache behavior, data model, and PWA mechanics.
+- [Development](docs/DEVELOPMENT.md) — local setup, checks, database workflow, and maintenance practices.
+- [Security](docs/SECURITY.md) — authorization model, secrets, provider configuration, and known configuration limitations.
+- [Deployment and operations](docs/DEPLOYMENT.md) — Vercel/Supabase release steps, smoke tests, and rollback guidance.
+- [Performance baseline](docs/PERFORMANCE.md) — production bundle measurements and the distinction between build size and Lighthouse/Core Web Vitals.
+- [Backup and restore](docs/BACKUP_AND_RESTORE.md) — prompt exports, database dumps, and safe recovery.
 
-```text
-supabase/schema.sql
-```
+## Production and known boundaries
 
-### Development
+The current production app has passed the repository CI checks, direct-route smoke checks, PWA Offline + Reload confirmation, and a user-confirmed mobile layout check on iPhone 17 Pro Max/Safari. Production prompt creation timestamps were normalized to PostgreSQL **timestamptz**, with existing values interpreted as UTC.
 
-```bash
-npm run dev
-```
+The production build baseline is documented in [Performance](docs/PERFORMANCE.md). A Lighthouse run and field Core Web Vitals data were not available in the automated environment used for this handoff; no Lighthouse score is claimed.
 
-### Tests
-
-```bash
-npm test
-```
-
-### Production Build
-
-```bash
-npm run build
-```
-
-## Project Status and Audit Roadmap
-
-For the current architecture map, audit findings, risks to verify, prioritized remediation roadmap, and handoff context for future development sessions, see [Project Status](docs/PROJECT_STATUS.md).
-
-## Backup and Recovery
-
-For a low-cost manual backup routine, prompt JSON export instructions, and optional Supabase CLI schema/data dumps, see [Backup and Restore](docs/BACKUP_AND_RESTORE.md). Backups may contain private prompt content and should be stored outside Git.
-
-## Scripts
-
-- `npm run dev`
-- `npm run build`
-- `npm run lint`
-- `npm run test`
-- `npm run preview`
-- `npm run check`
-
-## Project Structure
-
-```text
-src/
-├── api/
-├── components/
-├── hooks/
-├── lib/
-├── pages/
-├── stores/
-└── types/
-```
-
-## Roadmap
-
-Potential future enhancements:
-
-- Prompt collections
-- Prompt version history
-- Team workspaces
-- AI-powered prompt search
+- Offline mode covers the cached interface and build assets, not creating/updating prompts without network access.
+- Google Fonts are fetched from third-party origins and are unavailable when offline unless the browser already has them cached.
+- Supabase Auth password policy and leaked-password protection are dashboard/plan settings, not fully defined by the frontend. See [Security](docs/SECURITY.md).
