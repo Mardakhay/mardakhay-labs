@@ -4,7 +4,7 @@
 >
 > **Язык:** русский.  
 > **Последний обзор исходников:** 14 октября 2026.  
-> **Последняя проверенная версия исходников:** ветка `main`, commit `079c8d480ef9ddf297917d9ba290d0a95421575a` (14 октября 2026; последующие изменения этой записи — только handoff-документация).  
+> **Последняя проверенная версия исходников:** ветка `main`, commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` (14 октября 2026; CI для этой ревизии прошёл успешно).  
 > **Статус:** базовый статический аудит выполнен; предложенный roadmap ещё не означает, что исправления сделаны.
 
 ## 1. Краткий контекст
@@ -14,8 +14,8 @@ Mardakhay Labs — SPA/PWA для хранения, организации и п
 - Репозиторий: https://github.com/Mardakhay/mardakhay-labs
 - Production/demo URL из метаданных репозитория: https://mardakhay-labs.xyz
 - Основная документация: README.md и docs/BACKUP_AND_RESTORE.md
-- Последний просмотренный source commit: 079c8d480ef9ddf297917d9ba290d0a95421575a.
-- Последний проверенный CI для изменённых исходников: https://github.com/Mardakhay/mardakhay-labs/actions/runs/38530663519 — test/lint/build успешно завершились 14 октября 2026.
+- Последний просмотренный source commit: 60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358.
+- Последний проверенный CI для изменённых исходников: https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349 — 10 test files, 67 tests, lint и production build прошли 14 октября 2026.
 
 ### Текущая общая оценка
 
@@ -169,17 +169,14 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Сверена история миграций: два локальных filename не совпадали с version IDs в production history. Файлы выровнены по remote versions; новые migrations 20261014074235 и 20261014074431 совпадают с версиями, уже зарегистрированными в live БД.
 
-Оставшийся schema drift: created_at в production имеет тип timestamp without time zone, тогда как schema.sql задаёт timestamptz. Тип не менялся автоматически, так как это может переинтерпретировать исторические timestamps без подтверждённой исходной timezone. Supabase Security Advisor также сообщает Leaked Password Protection Disabled; эту Auth-настройку необходимо включить в Dashboard отдельно.
+Оставшийся schema drift: created_at в production имеет тип timestamp without time zone, тогда как schema.sql задаёт timestamptz. Тип не менялся автоматически, так как это может переинтерпретировать исторические timestamps без подтверждённой исходной timezone. Supabase Auth сообщил, что Leaked Password Protection через HaveIBeenPwned.org доступна только на Pro и выше; попытка включить настройку на текущем плане завершилась отказом. Это plan limitation, а не ошибка конфигурации. Если не планируем апгрейд, оставить пункт как optional hardening и проверить доступные настройки минимальной длины и сложности пароля.
 
-#### P1-5. Переиспользуемый draft key в PromptDetailPanel — VERIFY / вероятный дефект
-Файл: src/components/PromptDetailPanel.tsx.
+#### P1-5. Переиспользуемый draft key в PromptDetailPanel — FIXED (CI passed)
+Файлы: src/components/PromptDetailPanel.tsx, src/components/CreatePromptModal.tsx, src/lib/storageKeys.ts, src/lib/__tests__/storageKeys.test.ts.
 
-Редактор из PromptDetailPanel открывается без явного draftKey, поэтому используется резервный ключ CreatePromptModal, формируемый по initialTitle. Две записи с одинаковым исходным заголовком могут разделить ключ черновика, потенциально приводя к восстановлению черновика не той записи.
+Редактор режима edit теперь использует ключ `draft:edit:promptId:userId`, основанный на ID записи и user_id владельца. Это устраняет коллизии промптов с одинаковым заголовком и разделяет данные между пользователями. Ключ черновика включён в React key компонента PromptEditorModal, поэтому при смене записи или draft key редактор перемонтируется и не переносит старое состояние на другую запись.
 
-Предлагаемое исправление:
-- Передавать draftKey, основанный на ID промпта, например draft:edit-<promptId>.
-- Добавить тест/ручной сценарий с двумя промптами с одинаковым заголовком.
-- Проверить, что черновики новых и редактируемых записей изолированы между собой и пользователями.
+Добавлены три unit-теста: ключ включает ID записи/владельца, разные prompt IDs не совпадают, один prompt ID у разных пользователей даёт разные ключи. GitHub Actions CI passed: 9 test files, 62 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
 
 #### P1-6. Проверка уязвимостей зависимостей — TODO (CI warning)
 
@@ -201,10 +198,12 @@ Runtime-проверка с JWT-контекстом владельца увид
 
 Возможные части: usePromptFilters, usePromptSelection, import/export handlers, bulk actions, URL-driven prompt detail state.
 
-#### P2-2. Доступность модальных окон — VERIFY
-CreatePromptModal имеет focus trap и возврат фокуса; PromptDetailPanel ставит фокус на кнопку закрытия, но не имеет эквивалентной полноценной обработки Tab/Shift+Tab в просмотренном коде.
+#### P2-2. Доступность модальных окон — IN PROGRESS (unit tests + CI passed)
+PromptDetailPanel теперь ограничивает Tab/Shift+Tab внутри detail-диалога, ставит начальный фокус на кнопку закрытия и возвращает фокус инициатору после закрытия. Для вложенного edit-диалога внешний обработчик не перехватывает фокус и Escape; редактор продолжает владеть собственным focus trap. Логика границ фокуса общая для двух модалок и покрыта пятью unit-тестами.
 
-Проверить keyboard-only сценарии, поведение screen reader, aria-live для статусов операций и связь ошибок формы с полями.
+CI для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358` прошёл: 10 test files, 67 tests, lint и production build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
+
+Ручная проверка пользователя подтвердила корректную работу Tab/Shift+Tab: фокус остаётся внутри модального окна, переходы работают ожидаемо. Остаётся проверить screen reader/live announcements и связи label/error для полей формы; эти сценарии отдельно не подтверждены.
 
 #### P2-3. Немедленный revokeObjectURL — IMPROVEMENT / VERIFY
 Файл: src/lib/promptExport.ts, downloadTextFile.
@@ -224,11 +223,15 @@ URL.revokeObjectURL(url) вызывается сразу после link.click()
 
 Подтверждённые unit-test файлы:
 - src/lib/__tests__/activityLog.test.ts
+- src/lib/__tests__/authSession.test.ts
 - src/lib/__tests__/authUtils.test.ts
+- src/lib/__tests__/focusTrap.test.ts
 - src/lib/__tests__/promptCache.test.ts
 - src/lib/__tests__/promptExport.test.ts
 - src/lib/__tests__/promptFormatting.test.ts
 - src/lib/__tests__/promptMetadata.test.ts
+- src/lib/__tests__/serviceWorker.test.ts
+- src/lib/__tests__/storageKeys.test.ts
 - supabase/tests/prompts_security.test.sql (read-only catalog/security assertions; separate from npm test)
 
 CI из .github/workflows/ci.yml запускает:
@@ -265,21 +268,23 @@ CI из .github/workflows/ci.yml запускает:
 - [x] Тесты восстановления сессии, logout, быстрого login и переключения аккаунта.
 - [x] Кеш промптов очищается при logout/смене user id; query keys включают user id.
 - [x] GitHub Actions CI passed: test/lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
+- [x] Edit draft key изолирован по prompt ID и user ID; редактор перемонтируется при смене ключа.
 
 ### Milestone 3 — Backend security verification (P1)
 - [x] Проверить фактические production RLS policies и роли; убрать лишние anon grants и сузить права authenticated до CRUD.
 - [x] Проверить A/B read isolation: владелец видит свои строки, произвольный другой UUID — 0 строк.
 - [x] Сверить production schema и migrations, выровнять file versions с remote migration history; добавить FK и NOT NULL.
 - [x] Включить серверную проверку metadata через DB CHECK constraints.
-- [ ] Включить Leaked Password Protection в Supabase Auth Dashboard (Security Advisor warning).
+- [~] Leaked Password Protection заблокирована текущим планом: Supabase требует Pro или выше. Не апгрейдить только ради этого пункта; пересмотреть при смене плана. При текущем плане проверить доступные minimum length/password complexity settings.
 - [ ] Согласовать timezone created_at и безопасно мигрировать тип к timestamptz.
 
 ### Milestone 4 — PWA and UI quality (P1/P2)
 - [x] Добавлены unit-тесты network-first/offline fallback, runtime asset cache, API bypass и безопасной очистки кешей.
 - [x] GitHub Actions CI passed: 8 test files, 59 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884.
 - [ ] Проверить в реальном браузере update/offline между двумя production deploys с разными asset hashes.
-- [ ] Пройти пользовательские сценарии клавиатурой.
-- [ ] Проверить модальные окна, focus return, live announcements.
+- [x] Добавлен общий focus-trap helper для detail/editor modal: Tab/Shift+Tab boundary handling и 5 unit-тестов; CI passed (10 test files, 67 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349.
+- [x] Ручная keyboard-only проверка Tab/Shift+Tab в модальном окне подтверждена пользователем: фокус работает ожидаемо.
+- [ ] Проверить screen reader/live announcements и связи label/error для полей.
 - [ ] Подтвердить, нужен ли рефакторинг крупных компонентов.
 
 ### Milestone 5 — Portfolio polish (P2)
@@ -314,13 +319,17 @@ CI из .github/workflows/ci.yml запускает:
 - 2026-10-14 — инициализация auth переведена на version-guard для защиты от устаревшего getSession(), кеш промптов очищается при смене пользователя; добавлены 9 регрессионных тестов. CI passed для implementation revision `02fadb757fbcba29af704ab89b6285f2b00a9b00` (test/lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528032073.
 - 2026-10-14 — обновлена cache/update policy Service Worker: runtime cache только для shell/assets, обработка cache writes через waitUntil, cleanup scoped по cache prefix, обновления не перехватывают вкладки принудительно; добавлены regression tests. CI passed для implementation revision `770cb35088c9625436f618995e8d9dbe4a31ad14` (8 test files, 59 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38528975884. Реальный браузерный QA остаётся открытым.
 - 2026-10-14 — проверен live Supabase backend: RLS owner/A-vs-B read isolation подтверждена; отозваны лишние grants anon/authenticated, добавлены owner NOT NULL/FK/cascade, GENERATED ALWAYS и metadata CHECK constraints. Добавлен SQL catalog security test, migration filenames выровнены по production versions. Supabase advisor: leaked-password protection отключена; created_at timezone/type drift оставлен для отдельного решения.
+- 2026-10-14 — edit draft key изолирован по prompt ID и owner user ID; добавлены три storage key unit-теста. GitHub Actions CI passed (9 test files, 62 tests, lint/build) — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38531669226.
+- 2026-10-14 — в PromptDetailPanel добавлен focus trap для Tab/Shift+Tab, возврат фокуса на инициатор и защита вложенного edit-диалога от внешнего Escape handler; общий helper покрыт пятью unit-тестами. CI passed для source commit `60d8cd9fa64bc843b8c7cd96162d9c2bd72c4358`: 10 test files, 67 tests, lint/build — https://github.com/Mardakhay/mardakhay-labs/actions/runs/38532531349. Ручная keyboard-only и screen-reader проверка остаётся открытой.
+- 2026-10-14 — попытка включить Leaked Password Protection в Supabase Auth вернула сообщение о необходимости Pro plan или выше. Документация roadmap обновлена: это ограничение тарифа; апгрейд не требуется для продолжения аудита, проверить доступные парольные требования на текущем плане.
+- 2026-10-14 — пользователь вручную подтвердил, что клавиатурная навигация Tab/Shift+Tab в модальном окне работает ожидаемо. В Milestone 4 закрыт этот ручной QA-пункт; screen reader/live announcements и label/error associations остаются непроверенными.
 - При каждой следующей итерации добавлять дату, commit SHA, выполненные изменения, результаты тестов и оставшиеся риски.
 
 ## 10. Инструкция для нового чата
 
 Перед началом работы прочитать этот документ и актуальный код соответствующих файлов. Учитывать, что статусы и commit SHA в документе могут устареть. Проверять текущую ветку и последний commit, не предполагать, что roadmap уже выполнен.
 
-Следующая задача: P1-5 — исправить и проверить draft key в PromptDetailPanel. Ручные Auth/schema follow-ups из Milestone 3 нужно сохранить в контексте.
+Следующая задача: проверить screen reader/live announcements и связи label/error для полей формы; затем проверить доступные настройки минимальной длины и сложности пароля на текущем Supabase плане. Не менять тип created_at без согласования исходной timezone. Leaked Password Protection остаётся ограниченной тарифом Pro+.
 
 При продолжении аудита:
 - Отделять подтверждённые баги от непроверенных рисков.

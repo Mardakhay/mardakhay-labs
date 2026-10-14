@@ -148,6 +148,9 @@ function SettingsPage() {
                 )}
                 {copiedEmail ? 'Copied email' : 'Copy email'}
               </button>
+              <p className='sr-only' role='status' aria-live='polite' aria-atomic='true'>
+                {copiedEmail ? 'Email address copied to clipboard.' : ''}
+              </p>
 
               <span className='inline-flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[11px] font-medium text-zinc-400'>
                 <ShieldCheck className='h-3 w-3 text-violet-300' />

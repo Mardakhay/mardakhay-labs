@@ -52,6 +52,7 @@ function Notification() {
       className='app-toast fixed right-4 top-4 z-[100] w-[min(92vw,420px)]'
       role={variant === 'error' ? 'alert' : 'status'}
       aria-live={variant === 'error' ? 'assertive' : 'polite'}
+      aria-atomic='true'
     >
       <div className={`rounded-xl border px-4 py-3 backdrop-blur-2xl ${variantConfig[variant].className}`}>
         <div className='flex items-start gap-3'>
