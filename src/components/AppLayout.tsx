@@ -185,7 +185,7 @@ function AppLayout() {
 
       <div className='min-h-screen xl:pl-[272px]'>
         <div className='flex min-h-screen flex-1 flex-col'>
-          <header className='sticky top-0 z-20 border-b border-white/[0.04] bg-[#030305]/80 px-4 py-3 backdrop-blur-2xl sm:px-6 sm:py-4 lg:px-8'>
+          <header className='app-mobile-header sticky top-0 z-20 border-b border-white/[0.04] bg-[#030305]/80 px-4 py-3 backdrop-blur-2xl sm:px-6 sm:py-4 lg:px-8'>
             <div className='flex items-center justify-between gap-3'>
               <div className='flex min-w-0 items-center gap-3'>
                 <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-sky-500/10 text-violet-200 ring-1 ring-white/[0.06] xl:hidden'>
@@ -261,13 +261,13 @@ function AppLayout() {
               </div>
             </div>
 
-            <nav className='mt-3 grid grid-cols-4 gap-1.5 xl:hidden'>
+            <nav className='app-mobile-nav mt-3 grid grid-cols-4 gap-1.5 xl:hidden'>
               {navigation.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `group flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-[11px] font-medium transition-all duration-200 sm:min-h-10 sm:flex-row sm:gap-2 sm:rounded-lg sm:text-[13px] ${
+                    `app-mobile-nav-link group flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-[11px] font-medium transition-all duration-200 sm:min-h-10 sm:flex-row sm:gap-2 sm:rounded-lg sm:text-[13px] ${
                       isActive
                         ? 'border-white/[0.06] bg-white/[0.06] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.04)]'
                         : 'border-transparent bg-transparent text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200'
